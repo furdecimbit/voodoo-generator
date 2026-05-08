@@ -836,8 +836,8 @@ HTML = r"""<!DOCTYPE html>
   /* preview area */
   #preview-area{
     flex:1;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;
-    padding:24px;background:#080608;position:relative;
+    align-items:center;justify-content:flex-start;
+    padding:30px 24px 24px;background:#080608;position:relative;
   }
   #preview-img{
     max-width:100%;max-height:calc(100vh - 80px);
