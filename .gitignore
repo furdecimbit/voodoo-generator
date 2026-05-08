@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.env
+generated_*.png
+compose_test_*.png
