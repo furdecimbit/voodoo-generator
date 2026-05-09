@@ -429,27 +429,6 @@ def compose(params):
     paste_with_shadow(scene,eye2_r,eye2x,eye2y)
     paste_centered(scene,mouth_img,mouth_cx,mouth_cy)
 
-    # Thumb
-    body_thumb=np.array(body_colored.crop((1320,1100,1550,1230))).copy()
-    H2,W2=body_thumb.shape[:2]
-    is_black=(body_thumb[:,:,0]<60)&(body_thumb[:,:,1]<60)&(body_thumb[:,:,2]<60)&(body_thumb[:,:,3]>128)
-    is_transparent=body_thumb[:,:,3]==0
-    barrier=is_black|is_transparent
-    candidates=np.argwhere(~barrier[:H2//2,:])
-    interior=np.zeros((H2,W2),bool)
-    if len(candidates):
-        sy_t,sx_t=candidates[len(candidates)//2]
-        q=deque([(sy_t,sx_t)]); interior[sy_t,sx_t]=True
-        while q:
-            y,x=q.popleft()
-            for dy,dx in [(-1,0),(1,0),(0,-1),(0,1)]:
-                ny,nx=y+dy,x+dx
-                if 0<=ny<H2 and 0<=nx<W2 and not barrier[ny,nx] and not interior[ny,nx]:
-                    interior[ny,nx]=True; q.append((ny,nx))
-    keep=interior|is_black
-    body_thumb[~keep,3]=0
-    thumb_src=Image.fromarray(body_thumb)
-    scene.paste(thumb_src,(1320+offset_x,1100+offset_y),thumb_src)
 
     # Name text: y range 1800-1900, curved arc (center dips down), bloodcrowc font
     name = params.get('name', '').strip()
@@ -663,7 +642,7 @@ HTML = r"""<!DOCTYPE html>
   .section-header{
     padding:14px 18px;
     font-family:'Blackburn',serif;
-    font-size:20px;
+    font-size:22px;
     letter-spacing:.04em;
     color:#9a7858;
     cursor:pointer;
@@ -877,12 +856,28 @@ HTML = r"""<!DOCTYPE html>
   }
 
   input[type=color]{width:44px;height:32px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px}
+
+  /* mobile */
+  #menu-toggle{display:none}
+  @media(max-width:768px){
+    body{flex-direction:column;overflow:auto}
+    #sidebar{width:100%;height:auto;max-height:none;overflow:visible;border-right:none;border-bottom:1px solid #2e1f1f}
+    #sidebar-title{cursor:pointer;user-select:none;padding:18px;}
+    #sidebar-title::after{content:' ▾';font-size:24px;float:right}
+    #sidebar.collapsed #sidebar-content{display:none}
+    #sidebar.collapsed #sidebar-title::after{content:' ▸'}
+    #preview-area{min-height:60vh}
+    #preview-img{max-height:60vw}
+    #btn-area{flex-direction:row;flex-wrap:wrap}
+    #btn-area button{flex:1;min-width:120px}
+  }
 </style>
 </head>
 <body>
 
 <div id="sidebar">
-  <div id="sidebar-title">✦ VOODOO FORGE ✦</div>
+  <div id="sidebar-title" onclick="toggleSidebar()">✦ VOODOO FORGE ✦</div>
+  <div id="sidebar-content">
 
   <div class="section" id="sec-bg">
     <div class="section-header" onclick="toggleSection('sec-bg')">⬡ Background <span class="arrow">›</span></div>
@@ -997,25 +992,31 @@ HTML = r"""<!DOCTYPE html>
   <div class="section" id="sec-name">
     <div class="section-header" onclick="toggleSection('sec-name')">𖤐 Name <span class="arrow">›</span></div>
     <div class="section-body">
-      <input type="text" id="name_input" placeholder="Enter name…" oninput="scheduleGen()"
-        style="
-          width:100%;padding:10px 14px;
-          background:#180e18;
-          border:1px solid #3a2030;
-          border-radius:8px;
-          color:#e8d8a8;
-          font-family:'Bloodcrow',serif;
-          font-size:15px;
-          letter-spacing:.06em;
-          outline:none;
-          transition:border-color .2s;
-        "
-        onfocus="this.style.borderColor='#d4a84b'"
-        onblur="this.style.borderColor='#3a2030'"
-      >
-      <p style="margin-top:8px;font-size:12px;font-style:italic;color:#6a5040">
-        Appears between y 1800–1900 on the canvas
-      </p>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="name_input" placeholder="Enter name…"
+          onkeydown="if(event.key==='Enter') applyName()"
+          style="
+            flex:1;padding:10px 14px;
+            background:#180e18;
+            border:1px solid #3a2030;
+            border-radius:8px;
+            color:#e8d8a8;
+            font-family:'Bloodcrow',serif;
+            font-size:15px;
+            letter-spacing:.06em;
+            outline:none;
+            transition:border-color .2s;
+          "
+          onfocus="this.style.borderColor='#d4a84b'"
+          onblur="this.style.borderColor='#3a2030'"
+        >
+        <button onclick="applyName()" style="
+          padding:10px 14px;
+          background:#2a1820;border:1px solid #6a3848;border-radius:8px;
+          color:#d4a84b;font-family:'Blackburn',serif;font-size:14px;
+          cursor:pointer;white-space:nowrap;transition:background .2s;
+        " onmouseover="this.style.background='#3a2030'" onmouseout="this.style.background='#2a1820'">Apply</button>
+      </div>
     </div>
   </div>
 
@@ -1025,6 +1026,7 @@ HTML = r"""<!DOCTYPE html>
     <button id="btn-save" onclick="saveHQ()">☽ Save 2048px</button>
   </div>
 
+  </div><!-- /sidebar-content -->
 </div>
 
 <div id="preview-area">
@@ -1227,6 +1229,15 @@ function randomizeAll(){
 function scheduleGen(){
   clearTimeout(genTimer);
   genTimer=setTimeout(generate, 400);
+}
+
+function applyName(){
+  scheduleGen();
+}
+
+function toggleSidebar(){
+  if(window.innerWidth<=768)
+    document.getElementById('sidebar').classList.toggle('collapsed');
 }
 
 function buildParams(){
