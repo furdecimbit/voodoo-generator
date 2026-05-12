@@ -2046,22 +2046,69 @@ async function compositeCanvas(params) {
       const eye1y     = eye_yc+Math.floor(20*_s);
       const eye2y     = eye_yc+Math.floor(10*_s);
 
-      async function drawItem(url,cx2,cy2,size){
+      async function drawItem(url,cx2,cy2,size,flipH=false){
         const img=await loadImage(url);
         if(!img)return;
         const sc2=size/Math.max(img.width,img.height);
-        ctx.drawImage(img,Math.round(cx2-img.width*sc2/2),Math.round(cy2-img.height*sc2/2),Math.round(img.width*sc2),Math.round(img.height*sc2));
+        const iw=Math.round(img.width*sc2), ih=Math.round(img.height*sc2);
+        const dx=Math.round(cx2-iw/2), dy=Math.round(cy2-ih/2);
+        if(flipH){
+          ctx.save();
+          ctx.translate(dx+iw,dy);
+          ctx.scale(-1,1);
+          ctx.drawImage(img,0,0,iw,ih);
+          ctx.restore();
+        } else {
+          ctx.drawImage(img,dx,dy,iw,ih);
+        }
       }
 
       const imap=window.itemURLMap||{};
       function iurl(cat,path){return imap[path]||(CDN+'/'+cat+'/'+path);}
+
+      // Necklace ropes (bezier curves from neck left/right to necklace position)
+      if(params.necklace_file){
+        // Find neck width at neck_y in body pixel space
+        const neckRowData = [];
+        const bodyOC2 = document.createElement('canvas');
+        bodyOC2.width=IW; bodyOC2.height=IH;
+        const boctx2=bodyOC2.getContext('2d');
+        boctx2.drawImage(bodyImg,0,0);
+        const bdata=boctx2.getImageData(0,Math.min(lm.neck_y,IH-1),IW,1).data;
+        let lx2=lm.neck_cx-lm.head_r, rx2=lm.neck_cx+lm.head_r;
+        for(let x=0;x<IW;x++) if(bdata[x*4+3]>128){lx2=x;break;}
+        for(let x=IW-1;x>=0;x--) if(bdata[x*4+3]>128){rx2=x;break;}
+
+        const rope_w = Math.max(4, Math.floor(neck_size/15));
+        const neckImgSize = neck_size * 0.83;
+
+        for(const start_x of [lx2, rx2]){
+          const sx0 = Math.floor(start_x*sc)+offset_x;
+          const sy0 = sy(lm.neck_y);
+          const cxc = (sx0+neck_cx)/2;
+          const cyc = (sy0+neck_cy)/2 + neck_size*0.15;
+          ctx.beginPath();
+          ctx.moveTo(sx0,sy0);
+          ctx.quadraticCurveTo(cxc,cyc,neck_cx,neck_cy);
+          ctx.strokeStyle='rgba(10,8,6,0.9)';
+          ctx.lineWidth=rope_w+4;
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(sx0,sy0);
+          ctx.quadraticCurveTo(cxc,cyc,neck_cx,neck_cy);
+          ctx.strokeStyle='rgba(30,20,10,0.85)';
+          ctx.lineWidth=rope_w;
+          ctx.stroke();
+        }
+      }
+
       const tasks=[];
       if(params.eye_left_file)  tasks.push(drawItem(iurl('eyes',    params.eye_left_file),  eye1x,eye1y,eye_size));
       if(params.eye_right_file) tasks.push(drawItem(iurl('eyes',    params.eye_right_file), eye2x,eye2y,eye_size));
       if(params.mouth_file)     tasks.push(drawItem(iurl('mouths',  params.mouth_file),     mouth_cx,mouth_cy,mouth_size));
-      if(params.necklace_file)  tasks.push(drawItem(iurl('necklace',params.necklace_file),  neck_cx,neck_cy,neck_size*2.5));
-      if(params.knife_file)     tasks.push(drawItem(iurl('knife',   params.knife_file),     knife_cx,knife_cy,knife_size));
-      if(params.offhand_file)   tasks.push(drawItem(iurl('offhand', params.offhand_file),   off_cx,off_cy,off_size));
+      if(params.necklace_file)  tasks.push(drawItem(iurl('necklace',params.necklace_file),  neck_cx,neck_cy,neck_size*0.83));
+      if(params.knife_file)     tasks.push(drawItem(iurl('knife',   params.knife_file),     knife_cx,knife_cy,knife_size,true));
+      if(params.offhand_file)   tasks.push(drawItem(iurl('offhand', params.offhand_file),   off_cx,off_cy,off_size*0.5));
       await Promise.all(tasks);
 
       if(params.name){
