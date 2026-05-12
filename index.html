@@ -2002,7 +2002,7 @@ async function compositeCanvas(params) {
       const feet_target_y = Math.floor(H * 0.867);
       const sc = Math.min(W/IW, H/IH);
       const offset_x = platform_cx - Math.floor(lm.foot_cx*sc);
-      const offset_y = feet_target_y - Math.floor(lm.body_bottom*sc) + 100;
+      const offset_y = feet_target_y - Math.floor(lm.body_bottom*sc) + 60;
       const _s = sc;
 
       function sx(x){return Math.floor(x*sc)+offset_x;}
@@ -2116,7 +2116,7 @@ async function compositeCanvas(params) {
         ctx.font=`bold ${Math.round(W*0.045)}px serif`;
         ctx.fillStyle='#e8c060';ctx.textAlign='center';
         ctx.shadowColor='#000';ctx.shadowBlur=8;
-        ctx.fillText(params.name,W/2,H-Math.round(H*0.02));
+        ctx.fillText(params.name,W/2,H-Math.round(H*0.02)-20);
         ctx.restore();
       }
     }
