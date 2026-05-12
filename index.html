@@ -2082,7 +2082,7 @@ async function compositeCanvas(params) {
         for(let x=IW-1;x>=0;x--) if(bdata[x*4+3]>128){rx2=x;break;}
 
         const rope_w = Math.max(4, Math.floor(neck_size/15));
-        const neckImgSize = neck_size * 0.83;
+        const neckImgSize = neck_size * 2.4;
 
         for(const start_x of [lx2, rx2]){
           const sx0 = Math.floor(start_x*sc)+offset_x;
@@ -2108,9 +2108,9 @@ async function compositeCanvas(params) {
       if(params.eye_left_file)  tasks.push(drawItem(iurl('eyes',    params.eye_left_file),  eye1x,eye1y,eye_size));
       if(params.eye_right_file) tasks.push(drawItem(iurl('eyes',    params.eye_right_file), eye2x,eye2y,eye_size));
       if(params.mouth_file)     tasks.push(drawItem(iurl('mouths',  params.mouth_file),     mouth_cx,mouth_cy,mouth_size));
-      if(params.necklace_file)  tasks.push(drawItem(iurl('necklace',params.necklace_file),  neck_cx,neck_cy,neck_size*1.33));
-      if(params.knife_file)     tasks.push(drawItem(iurl('knife',   params.knife_file),     knife_cx,knife_cy,knife_size,true));
-      if(params.offhand_file)   tasks.push(drawItem(iurl('offhand', params.offhand_file),   off_cx,off_cy,off_size*0.8));
+      if(params.necklace_file)  tasks.push(drawItem(iurl('necklace',params.necklace_file),  neck_cx,neck_cy,neck_size*2.4));
+      if(params.knife_file)     tasks.push(drawItem(iurl('knife',   params.knife_file),     knife_cx,knife_cy,knife_size,false));
+      if(params.offhand_file)   tasks.push(drawItem(iurl('offhand', params.offhand_file),   off_cx,off_cy,off_size*1.44));
       await Promise.all(tasks);
 
       if(params.name){
