@@ -6,8 +6,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-  @font-face { font-family:'Blackburn'; src:url('https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/img/Blackburn.ttf'); }
-  @font-face { font-family:'Bloodcrow'; src:url('https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/img/bloodcrowc.ttf'); }
+  @font-face { font-family:'Blackburn'; src:url('https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/img/Blackburn.ttf'); }
+  @font-face { font-family:'Bloodcrow'; src:url('https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/img/bloodcrowc.ttf'); }
 </style>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -802,13 +802,13 @@
 <body>
 
 <video id="bg-video" autoplay muted loop playsinline>
-  <source src="https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/back.mp4" type="video/mp4">
+  <source src="https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/back.mp4" type="video/mp4">
 </video>
 
 <div id="sidebar">
   <div id="sidebar-title">HEX &amp; THREAD</div>
   <div id="sidebar-subtitle">
-    <img src="https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/icon.png" alt="">
+    <img src="https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/icon.png" alt="">
     <span>Ritual Effigy Forge</span>
   </div>
   <div id="wallet-bar">
@@ -961,7 +961,7 @@
     <div class="glow-ring"></div>
     <div class="glow-ring"></div>
     <div class="glow-ring"></div>
-    <img id="bewitch-img" src="https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/bewitch.png" alt="">
+    <img id="bewitch-img" src="https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/bewitch.png" alt="">
   </div>
   <div id="selected-panel"></div>
   <div id="pending-indicator"></div>
@@ -1065,8 +1065,8 @@ function updateBodySwatch(){
 updateSwatch(); updateBodySwatch();
 
 // Thumbnail grids
-const ITEMS_CSV = 'https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/items.csv';
-const RAW_BASE = 'https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main';
+const ITEMS_CSV = 'https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/items.csv';
+const RAW_BASE = 'https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main';
 
 function parseCSV(text){
   const lines = text.trim().split('\n');
@@ -1211,7 +1211,7 @@ function buildGridFlat(gridId, folder, files, key){
   grid.innerHTML='';
   if(!files||!files.length) return;
   files.forEach(fname=>{
-    const wrap=makeWrap(`https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/` + folder + '/' + fname, fname, fname);
+    const wrap=makeWrap(`https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/` + folder + '/' + fname, fname, fname);
     wrap.onclick=()=>selectThumb(grid, wrap, key, fname);
     grid.appendChild(wrap);
   });
@@ -1269,7 +1269,7 @@ function buildGridRarity(gridId, folder, data, key){
     if(!files||!files.length) return;
     files.forEach(fname=>{
       const path=`${rarity}/${fname}`;
-      const wrap=makeWrap(`https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/` + folder + '/' + path, path, path, `rarity-wrap-${rarity}`);
+      const wrap=makeWrap(`https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/` + folder + '/' + path, path, path, `rarity-wrap-${rarity}`);
       wrap.querySelector('.thumb').classList.add(`rarity-${rarity}`);
       if(isKnife && RARITY_GLOW[rarity]) wrap.querySelector('.thumb').style.filter=RARITY_GLOW[rarity];
       wrap.onclick=()=>selectThumb(grid, wrap, key, path);
@@ -1353,7 +1353,7 @@ function buildPinGrid(files){
   pinList.forEach(fname=>{
     const img=document.createElement('img');
     img.className='pin-drag-thumb';
-    img.src=`https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/pins/${fname}`;
+    img.src=`https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/pins/${fname}`;
     img.draggable=true;
     img.addEventListener('dragstart',e=>{
       dragPinSrc=img.src;
@@ -1866,7 +1866,7 @@ function buildParams(useStaged=false){
 
 
 // ── Canvas Compositing Engine ──────────────────────────────
-const CDN = 'https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main';
+const CDN = 'https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main';
 
 function loadImage(url) {
   return new Promise((resolve, reject) => {
