@@ -1963,6 +1963,7 @@ function getBodyLandmarks(bodyImg) {
 }
 
 async function compositeCanvas(params) {
+  await document.fonts.load(`${Math.round((params.preview_size||600)*0.048)}px Bloodcrow`);
   const W = params.preview_size || 600;
   const H = W;
   const canvas = document.createElement('canvas');
