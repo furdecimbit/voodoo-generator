@@ -269,7 +269,8 @@
   /* action buttons */
   #btn-area{
     padding:14px 0 0 0;
-    display:flex;flex-direction:row;gap:14px;justify-content:center;width:100%;
+    display:flex;flex-direction:row;gap:14px;justify-content:flex-start;width:100%;
+    max-width:600px;align-self:flex-start;margin-left:0;
   }
   button{
     padding:12px 22px;border:none;border-radius:4px;
@@ -366,9 +367,10 @@
   /* preview area */
   #preview-area{
     flex:1;display:flex;flex-direction:column;
-    align-items:center;justify-content:flex-start;
+    align-items:flex-start;justify-content:flex-start;
     padding:28px 24px 20px;background:transparent;position:relative;
   }
+  #preview-wrap{align-self:center;}
   #preview-wrap{position:relative;display:inline-block}
   #preview-img{
     max-width:100%;max-height:calc(100vh - 140px);
@@ -583,8 +585,8 @@
 
   /* ── staged item panel (bottom-right fixed) ── */
   #staged-panel{
-    position:fixed;bottom:28px;right:28px;
-    width:260px;
+    position:fixed;bottom:80px;right:28px;
+    width:300px;
     background:linear-gradient(160deg,#3a0808,#1a0404);
     border:3px solid #7a1008;
     border-radius:6px;
@@ -2005,7 +2007,7 @@ async function compositeCanvas(params) {
       const feet_target_y = Math.floor(H * 0.867);
       const sc = Math.min(W/IW, H/IH);
       const offset_x = platform_cx - Math.floor(lm.foot_cx*sc);
-      const offset_y = feet_target_y - Math.floor(lm.body_bottom*sc) - 40;
+      const offset_y = feet_target_y - Math.floor(lm.body_bottom*sc);
       const _s = sc;
 
       function sx(x){return Math.floor(x*sc)+offset_x;}
@@ -2109,9 +2111,9 @@ async function compositeCanvas(params) {
       if(params.eye_left_file)  tasks.push(drawItem(iurl('eyes',    params.eye_left_file),  eye1x,eye1y,eye_size));
       if(params.eye_right_file) tasks.push(drawItem(iurl('eyes',    params.eye_right_file), eye2x,eye2y,eye_size));
       if(params.mouth_file)     tasks.push(drawItem(iurl('mouths',  params.mouth_file),     mouth_cx,mouth_cy,mouth_size));
-      if(params.necklace_file)  tasks.push(drawItem(iurl('necklace',params.necklace_file),  neck_cx,neck_cy,neck_size*2.4));
+      if(params.necklace_file)  tasks.push(drawItem(iurl('necklace',params.necklace_file),  neck_cx,neck_cy,neck_size*1.68));
       if(params.knife_file)     tasks.push(drawItem(iurl('knife',   params.knife_file),     knife_cx,knife_cy,knife_size,false));
-      if(params.offhand_file)   tasks.push(drawItem(iurl('offhand', params.offhand_file),   off_cx,off_cy,off_size*1.44));
+      if(params.offhand_file)   tasks.push(drawItem(iurl('offhand', params.offhand_file),   off_cx,off_cy,off_size*1.0));
       await Promise.all(tasks);
 
       if(params.name){
