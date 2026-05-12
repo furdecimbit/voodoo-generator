@@ -2110,7 +2110,7 @@ async function compositeCanvas(params) {
       if(params.eye_left_file)  tasks.push(drawItem(iurl('eyes',    params.eye_left_file),  eye1x,eye1y,eye_size));
       if(params.eye_right_file) tasks.push(drawItem(iurl('eyes',    params.eye_right_file), eye2x,eye2y,eye_size));
       if(params.mouth_file)     tasks.push(drawItem(iurl('mouths',  params.mouth_file),     mouth_cx,mouth_cy,mouth_size));
-      if(params.necklace_file)  tasks.push(drawItem(iurl('necklace',params.necklace_file),  neck_cx,neck_cy,neck_size*1.68));
+      if(params.necklace_file)  tasks.push(drawItem(iurl('necklace',params.necklace_file),  neck_cx,neck_cy,neck_size*1.34));
       if(params.knife_file)     tasks.push(drawItem(iurl('knife',   params.knife_file),     knife_cx,knife_cy,knife_size,false));
       if(params.offhand_file)   tasks.push(drawItem(iurl('offhand', params.offhand_file),   off_cx,off_cy,off_size*1.0));
       await Promise.all(tasks);
