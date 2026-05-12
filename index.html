@@ -1084,39 +1084,111 @@ async function loadItems(){
   const text = await res.text();
   const rows = parseCSV(text);
 
-  // Build data structure matching old format
+  // Each item: {url, path, filename, rarity}
+  // path = used as equipped[key] value, must match compositeCanvas expectations
   const data = {
-    body: {common:[],rare:[],legendary:[],ultimate:[]},
-    knife: {common:[],rare:[],legendary:[],ultimate:[]},
+    body:     {common:[],rare:[],legendary:[],ultimate:[]},
+    knife:    {common:[],rare:[],legendary:[],ultimate:[]},
     necklace: {common:[],rare:[],legendary:[],ultimate:[]},
-    eyes: {common:[],rare:[],legendary:[],ultimate:[]},
-    offhand: [],
-    mouths: [],
+    eyes:     {common:[],rare:[],legendary:[],ultimate:[]},
+    offhand:  [],
+    mouths:   [],
     pins: ['aqua.png','blue.png','brown.png','green.png','pink.png','purple.png','red.png','yellow.png']
   };
 
+  // URL lookup: path -> full URL
+  window.itemURLMap = {};
+
   rows.forEach(r => {
     const cat = r.Category;
-    const rar = r.Rarity;
+    const rar = r.Rarity || 'common';
     const filename = r.Filename;
-    if(!filename) return;
+    const url = r.Image;
+    if(!filename || !url) return;
+
+    // path used as equipped value
+    let path;
     if(cat === 'offhand' || cat === 'mouths') {
-      if(data[cat]) data[cat].push(filename);
+      path = rar + '/' + filename;
+    } else {
+      path = rar + '/' + filename;
+    }
+    window.itemURLMap[path] = url;
+
+    const item = {url, path, filename, rarity: rar};
+    if(cat === 'offhand' || cat === 'mouths') {
+      if(data[cat]) data[cat].push(item);
     } else if(data[cat] && data[cat][rar] !== undefined) {
-      data[cat][rar].push(filename);
+      data[cat][rar].push(item);
     }
   });
 
-  // Override makeWrap to use full GitHub URL
-  buildGridRarity('grid-body',    'body',     data.body,     'body_file');
-  buildGridRarity('grid-knife',   'knife',    data.knife,    'knife_file');
-  buildGridFlat(  'grid-offhand', 'offhand',  data.offhand,  'offhand_file');
-  buildGridFlat(  'grid-mouth',   'mouths',   data.mouths,   'mouth_file');
-  buildGridRarity('grid-necklace','necklace', data.necklace, 'necklace_file');
-  buildGridRarity('grid-eye-left','eyes',     data.eyes,     'eye_left_file');
-  buildGridRarity('grid-eye-right','eyes',    data.eyes,     'eye_right_file');
+  buildGridRarityFromItems('grid-body',     data.body,     'body_file');
+  buildGridRarityFromItems('grid-knife',    data.knife,    'knife_file');
+  buildGridFlatFromItems(  'grid-offhand',  data.offhand,  'offhand_file');
+  buildGridFlatFromItems(  'grid-mouth',    data.mouths,   'mouth_file');
+  buildGridRarityFromItems('grid-necklace', data.necklace, 'necklace_file');
+  buildGridRarityFromItems('grid-eye-left', data.eyes,     'eye_left_file');
+  buildGridRarityFromItems('grid-eye-right',data.eyes,     'eye_right_file');
   buildPinGrid(data.pins||[]);
   applyHolderFilter();
+}
+
+function buildGridFlatFromItems(gridId, items, key){
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = '';
+  if(!items||!items.length) return;
+  items.forEach(item => {
+    const wrap = makeWrap(item.url, item.filename, item.path);
+    wrap.onclick = () => selectThumb(grid, wrap, key, item.path);
+    grid.appendChild(wrap);
+  });
+}
+
+function buildGridRarityFromItems(gridId, data, key){
+  const gridEl = document.getElementById(gridId);
+  const existingBar = gridEl.previousElementSibling;
+  if(existingBar && existingBar.classList.contains('rarity-filter')) existingBar.remove();
+  gridEl.innerHTML = '';
+  if(!data) return;
+
+  const isKnife = key === 'knife_file';
+  const order = ['common','rare','legendary','ultimate'];
+  const available = order.filter(r => data[r] && data[r].length);
+
+  const bar = document.createElement('div');
+  bar.className = 'rarity-filter';
+  function applyFilter(active){
+    bar.querySelectorAll('.rf-btn').forEach(b=>b.classList.remove('active'));
+    active.classList.add('active');
+    const r = active.dataset.rarity;
+    gridEl.querySelectorAll('.thumb').forEach(img=>{
+      img.style.display = (r==='all' || img.classList.contains(`rarity-${r}`)) ? '' : 'none';
+    });
+  }
+  const allBtn = document.createElement('button');
+  allBtn.className='rf-btn active'; allBtn.textContent='All'; allBtn.dataset.rarity='all';
+  allBtn.onclick=()=>applyFilter(allBtn);
+  bar.appendChild(allBtn);
+  available.forEach(r=>{
+    const btn=document.createElement('button');
+    btn.className=`rf-btn rf-${r}`; btn.textContent=r[0].toUpperCase()+r.slice(1); btn.dataset.rarity=r;
+    btn.onclick=()=>applyFilter(btn);
+    bar.appendChild(btn);
+  });
+  gridEl.before(bar);
+
+  order.forEach(rarity=>{
+    const items = data[rarity];
+    if(!items||!items.length) return;
+    items.forEach(item=>{
+      const wrap = makeWrap(item.url, item.filename, item.path, `rarity-wrap-${rarity}`);
+      wrap.querySelector('.thumb').classList.add(`rarity-${rarity}`);
+      if(isKnife && RARITY_GLOW[rarity]) wrap.querySelector('.thumb').style.filter=RARITY_GLOW[rarity];
+      wrap.onclick=()=>selectThumb(gridEl, wrap, key, item.path);
+      gridEl.appendChild(wrap);
+    });
+  });
 }
 
 function makeWrap(src, title, path, extraClass){
@@ -1867,7 +1939,8 @@ async function compositeCanvas(params) {
 
   // Body
   if(params.body_file) {
-    const burl = CDN + '/body/' + params.body_file;
+    const imap2 = window.itemURLMap || {};
+    const burl = imap2[params.body_file] || (CDN + '/body/' + params.body_file);
     const bodyImg = await loadImage(burl);
     if(bodyImg) {
       // Scale body to fit ~80% of canvas height
@@ -1929,12 +2002,14 @@ async function compositeCanvas(params) {
 
       // Draw items
       const tasks = [];
-      if(params.eye_left_file)  tasks.push(drawItem(CDN+'/eyes/'+params.eye_left_file,  eye1x, eyeY, eyeSize));
-      if(params.eye_right_file) tasks.push(drawItem(CDN+'/eyes/'+params.eye_right_file, eye2x, eyeY, eyeSize));
-      if(params.mouth_file)     tasks.push(drawItem(CDN+'/mouths/'+params.mouth_file,   mouthCx, mouthCy, mouthSize));
-      if(params.necklace_file)  tasks.push(drawItem(CDN+'/necklace/'+params.necklace_file, neckCx, neckCy, neckSize*2.5));
-      if(params.knife_file)     tasks.push(drawItem(CDN+'/knife/'+params.knife_file,    knifeX, handY, knifeSize));
-      if(params.offhand_file)   tasks.push(drawItem(CDN+'/offhand/'+params.offhand_file, offhandX, handY, offhandSize));
+      const imap = window.itemURLMap || {};
+      function iurl(cat, path){ return imap[path] || (CDN+'/'+cat+'/'+path); }
+      if(params.eye_left_file)  tasks.push(drawItem(iurl('eyes',     params.eye_left_file),  eye1x, eyeY, eyeSize));
+      if(params.eye_right_file) tasks.push(drawItem(iurl('eyes',     params.eye_right_file), eye2x, eyeY, eyeSize));
+      if(params.mouth_file)     tasks.push(drawItem(iurl('mouths',   params.mouth_file),     mouthCx, mouthCy, mouthSize));
+      if(params.necklace_file)  tasks.push(drawItem(iurl('necklace', params.necklace_file),  neckCx, neckCy, neckSize*2.5));
+      if(params.knife_file)     tasks.push(drawItem(iurl('knife',    params.knife_file),     knifeX, handY, knifeSize));
+      if(params.offhand_file)   tasks.push(drawItem(iurl('offhand',  params.offhand_file),   offhandX, handY, offhandSize));
       await Promise.all(tasks);
 
       // Name text
