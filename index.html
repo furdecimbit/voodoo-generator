@@ -2002,7 +2002,7 @@ async function compositeCanvas(params) {
       const feet_target_y = Math.floor(H * 0.867);
       const sc = Math.min(W/IW, H/IH);
       const offset_x = platform_cx - Math.floor(lm.foot_cx*sc);
-      const offset_y = feet_target_y - Math.floor(lm.body_bottom*sc) + 60;
+      const offset_y = feet_target_y - Math.floor(lm.body_bottom*sc) - 40;
       const _s = sc;
 
       function sx(x){return Math.floor(x*sc)+offset_x;}
@@ -2106,9 +2106,9 @@ async function compositeCanvas(params) {
       if(params.eye_left_file)  tasks.push(drawItem(iurl('eyes',    params.eye_left_file),  eye1x,eye1y,eye_size));
       if(params.eye_right_file) tasks.push(drawItem(iurl('eyes',    params.eye_right_file), eye2x,eye2y,eye_size));
       if(params.mouth_file)     tasks.push(drawItem(iurl('mouths',  params.mouth_file),     mouth_cx,mouth_cy,mouth_size));
-      if(params.necklace_file)  tasks.push(drawItem(iurl('necklace',params.necklace_file),  neck_cx,neck_cy,neck_size*0.83));
+      if(params.necklace_file)  tasks.push(drawItem(iurl('necklace',params.necklace_file),  neck_cx,neck_cy,neck_size*1.33));
       if(params.knife_file)     tasks.push(drawItem(iurl('knife',   params.knife_file),     knife_cx,knife_cy,knife_size,true));
-      if(params.offhand_file)   tasks.push(drawItem(iurl('offhand', params.offhand_file),   off_cx,off_cy,off_size*0.5));
+      if(params.offhand_file)   tasks.push(drawItem(iurl('offhand', params.offhand_file),   off_cx,off_cy,off_size*0.8));
       await Promise.all(tasks);
 
       if(params.name){
@@ -2116,7 +2116,7 @@ async function compositeCanvas(params) {
         ctx.font=`bold ${Math.round(W*0.045)}px serif`;
         ctx.fillStyle='#e8c060';ctx.textAlign='center';
         ctx.shadowColor='#000';ctx.shadowBlur=8;
-        ctx.fillText(params.name,W/2,H-Math.round(H*0.02)-20);
+        ctx.fillText(params.name,W/2,H-Math.round(H*0.02)-30);
         ctx.restore();
       }
     }
