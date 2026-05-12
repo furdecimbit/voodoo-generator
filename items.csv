@@ -1,4 +1,22 @@
 Title,Category,Rarity,Filename,Image
+Burlap,body,common,burlap.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/common/burlap.PNG
+Corduroy,body,common,corduroy.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/common/corduroy.PNG
+Cracked Leather,body,common,cracked_leather.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/common/cracked_leather.PNG
+Jean,body,common,jean.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/common/jean.PNG
+Tartan,body,common,tartan.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/common/tartan.PNG
+Wool,body,common,wool.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/common/wool.PNG
+Cosmic,body,legendary,cosmic.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/legendary/cosmic.PNG
+Fractured,body,legendary,fractured.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/legendary/fractured.PNG
+Marble,body,legendary,marble.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/legendary/marble.PNG
+Mummy,body,legendary,mummy.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/legendary/mummy.PNG
+Copper,body,rare,copper.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/rare/copper.PNG
+Cracked Stone,body,rare,cracked_stone.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/rare/cracked_stone.PNG
+Glassy,body,rare,glassy.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/rare/glassy.PNG
+Wooden,body,rare,wooden.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/rare/wooden.PNG
+Infernal Bone Wraith,body,ultimate,infernal_bone_wraith.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/ultimate/infernal_bone_wraith.PNG
+Prismatic Dragon Scale,body,ultimate,prismatic dragon scale.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/ultimate/prismatic dragon scale.PNG
+Rune Iron Golem,body,ultimate,rune_iron_golem.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/ultimate/rune_iron_golem.PNG
+Void Portal Golem,body,ultimate,void_portal_golem.PNG,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/body/ultimate/void_portal_golem.PNG
 Abyss Button,eyes,common,abyss_button.png,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/eyes/common/abyss_button.png
 Amethyst Cross,eyes,common,amethyst_cross.png,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/eyes/common/amethyst_cross.png
 Aqua Cross,eyes,common,aqua_cross.png,https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/eyes/common/aqua_cross.png
