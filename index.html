@@ -1910,6 +1910,56 @@ function applyHueShift(ctx, w, h, hue, sat, val) {
   ctx.putImageData(imageData, 0, 0);
 }
 
+function getBodyLandmarks(bodyImg) {
+  const IW = bodyImg.width, IH = bodyImg.height;
+  const oc = document.createElement('canvas');
+  oc.width = IW; oc.height = IH;
+  const octx = oc.getContext('2d');
+  octx.drawImage(bodyImg, 0, 0);
+  const data = octx.getImageData(0, 0, IW, IH).data;
+
+  function solidRow(y) {
+    const cols = [];
+    for(let x=0;x<IW;x++) if(data[(y*IW+x)*4+3]>128) cols.push(x);
+    return cols;
+  }
+
+  let top=-1, bottom=-1;
+  for(let y=0;y<IH;y++){const c=solidRow(y);if(c.length){if(top===-1)top=y;bottom=y;}}
+  if(top===-1) return null;
+  const body_h = bottom - top;
+
+  let max_w=0, head_cx=Math.floor(IW/2), head_cy=top;
+  for(let y=top;y<top+Math.floor(body_h*0.38);y++){
+    const c=solidRow(y);
+    if(c.length&&c[c.length-1]-c[0]>max_w){max_w=c[c.length-1]-c[0];head_cx=Math.floor((c[0]+c[c.length-1])/2);head_cy=y;}
+  }
+  const head_r=Math.floor(max_w/2);
+
+  let min_nw=99999,neck_y=head_cy+Math.floor(head_r*0.8);
+  for(let y=head_cy+Math.floor(head_r*0.8);y<top+Math.floor(body_h*0.55);y++){
+    const c=solidRow(y);
+    if(c.length&&c[c.length-1]-c[0]<min_nw){min_nw=c[c.length-1]-c[0];neck_y=y;}
+  }
+
+  let max_rx=0,max_ry=0,min_lx=99999,min_ly=0;
+  for(let y=top+Math.floor(body_h*0.55);y<top+Math.floor(body_h*0.82);y+=2){
+    const c=solidRow(y);
+    if(c.length){if(c[c.length-1]>max_rx){max_rx=c[c.length-1];max_ry=y;}if(c[0]<min_lx){min_lx=c[0];min_ly=y;}}
+  }
+
+  let fxs=[];
+  for(let y=bottom-Math.floor(body_h*0.08);y<=bottom;y++){fxs=fxs.concat(solidRow(y));}
+  const foot_cx=fxs.length?Math.floor(fxs.reduce((a,b)=>a+b,0)/fxs.length):head_cx;
+
+  return {head_cx,head_cy,head_r,neck_y,neck_cx:head_cx,
+    rhand_x:max_rx,rhand_y:max_ry,lhand_x:min_lx,lhand_y:min_ly,
+    body_top:top,body_bottom:bottom,body_h,foot_cx,
+    eye_y:head_cy-Math.floor(head_r*0.05),
+    eye_gap:Math.floor(head_r*0.50),
+    eye_size:Math.floor(head_r*0.55*0.80*1.05)};
+}
+
 async function compositeCanvas(params) {
   const W = params.preview_size || 600;
   const H = W;
@@ -1938,90 +1988,88 @@ async function compositeCanvas(params) {
     ctx.restore();
   }
 
-  // Body
   if(params.body_file) {
     const imap2 = window.itemURLMap || {};
     const burl = imap2[params.body_file] || (CDN + '/body/' + params.body_file);
     const bodyImg = await loadImage(burl);
     if(bodyImg) {
-      // Scale body to fit ~80% of canvas height
-      const sc = Math.min(W / bodyImg.width, H * 0.85 / bodyImg.height);
-      const bw = Math.round(bodyImg.width * sc);
-      const bh = Math.round(bodyImg.height * sc);
-      const bx = Math.round((W - bw) / 2);
-      const by = Math.round(H - bh - H * 0.03);
+      const IW = bodyImg.width, IH = bodyImg.height;
+      const lm = getBodyLandmarks(bodyImg);
+      if(!lm) return canvas.toDataURL('image/png').split(',')[1];
 
-      // Apply body hue to offscreen canvas
+      // Match Python compose: platform_cx=W/2, feet_target_y=H*0.867, +100px offset
+      const platform_cx = Math.floor(W/2);
+      const feet_target_y = Math.floor(H * 0.867);
+      const sc = Math.min(W/IW, H/IH);
+      const offset_x = platform_cx - Math.floor(lm.foot_cx*sc);
+      const offset_y = feet_target_y - Math.floor(lm.body_bottom*sc) + 100;
+      const _s = sc;
+
+      function sx(x){return Math.floor(x*sc)+offset_x;}
+      function sy(y){return Math.floor(y*sc)+offset_y;}
+
+      // Draw body with hue
       const bodyCanvas = document.createElement('canvas');
-      bodyCanvas.width = bw; bodyCanvas.height = bh;
+      bodyCanvas.width = IW; bodyCanvas.height = IH;
       const bctx = bodyCanvas.getContext('2d');
-      bctx.drawImage(bodyImg, 0, 0, bw, bh);
-      if(params.body_hue !== 0 || params.body_sat !== 1) {
-        applyHueShift(bctx, bw, bh, params.body_hue, params.body_sat || 0.6, params.body_val || 0.85);
-      }
-      ctx.drawImage(bodyCanvas, bx, by);
+      bctx.drawImage(bodyImg, 0, 0);
+      if(params.body_hue!==0||params.body_sat!==1)
+        applyHueShift(bctx,IW,IH,params.body_hue,params.body_sat||0.6,params.body_val||0.85);
+      ctx.drawImage(bodyCanvas,offset_x,offset_y,Math.round(IW*sc),Math.round(IH*sc));
 
-      // Items relative to body
-      const cx = bx + bw/2;  // body center x
-      const top = by;
-      const headH = bh * 0.38;
-      const headCy = top + headH * 0.5;
-      const headR  = bw * 0.22;
+      // Item sizes
+      const body_h_sc  = lm.body_h * sc;
+      const neck_size  = Math.floor(lm.head_r*sc*0.44);
+      const knife_size = Math.floor(body_h_sc*0.312);
+      const off_size   = Math.floor(body_h_sc*0.234);
+      const mouth_size = Math.floor(lm.head_r*sc*0.90);
+      const eye_size   = Math.floor(lm.eye_size*sc*0.6*1.30*1.15*1.10);
+      const eye_gap    = Math.floor(lm.eye_gap*sc);
 
-      // Eye positions
-      const eyeSize = Math.round(headR * 0.55);
-      const eyeGap  = Math.round(headR * 0.50);
-      const eyeY    = Math.round(headCy - headR * 0.05);
-      const eye1x = Math.round(cx - eyeGap);
-      const eye2x = Math.round(cx + eyeGap + 5);
+      // Item positions
+      const right_x = Math.max(lm.rhand_x,lm.lhand_x);
+      const right_y = lm.rhand_x>=lm.lhand_x?lm.rhand_y:lm.lhand_y;
+      const left_x  = Math.min(lm.rhand_x,lm.lhand_x);
+      const left_y  = lm.rhand_x>=lm.lhand_x?lm.lhand_y:lm.rhand_y;
 
-      // Mouth
-      const mouthSize = Math.round(headR * 0.9);
-      const mouthCx = Math.round(cx + 10);
-      const mouthCy = Math.round(eyeY + eyeSize/2 + headR * 0.55);
+      const neck_cx = sx(lm.neck_cx)+Math.floor(neck_size*0.25)-Math.floor(17*_s);
+      const neck_cy = sy(lm.neck_y)+Math.floor(neck_size*0.3)+Math.floor(neck_size/2)+Math.floor(20*_s);
+      const knife_cx  = sx(right_x);
+      const knife_cy  = sy(right_y)-Math.floor(180*_s);
+      const off_cx    = sx(left_x)+Math.floor(70*_s);
+      const off_cy    = sy(left_y)-Math.floor(160*_s);
+      const mouth_cx  = sx(lm.head_cx)+Math.floor(10*_s);
+      const eye_yc    = sy(lm.eye_y);
+      const mouth_cy  = eye_yc+Math.floor(eye_size/2)+Math.floor(100*_s);
+      const eye1x     = sx(lm.head_cx)-eye_gap+Math.floor(20*_s);
+      const eye2x     = sx(lm.head_cx)+eye_gap+Math.floor(5*_s);
+      const eye1y     = eye_yc+Math.floor(20*_s);
+      const eye2y     = eye_yc+Math.floor(10*_s);
 
-      // Neck/necklace
-      const neckSize = Math.round(headR * 0.44);
-      const neckCx = Math.round(cx + neckSize*0.25 - 17);
-      const neckCy = Math.round(top + bh*0.48 + neckSize);
-
-      // Hands
-      const handY = top + bh * 0.68;
-      const knifeX = Math.round(bx + bw * 0.85);
-      const offhandX = Math.round(bx + bw * 0.15);
-      const knifeSize = Math.round(bh * 0.31);
-      const offhandSize = Math.round(bh * 0.23);
-
-      async function drawItem(url, cx2, cy2, size) {
-        const img = await loadImage(url);
-        if(!img) return;
-        const sc2 = size / Math.max(img.width, img.height);
-        const iw = Math.round(img.width * sc2);
-        const ih = Math.round(img.height * sc2);
-        ctx.drawImage(img, Math.round(cx2 - iw/2), Math.round(cy2 - ih/2), iw, ih);
+      async function drawItem(url,cx2,cy2,size){
+        const img=await loadImage(url);
+        if(!img)return;
+        const sc2=size/Math.max(img.width,img.height);
+        ctx.drawImage(img,Math.round(cx2-img.width*sc2/2),Math.round(cy2-img.height*sc2/2),Math.round(img.width*sc2),Math.round(img.height*sc2));
       }
 
-      // Draw items
-      const tasks = [];
-      const imap = window.itemURLMap || {};
-      function iurl(cat, path){ return imap[path] || (CDN+'/'+cat+'/'+path); }
-      if(params.eye_left_file)  tasks.push(drawItem(iurl('eyes',     params.eye_left_file),  eye1x, eyeY, eyeSize));
-      if(params.eye_right_file) tasks.push(drawItem(iurl('eyes',     params.eye_right_file), eye2x, eyeY, eyeSize));
-      if(params.mouth_file)     tasks.push(drawItem(iurl('mouths',   params.mouth_file),     mouthCx, mouthCy, mouthSize));
-      if(params.necklace_file)  tasks.push(drawItem(iurl('necklace', params.necklace_file),  neckCx, neckCy, neckSize*2.5));
-      if(params.knife_file)     tasks.push(drawItem(iurl('knife',    params.knife_file),     knifeX, handY, knifeSize));
-      if(params.offhand_file)   tasks.push(drawItem(iurl('offhand',  params.offhand_file),   offhandX, handY, offhandSize));
+      const imap=window.itemURLMap||{};
+      function iurl(cat,path){return imap[path]||(CDN+'/'+cat+'/'+path);}
+      const tasks=[];
+      if(params.eye_left_file)  tasks.push(drawItem(iurl('eyes',    params.eye_left_file),  eye1x,eye1y,eye_size));
+      if(params.eye_right_file) tasks.push(drawItem(iurl('eyes',    params.eye_right_file), eye2x,eye2y,eye_size));
+      if(params.mouth_file)     tasks.push(drawItem(iurl('mouths',  params.mouth_file),     mouth_cx,mouth_cy,mouth_size));
+      if(params.necklace_file)  tasks.push(drawItem(iurl('necklace',params.necklace_file),  neck_cx,neck_cy,neck_size*2.5));
+      if(params.knife_file)     tasks.push(drawItem(iurl('knife',   params.knife_file),     knife_cx,knife_cy,knife_size));
+      if(params.offhand_file)   tasks.push(drawItem(iurl('offhand', params.offhand_file),   off_cx,off_cy,off_size));
       await Promise.all(tasks);
 
-      // Name text
-      if(params.name) {
+      if(params.name){
         ctx.save();
-        ctx.font = `bold ${Math.round(W*0.045)}px serif`;
-        ctx.fillStyle = '#e8c060';
-        ctx.textAlign = 'center';
-        ctx.shadowColor = '#000';
-        ctx.shadowBlur = 8;
-        ctx.fillText(params.name, W/2, H - H*0.02);
+        ctx.font=`bold ${Math.round(W*0.045)}px serif`;
+        ctx.fillStyle='#e8c060';ctx.textAlign='center';
+        ctx.shadowColor='#000';ctx.shadowBlur=8;
+        ctx.fillText(params.name,W/2,H-Math.round(H*0.02));
         ctx.restore();
       }
     }
