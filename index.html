@@ -68,7 +68,7 @@
     line-height:1;
   }
   #sidebar-subtitle{
-    display:flex;align-items:center;justify-content:center;gap:8px;
+    display:flex;align-items:center;justify-content:center;gap:10px;
     padding:4px 18px 16px;
     background:linear-gradient(180deg,#2c1e0a,#251a08);
     border-bottom:2px solid #7a5520;
@@ -79,14 +79,16 @@
     height:1px;background:linear-gradient(90deg,transparent,#c8a04088,transparent);
   }
   #sidebar-subtitle img{
-    height:1em;width:auto;object-fit:contain;
+    height:1.6em;width:auto;object-fit:contain;
     filter:drop-shadow(0 0 6px #e8c06088);
+    flex-shrink:0;
   }
   #sidebar-subtitle span{
     font-family:'Bloodcrow',serif;
-    font-size:14px;letter-spacing:.12em;
+    font-size:20px;letter-spacing:.10em;
     color:#c8a050;text-transform:uppercase;
     text-shadow:0 0 10px #c8a05055;
+    white-space:nowrap;
   }
   @keyframes titlePulse{
     0%,100%{text-shadow:0 0 20px #e8c06077,0 2px 6px #000}
@@ -2113,7 +2115,7 @@ async function compositeCanvas(params) {
 
       if(params.name){
         ctx.save();
-        ctx.font=`bold ${Math.round(W*0.045)}px serif`;
+        ctx.font=`${Math.round(W*0.048)}px Blackburn,serif`;
         ctx.fillStyle='#e8c060';ctx.textAlign='center';
         ctx.shadowColor='#000';ctx.shadowBlur=8;
         ctx.fillText(params.name,W/2,H-Math.round(H*0.02)-30);
