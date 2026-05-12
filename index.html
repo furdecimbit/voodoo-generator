@@ -1,0 +1,2097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Voodoo Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  @font-face { font-family:'Blackburn'; src:url('https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/img/Blackburn.ttf'); }
+  @font-face { font-family:'Bloodcrow'; src:url('https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/img/bloodcrowc.ttf'); }
+</style>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#080608;
+    color:#d0c8b8;
+    font-family:'Crimson Text',Georgia,serif;
+    font-size:15px;
+    height:100vh;overflow:hidden;
+    position:relative;
+  }
+  #bg-video{
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    object-fit:cover;z-index:-1;opacity:0.45;pointer-events:none;
+  }
+
+  /* ── SIDEBAR ── */
+  /* desktop: body is a grid — left col = sidebar+sidebar-content, right col = preview */
+  body{
+    display:grid;
+    grid-template-columns:460px 1fr;
+    grid-template-rows:auto 1fr;
+    grid-template-areas:
+      "sidebar  preview"
+      "items    preview";
+  }
+  #sidebar{
+    grid-area:sidebar;
+    background:linear-gradient(180deg,#3d2b0f 0%,#2c1e0a 40%,#1e1508 100%);
+    display:flex;flex-direction:column;gap:0;flex-shrink:0;
+    border-right:3px solid #7a5520;
+    box-shadow:inset -6px 0 24px #00000099,inset 2px 0 8px #c8901410;
+  }
+  #sidebar-content{
+    grid-area:items;
+    background:linear-gradient(180deg,#1e1508 0%,#141008 100%);
+    overflow-y:auto;display:flex;flex-direction:column;gap:0;
+    border-right:3px solid #7a5520;
+    box-shadow:inset -6px 0 24px #00000099,4px 0 32px #00000077;
+  }
+  #sidebar-content::-webkit-scrollbar{width:6px}
+  #sidebar-content::-webkit-scrollbar-track{background:#140e04}
+  #sidebar-content::-webkit-scrollbar-thumb{background:#7a5520;border-radius:3px}
+  #preview-area{grid-area:preview}
+
+  /* title */
+  #sidebar-title{
+    padding:20px 18px 6px;
+    font-family:'Bloodcrow',serif;
+    font-size:46px;
+    color:#e8c060;
+    letter-spacing:.06em;
+    text-align:center;
+    background:linear-gradient(180deg,#3d2b0f,#2c1e0a);
+    position:relative;
+    text-shadow:0 0 28px #e8c06099, 0 2px 6px #000;
+    animation:titlePulse 3.5s ease-in-out infinite;
+    line-height:1;
+  }
+  #sidebar-subtitle{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:4px 18px 16px;
+    background:linear-gradient(180deg,#2c1e0a,#251a08);
+    border-bottom:2px solid #7a5520;
+    position:relative;
+  }
+  #sidebar-subtitle::after{
+    content:'';position:absolute;bottom:-1px;left:10%;right:10%;
+    height:1px;background:linear-gradient(90deg,transparent,#c8a04088,transparent);
+  }
+  #sidebar-subtitle img{
+    height:1em;width:auto;object-fit:contain;
+    filter:drop-shadow(0 0 6px #e8c06088);
+  }
+  #sidebar-subtitle span{
+    font-family:'Bloodcrow',serif;
+    font-size:14px;letter-spacing:.12em;
+    color:#c8a050;text-transform:uppercase;
+    text-shadow:0 0 10px #c8a05055;
+  }
+  @keyframes titlePulse{
+    0%,100%{text-shadow:0 0 20px #e8c06077,0 2px 6px #000}
+    50%{text-shadow:0 0 44px #e8c060bb,0 0 90px #e8c06033,0 2px 6px #000}
+  }
+
+  /* wallet bar */
+  #wallet-bar{
+    padding:8px 16px 12px;
+    display:flex;align-items:center;gap:10px;
+    border-bottom:1px solid #3a2810;
+  }
+  #btn-wallet{
+    padding:7px 16px;
+    font-family:'Bloodcrow',serif;font-size:13px;letter-spacing:.06em;
+    background:linear-gradient(180deg,#2a1e10,#1a1208);
+    border:1px solid #7a5520;border-radius:4px;
+    color:#c8a050;cursor:pointer;
+    transition:background .2s,box-shadow .2s;
+    white-space:nowrap;
+  }
+  #btn-wallet:hover{background:linear-gradient(180deg,#3a2810,#2a1a08);box-shadow:0 0 12px #c8a05033}
+  #btn-wallet.connected{border-color:#307030;color:#70cc70;background:linear-gradient(180deg,#1a2e1a,#101e10)}
+  #wallet-status{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+  #wallet-addr{
+    font-family:'Bloodcrow',serif;font-size:12px;letter-spacing:.04em;
+    color:#a09070;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  #wallet-badge{
+    font-family:'Bloodcrow',serif;font-size:12px;letter-spacing:.06em;
+    padding:2px 8px;border-radius:3px;white-space:nowrap;flex-shrink:0;
+  }
+  #wallet-badge.holder{background:#1a3a1a;color:#70cc70;border:1px solid #308030}
+  #wallet-badge.not-holder{background:#2a0a0a;color:#cc4040;border:1px solid #602020}
+
+  /* sections */
+  .section{
+    border-bottom:1px solid #4a3210;
+  }
+  .section-header{
+    padding:13px 18px;
+    font-family:'Bloodcrow',serif;
+    font-size:19px;
+    letter-spacing:.08em;
+    color:#c49a50;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:space-between;
+    user-select:none;
+    transition:color .2s,background .2s;
+    text-transform:uppercase;
+  }
+  .section-header:hover{
+    color:#f0d070;
+    background:linear-gradient(90deg,#4a3010cc,transparent);
+    text-shadow:0 0 14px #f0d07055;
+  }
+  .section.open .section-header{
+    color:#f0d070;
+    background:linear-gradient(90deg,#4a3010cc,transparent);
+    text-shadow:0 0 12px #f0d07066;
+    border-bottom:1px solid #6a4a18;
+  }
+  .section-body{
+    padding:0 14px;
+    background:linear-gradient(180deg,#2a1e0c 0%,#1e1508 20%,#181208 60%,#141008 100%);
+    max-height:0;overflow:hidden;
+    transition:max-height .4s cubic-bezier(.4,0,.2,1),padding .4s;
+  }
+  .section.open .section-body{max-height:2000px;padding:12px 14px}
+  .section-header .arrow{font-size:14px;transition:transform .25s;opacity:.5}
+  .section.open .section-header .arrow{transform:rotate(90deg)}
+
+  /* thumb grid */
+  .thumb-grid{display:flex;flex-wrap:wrap;gap:6px}
+  #grid-mouth .thumb{background:#e8e4dc}
+  .thumb{
+    width:54px;height:54px;
+    object-fit:contain;
+    background:#0e0b07;
+    border:2px solid #3a280e;
+    border-radius:6px;
+    cursor:pointer;
+    transition:border-color .15s,transform .12s,box-shadow .15s;
+    box-shadow:inset 0 1px 4px #00000088;
+  }
+  .thumb:hover{border-color:#9a7030;transform:scale(1.08);box-shadow:0 0 12px #c8a03844,inset 0 1px 4px #00000088}
+  .thumb.selected{border-color:#e8c050;background:#1e1508;box-shadow:0 0 16px #e8c05066,inset 0 1px 4px #00000066}
+
+  /* rarity borders */
+  .thumb.rarity-common   {border-color:#4a4a3a}
+  .thumb.rarity-rare     {border-color:#9a7808}
+  .thumb.rarity-legendary{border-color:#2a8aaa}
+  .thumb.rarity-ultimate {border-color:#aa3a80}
+  .thumb.rarity-common.selected  {border-color:#b0b090;box-shadow:0 0 12px #b0b09066}
+  .thumb.rarity-rare.selected    {border-color:#f0c020;box-shadow:0 0 14px #f0c02066}
+  .thumb.rarity-legendary.selected{border-color:#50d0f0;box-shadow:0 0 14px #50d0f066}
+  .thumb.rarity-ultimate.selected {border-color:#f060b8;box-shadow:0 0 14px #f060b866}
+
+  .rarity-label{font-family:'Bloodcrow',serif;font-size:16px;letter-spacing:.06em;margin:10px 0 5px;padding:2px 0;text-transform:uppercase}
+
+  /* rarity filter bar */
+  .rarity-filter{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+  .rf-btn{
+    padding:3px 11px;
+    border:1px solid #3a2c12;
+    border-radius:3px;
+    background:linear-gradient(180deg,#221808,#1a1205);
+    font-family:'Bloodcrow',serif;
+    font-size:12px;
+    letter-spacing:.05em;
+    color:#7a6040;
+    cursor:pointer;
+    text-transform:uppercase;
+    transition:background .15s,color .15s,border-color .15s,box-shadow .15s;
+  }
+  .rf-btn:hover{color:#e8c060;border-color:#7a5820;background:linear-gradient(180deg,#2e2010,#221808)}
+  .rf-btn.active{
+    background:linear-gradient(180deg,#5a3c10,#3a2808);
+    color:#f0d060;border-color:#c0900a;
+    box-shadow:0 0 8px #c0900a44;
+  }
+  .rf-btn.rf-common.active  {color:#c8c8a8;border-color:#a0a080;background:linear-gradient(180deg,#2a2a20,#1e1e18);box-shadow:0 0 8px #a0a08044}
+  .rf-btn.rf-rare.active    {color:#f0d020;border-color:#c09008;background:linear-gradient(180deg,#2e2400,#221a00);box-shadow:0 0 8px #f0d02055}
+  .rf-btn.rf-legendary.active{color:#60e0ff;border-color:#30b0d8;background:linear-gradient(180deg,#001e2e,#001422);box-shadow:0 0 8px #60e0ff44}
+  .rf-btn.rf-ultimate.active {color:#ff80d8;border-color:#c040a0;background:linear-gradient(180deg,#280018,#1a0010);box-shadow:0 0 8px #ff80d855}
+  .rarity-label.common  {color:#a0a080}
+  .rarity-label.rare    {color:#c8a010}
+  .rarity-label.legendary{color:#40c0e0}
+  .rarity-label.ultimate{color:#e050b0}
+
+  /* sub-labels */
+  .sub-label{
+    font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.06em;
+    color:#7a5830;margin:10px 0 5px;text-transform:uppercase;
+  }
+
+  /* sub-accordion */
+  .sub-section{border:1px solid #2e1e08;border-radius:4px;margin-bottom:7px;overflow:hidden}
+  .sub-section-header{
+    padding:9px 12px;
+    font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.05em;
+    color:#8a6840;cursor:pointer;
+    display:flex;align-items:center;justify-content:space-between;
+    background:linear-gradient(180deg,#1a1208,#120e06);
+    user-select:none;transition:color .15s,background .15s;
+    text-transform:uppercase;
+  }
+  .sub-section-header:hover{color:#e8c060;background:linear-gradient(180deg,#2a1e0c,#1e1608)}
+  .sub-section.open .sub-section-header{color:#e8c060;background:linear-gradient(180deg,#2e2010,#1e1608)}
+  .sub-section-body{
+    max-height:0;overflow:hidden;padding:0 10px;
+    background:linear-gradient(180deg,#221808,#141008);
+    transition:max-height .3s cubic-bezier(.4,0,.2,1),padding .3s;
+  }
+  .sub-section.open .sub-section-body{max-height:1200px;padding:9px 10px}
+  .sub-section-header .sarrow{font-size:12px;transition:transform .2s;opacity:.5}
+  .sub-section.open .sub-section-header .sarrow{transform:rotate(90deg)}
+
+  /* sliders */
+  .slider-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .slider-row label{
+    width:140px;font-family:'Bloodcrow',serif;font-size:15px;
+    color:#9a8868;flex-shrink:0;letter-spacing:.04em;
+  }
+  .slider-row input[type=range]{flex:1;accent-color:#d4a84b;height:4px;cursor:pointer}
+  .slider-row .val{width:42px;font-size:15px;color:#c0a060;text-align:right}
+
+  .hue-preview{width:26px;height:26px;border-radius:4px;border:1px solid #3a2818;flex-shrink:0}
+
+  /* radio */
+  .radio-row{display:flex;gap:14px;margin-bottom:12px}
+  .radio-row label{
+    font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.04em;
+    cursor:pointer;display:flex;align-items:center;gap:5px;color:#a09070;
+  }
+  .radio-row label:hover{color:#e8c060}
+
+  /* action buttons */
+  #btn-area{
+    padding:14px 0 0 0;
+    display:flex;flex-direction:row;gap:14px;justify-content:center;width:100%;
+  }
+  button{
+    padding:12px 22px;border:none;border-radius:4px;
+    font-family:'Bloodcrow',serif;font-size:19px;letter-spacing:.05em;
+    cursor:pointer;transition:opacity .15s,box-shadow .15s,transform .1s;
+    text-transform:uppercase;
+  }
+  #btn-rand{
+    background:linear-gradient(180deg,#5a3c10,#3a2208);
+    color:#f0d060;
+    border:1px solid #c0900a;
+    box-shadow:0 2px 12px #00000077,0 0 8px #c0900a22;
+  }
+  #btn-rand:hover{box-shadow:0 2px 22px #f0d06055,0 0 16px #c0900a44;transform:translateY(-1px)}
+  #btn-save{
+    background:linear-gradient(180deg,#1a3020,#0e1e14);
+    color:#70cc70;border:1px solid #308030;
+    box-shadow:0 2px 12px #00000077;
+  }
+  #btn-save:hover{box-shadow:0 2px 18px #70cc7044;transform:translateY(-1px)}
+  #btn-clear{
+    background:linear-gradient(180deg,#2a1818,#180e0e);
+    color:#886050;border:1px solid #4a2820;
+    box-shadow:0 2px 10px #00000066;
+  }
+  #btn-clear:hover{color:#cc8060;border-color:#883020;box-shadow:0 2px 14px #cc806033}
+  button:active{opacity:.6;transform:translateY(0)}
+
+  /* selected items panel */
+  #selected-panel{
+    margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:0;
+  }
+  .sel-tag{
+    font-family:'Bloodcrow',serif;font-size:17px;letter-spacing:.04em;text-transform:uppercase;
+    color:#e8c878;background:linear-gradient(180deg,#2e1e08,#1e1405);
+    border:1px solid #7a5518;border-radius:3px;padding:3px 12px;
+    animation:tagIn .25s ease;box-shadow:0 0 8px #e8c87822;
+  }
+  @keyframes tagIn{from{opacity:0;transform:scale(.85) translateY(4px)}to{opacity:1;transform:none}}
+
+  /* thumb wrapper for badges */
+  .thumb-wrap{position:relative;display:inline-block;cursor:pointer}
+  .thumb-wrap .thumb{cursor:pointer}
+  .thumb-badge{
+    position:absolute;top:-5px;right:-5px;
+    width:16px;height:16px;border-radius:50%;
+    font-size:10px;font-weight:bold;
+    display:none;align-items:center;justify-content:center;
+    pointer-events:none;z-index:2;
+    box-shadow:0 0 4px #000a;
+  }
+  .thumb-wrap.staged .thumb-badge{
+    display:flex;background:#e8c050;color:#1a0e00;content:'◆';
+  }
+  .thumb-wrap.equipped .thumb-badge{
+    display:flex;background:#40bb40;color:#001a00;
+  }
+  .thumb-wrap.staged .thumb{
+    border-color:#e8c050 !important;
+    animation:stagedPulse 1.8s ease-in-out infinite;
+  }
+  .thumb-wrap.equipped .thumb{
+    border-color:#40bb40 !important;
+    box-shadow:0 0 10px #40bb4055 !important;
+  }
+  .thumb-wrap.staged.equipped .thumb{
+    border-color:#e8c050 !important;
+    animation:stagedPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes stagedPulse{
+    0%,100%{box-shadow:0 0 6px #e8c05066}
+    50%{box-shadow:0 0 16px #e8c050cc,0 0 30px #e8c05044}
+  }
+
+  /* toast notifications */
+  #toast-area{
+    position:fixed;bottom:32px;right:32px;
+    display:flex;flex-direction:column;gap:8px;
+    z-index:200;pointer-events:none;
+  }
+  .toast{
+    background:linear-gradient(180deg,#2e1e08,#1a1004);
+    border:1px solid #c8a040;border-radius:3px;
+    padding:8px 18px;
+    font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.05em;
+    color:#e8c878;text-shadow:0 0 8px #e8c87844;
+    animation:toastIn .3s ease, toastOut .4s ease 2.4s forwards;
+    white-space:nowrap;
+  }
+  .toast.equipped-toast{border-color:#40bb40;color:#90ee90}
+  @keyframes toastIn{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:none}}
+  @keyframes toastOut{to{opacity:0;transform:translateX(50px)}}
+
+  /* preview area */
+  #preview-area{
+    flex:1;display:flex;flex-direction:column;
+    align-items:center;justify-content:flex-start;
+    padding:28px 24px 20px;background:transparent;position:relative;
+  }
+  #preview-wrap{position:relative;display:inline-block}
+  #preview-img{
+    max-width:100%;max-height:calc(100vh - 140px);
+    border-radius:8px;
+    box-shadow:0 8px 60px #000e,0 0 80px #c8803a14;
+    display:block;
+    border:1px solid #4a3010;
+  }
+  /* pin drop overlay */
+  #pin-overlay{
+    position:absolute;inset:0;
+    pointer-events:auto;
+    border-radius:8px;
+    z-index:5;
+  }
+  #pin-overlay.drop-active{
+    outline:2px dashed #e8c05088;
+    background:rgba(232,192,80,0.04);
+  }
+  .placed-pin{
+    position:absolute;
+    width:32px;height:32px;
+    transform:translate(-50%,-50%);
+    pointer-events:auto;
+    cursor:pointer;
+    filter:drop-shadow(0 0 3px #000a);
+    transition:filter .15s;
+  }
+  .placed-pin:hover{filter:drop-shadow(0 0 6px #ff3020bb)}
+  .placed-pin .pin-remove{
+    position:absolute;top:-7px;right:-7px;
+    width:14px;height:14px;border-radius:50%;
+    background:#c01010;color:#fff;
+    font-size:9px;display:none;align-items:center;justify-content:center;
+    cursor:pointer;border:1px solid #ff4040;
+  }
+  .placed-pin:hover .pin-remove{display:flex}
+
+  /* pending indicator above bewitch */
+  #pending-indicator{
+    font-family:'Bloodcrow',serif;font-size:14px;letter-spacing:.06em;
+    color:#e8c050;text-align:center;min-height:22px;
+    text-transform:uppercase;
+    animation:pendingPulse 1.5s ease-in-out infinite;
+    opacity:0;transition:opacity .3s;
+  }
+  #pending-indicator.active{opacity:1}
+  @keyframes pendingPulse{
+    0%,100%{text-shadow:0 0 6px #e8c05066}
+    50%{text-shadow:0 0 18px #e8c050cc,0 0 32px #e8c05044}
+  }
+  /* bewitch pulse when pending */
+  #btn-curse.has-pending{
+    animation:cursePulse 1.8s ease-in-out infinite;
+  }
+  @keyframes cursePulse{
+    0%,100%{box-shadow:0 2px 14px #00000088,0 0 10px #a0201033}
+    50%{box-shadow:0 2px 26px #ff503088,0 0 28px #ff503066;text-shadow:0 0 14px #ff5030cc}
+  }
+
+  /* pin drag source */
+  .pin-drag-thumb{
+    width:44px;height:44px;object-fit:contain;
+    background:#0e0b07;border:2px solid #3a280e;border-radius:6px;
+    cursor:grab;transition:border-color .15s,transform .12s;
+    box-shadow:inset 0 1px 4px #00000088;
+  }
+  .pin-drag-thumb:hover{border-color:#9a7030;transform:scale(1.1)}
+  .pin-drag-thumb:active{cursor:grabbing}
+  .pin-drag-thumb.dragging{opacity:.5}
+  #pin-counter{
+    font-family:'Bloodcrow',serif;font-size:13px;color:#a09060;letter-spacing:.05em;
+    margin-bottom:8px;
+  }
+  #pin-clear{
+    padding:4px 14px;border:1px solid #5a2010;border-radius:3px;
+    background:linear-gradient(180deg,#2a1008,#1a0a04);
+    font-family:'Bloodcrow',serif;font-size:13px;color:#c06040;
+    cursor:pointer;letter-spacing:.04em;margin-top:6px;
+    transition:border-color .15s,color .15s;
+  }
+  #pin-clear:hover{border-color:#c04020;color:#ff6040}
+  #loading{
+    position:absolute;inset:0;
+    background:#080608cc;
+    display:none;align-items:center;justify-content:center;
+    flex-direction:column;gap:16px;z-index:10;
+  }
+  #loading.show{display:flex}
+  .spinner{
+    width:52px;height:52px;
+    border:4px solid #2a1a10;
+    border-top-color:#d4a84b;
+    border-radius:50%;
+    animation:spin .9s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #loading p{
+    font-family:'Bloodcrow',serif;font-size:18px;
+    color:#d4a84b;letter-spacing:.1em;text-shadow:0 0 12px #d4a84b88;
+  }
+
+  /* ── ritual veil ── */
+  #ritual-veil{
+    position:absolute;inset:0;pointer-events:none;
+    display:flex;align-items:center;justify-content:center;
+    z-index:20;opacity:0;
+  }
+  #ritual-veil.active{pointer-events:auto}
+  #ritual-veil .veil-bg{
+    position:absolute;inset:0;
+    background:radial-gradient(ellipse at 50% 50%,#2a000088 0%,#10000099 50%,#000000bb 100%);
+  }
+
+  /* bewitch image */
+  #bewitch-img{
+    position:absolute;
+    width:min(60vw,460px);height:min(60vw,460px);
+    object-fit:contain;
+    transform-origin:center;
+    opacity:0;
+  }
+  #ritual-veil.active #bewitch-img{
+    animation:bewitchSpin 1.4s linear forwards, bewitchFade 1.4s ease forwards;
+  }
+  @keyframes bewitchSpin{
+    0%  {transform:scale(0.05) rotate(0deg)}
+    8%  {transform:scale(1.2) rotate(28.8deg)}
+    85% {transform:scale(1.1) rotate(306deg)}
+    100%{transform:scale(1.8) rotate(360deg)}
+  }
+  @keyframes bewitchFade{
+    0%  {opacity:0;filter:brightness(20) saturate(0) drop-shadow(0 0 0px #ff0000)}
+    8%  {opacity:1;filter:brightness(5) drop-shadow(0 0 80px #ff0000) drop-shadow(0 0 160px #ff000088)}
+    30% {opacity:1;filter:brightness(2.5) drop-shadow(0 0 60px #ff3010cc) drop-shadow(0 0 120px #ff100077)}
+    75% {opacity:1;filter:brightness(7) saturate(2) drop-shadow(0 0 100px #ff0000) drop-shadow(0 0 200px #ff0000aa)}
+    88% {opacity:.5;filter:brightness(14) saturate(0) drop-shadow(0 0 120px #ffffff)}
+    100%{opacity:0;filter:brightness(20) drop-shadow(0 0 80px #ff0000)}
+  }
+
+  /* explosion rings */
+  .glow-ring{
+    position:absolute;border-radius:50%;
+    width:8px;height:8px;pointer-events:none;opacity:0;
+  }
+  #ritual-veil.active .glow-ring:nth-child(2){
+    border:5px solid #ff1000;
+    box-shadow:0 0 30px 14px #ff100099,0 0 60px 20px #ff000055;
+    animation:explodeRing .7s cubic-bezier(0,.5,.3,1) forwards;
+  }
+  #ritual-veil.active .glow-ring:nth-child(3){
+    border:4px solid #ff5010;
+    box-shadow:0 0 22px 10px #ff501088,0 0 50px 16px #ff200044;
+    animation:explodeRing .8s cubic-bezier(0,.5,.3,1) .08s forwards;
+  }
+  #ritual-veil.active .glow-ring:nth-child(4){
+    border:3px solid #ffbb30;
+    box-shadow:0 0 16px 8px #ffbb3077,0 0 40px 14px #ff600033;
+    animation:explodeRing .9s cubic-bezier(0,.5,.3,1) .18s forwards;
+  }
+  @keyframes explodeRing{
+    0%  {opacity:1;transform:scale(1)}
+    30% {opacity:1;transform:scale(28)}
+    70% {opacity:.6;transform:scale(55)}
+    100%{opacity:0;transform:scale(80)}
+  }
+
+  /* flash burst at moment of impact */
+  #ritual-veil::after{
+    content:'';position:absolute;inset:0;border-radius:inherit;
+    background:radial-gradient(circle at 50% 50%,#ff200066 0%,transparent 70%);
+    opacity:0;pointer-events:none;
+  }
+  #ritual-veil.active::after{animation:flashBurst .5s ease-out .07s forwards}
+  @keyframes flashBurst{
+    0%  {opacity:0;transform:scale(0.2)}
+    20% {opacity:1;transform:scale(1)}
+    100%{opacity:0;transform:scale(1.8)}
+  }
+
+  /* veil bg */
+  #ritual-veil .veil-bg{opacity:0}
+  #ritual-veil.active .veil-bg{animation:veilBgAnim 1.4s ease forwards}
+  @keyframes veilBgAnim{
+    0%  {opacity:0}
+    8%  {opacity:1}
+    70% {opacity:1}
+    100%{opacity:0}
+  }
+
+  #ritual-veil.revealing{animation:veilReveal .3s ease-out forwards}
+  @keyframes veilReveal{0%{opacity:1}100%{opacity:0}}
+
+  #preview-img.curse-reveal{animation:imgReveal .7s ease-out forwards}
+  @keyframes imgReveal{
+    0%  {opacity:0;filter:brightness(3) saturate(0)}
+    100%{opacity:1;filter:brightness(1) saturate(1)}
+  }
+
+  /* CURSE button */
+  #btn-curse{
+    background:linear-gradient(180deg,#3a0808,#1e0404);
+    color:#ff5030;border:1px solid #a02010;
+    box-shadow:0 2px 14px #00000088,0 0 10px #a0201033;
+    letter-spacing:.08em;
+  }
+  #btn-curse:hover{
+    box-shadow:0 2px 26px #ff503066,0 0 20px #ff503044;
+    transform:translateY(-1px);
+    text-shadow:0 0 12px #ff5030bb;
+  }
+
+  /* ── staged item panel (bottom-right fixed) ── */
+  #staged-panel{
+    position:fixed;bottom:28px;right:28px;
+    width:260px;
+    background:linear-gradient(160deg,#3a0808,#1a0404);
+    border:3px solid #7a1008;
+    border-radius:6px;
+    padding:14px 16px 12px;
+    display:none;
+    flex-direction:column;gap:10px;
+    z-index:150;
+    box-shadow:0 4px 32px #000c,0 0 20px #c8201022;
+    animation:panelSlideIn .3s ease;
+    cursor:pointer;
+    user-select:none;
+    overflow:visible;
+  }
+  #staged-panel:hover{background:linear-gradient(160deg,#4a0a0a,#220606);box-shadow:0 4px 40px #000e,0 0 30px #ff302044}
+  #staged-panel:active{transform:scale(.98)}
+  #staged-panel.visible{display:flex}
+  @keyframes panelSlideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
+  /* SVG traveling dot border */
+  #border-glow-svg{
+    position:absolute;inset:-4px;
+    width:calc(100% + 8px);height:calc(100% + 8px);
+    pointer-events:none;overflow:visible;
+  }
+  #bgr{
+    fill:none;stroke:#ff4018;stroke-width:4;stroke-linecap:round;
+    stroke-dasharray:40 9999;
+    animation:travelBorder 1.2s linear infinite;
+    filter:drop-shadow(0 0 8px #ff4018) drop-shadow(0 0 18px #ff2008) drop-shadow(0 0 30px #ff000066);
+  }
+  @keyframes travelBorder{to{stroke-dashoffset:var(--perim,-760)}}
+  .staged-item-row{display:flex;align-items:center;gap:12px}
+  .staged-item-icon{
+    width:52px;height:52px;object-fit:contain;
+    border-radius:5px;border:2px solid #ff4030;
+    background:#0e0404;flex-shrink:0;
+    box-shadow:0 0 12px #ff403066;
+  }
+  .staged-item-info{flex:1;min-width:0}
+  .staged-item-label{
+    font-family:'Bloodcrow',serif;font-size:12px;letter-spacing:.08em;
+    color:#c08080;text-transform:uppercase;margin-bottom:2px;
+  }
+  .staged-item-name{
+    font-family:'Bloodcrow',serif;font-size:18px;
+    color:#ff8060;text-shadow:0 0 10px #ff604077;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .staged-hint{
+    font-family:'Bloodcrow',serif;font-size:14px;font-style:italic;
+    color:#ff6040;text-align:center;
+    animation:hintPulse 2s ease-in-out infinite;
+  }
+  @keyframes hintPulse{0%,100%{opacity:.7}50%{opacity:1;text-shadow:0 0 10px #ff604088}}
+
+  #status{
+    position:absolute;bottom:14px;right:18px;
+    font-family:'Bloodcrow',serif;
+    font-size:18px;font-style:italic;
+    color:#8a7060;
+    letter-spacing:.03em;
+  }
+
+  /* save slots */
+  #save-slots{
+    display:flex;gap:10px;
+    padding:10px 0 4px;
+    width:100%;justify-content:center;
+    flex-wrap:nowrap;
+  }
+  .save-slot{
+    position:relative;
+    width:80px;height:80px;
+    border:2px solid #4a3010;
+    border-radius:6px;
+    background:#0e0b07;
+    cursor:pointer;
+    overflow:hidden;
+    transition:border-color .2s,box-shadow .2s;
+    flex-shrink:0;
+  }
+  .save-slot:hover{border-color:#c8a050;box-shadow:0 0 14px #c8a05044}
+  .save-slot.filled{border-color:#6a4a18}
+  .save-slot.filled:hover{border-color:#e8c060;box-shadow:0 0 18px #e8c06055}
+  .slot-num{
+    position:absolute;top:3px;left:5px;
+    font-family:'Bloodcrow',serif;font-size:11px;
+    color:#7a6040;z-index:2;pointer-events:none;
+  }
+  .slot-img{
+    width:100%;height:100%;object-fit:cover;
+    display:none;border-radius:4px;
+  }
+  .save-slot.filled .slot-img{display:block}
+  .slot-empty-label{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:'Bloodcrow',serif;font-size:11px;color:#3a2810;
+    pointer-events:none;
+  }
+  .save-slot.filled .slot-empty-label{display:none}
+  .slot-del{
+    position:absolute;top:2px;right:2px;
+    width:18px;height:18px;
+    background:#2a0808;border:1px solid #5a1818;
+    border-radius:3px;color:#cc4040;font-size:10px;
+    cursor:pointer;display:none;z-index:3;
+    line-height:1;padding:0;
+  }
+  .save-slot.filled .slot-del{display:flex;align-items:center;justify-content:center}
+  .slot-del:hover{background:#4a0808;color:#ff6060}
+  .save-slot.active-slot{
+    border-color:#e8c050;
+    box-shadow:0 0 18px #e8c05066, inset 0 0 8px #e8c05022;
+  }
+  .save-slot.active-slot .slot-num{color:#e8c050}
+
+  @media(max-width:768px){
+    #save-slots{gap:6px;padding:8px 10px 4px}
+    .save-slot{width:calc(25% - 5px);height:0;padding-bottom:calc(25% - 5px)}
+    .save-slot .slot-img{position:absolute;inset:0;height:100%}
+    .save-slot .slot-empty-label{font-size:9px}
+  }
+
+  input[type=color]{width:44px;height:32px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px}
+
+  /* mobile */
+  #menu-toggle{display:none}
+  @media(max-width:768px){
+    body{
+      flex-direction:column;
+      overflow:auto;
+      height:auto;
+      min-height:100vh;
+    }
+
+    /* reset desktop grid, switch to flex-column */
+    body{
+      display:flex;
+      flex-direction:column;
+      height:auto;
+      min-height:100vh;
+      overflow:auto;
+    }
+
+    /* ── 1. TITLE + SUBTITLE ── */
+    #sidebar{
+      order:0;
+      width:100%;
+      grid-area:unset;
+      border-right:none;
+      border-bottom:1px solid #4a3010;
+      background:linear-gradient(180deg,#3d2b0f,#1e1508);
+      box-shadow:none;
+    }
+    #sidebar-title{font-size:30px;padding:12px 16px 4px;cursor:default}
+
+    /* ── 2. PREVIEW: sticky below title ── */
+    #preview-area{
+      order:1;
+      grid-area:unset;
+      position:sticky;
+      top:0;
+      z-index:30;
+      width:100%;
+      padding:8px 10px;
+      background:rgba(8,6,8,0.94);
+      backdrop-filter:blur(4px);
+      align-items:center;
+      flex-shrink:0;
+    }
+    #preview-wrap{width:calc(100vw - 20px)}
+    #preview-img{width:100%;max-height:none;height:auto}
+
+    /* ── BUTTONS inside preview area ── */
+    #btn-area{
+      width:100%;
+      flex-direction:row;
+      flex-wrap:nowrap;
+      gap:6px;
+      margin:8px 0 0;
+      padding:0;
+    }
+    #btn-area button{flex:1;padding:9px 4px;font-size:14px;min-width:0}
+
+    /* ── 3. ITEM MENU ── */
+    #sidebar-content{
+      order:2;
+      grid-area:unset;
+      width:100%;
+      height:auto;
+      overflow:visible;
+      border-right:none;
+      border-top:2px solid #6a4a1a;
+      box-shadow:none;
+    }
+
+    /* ── BEWITCH PANEL: full width fixed at bottom ── */
+    #staged-panel{
+      position:fixed;
+      bottom:0;left:0;right:0;
+      width:100%;
+      border-radius:0;
+      border-left:none;border-right:none;border-bottom:none;
+      flex-direction:row;
+      align-items:center;
+      padding:12px 16px;
+      gap:14px;
+      z-index:200;
+    }
+    @keyframes panelSlideIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+    #staged-img-preview{width:50px;height:50px;flex-shrink:0}
+    #staged-name{font-size:17px}
+    #staged-hint{display:none}
+    #border-glow-svg{inset:-3px;width:calc(100% + 6px);height:calc(100% + 6px)}
+  }
+</style>
+</head>
+<body>
+
+<video id="bg-video" autoplay muted loop playsinline>
+  <source src="https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/back.mp4" type="video/mp4">
+</video>
+
+<div id="sidebar">
+  <div id="sidebar-title">HEX &amp; THREAD</div>
+  <div id="sidebar-subtitle">
+    <img src="https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/icon.png" alt="">
+    <span>Ritual Effigy Forge</span>
+  </div>
+  <div id="wallet-bar">
+    <button id="btn-wallet" onclick="connectWallet()">Connect Wallet</button>
+    <div id="wallet-status" style="display:none">
+      <span id="wallet-addr"></span>
+      <span id="wallet-badge"></span>
+    </div>
+  </div>
+</div>
+<div id="sidebar-content">
+
+<div class="section" id="sec-bg">
+    <div class="section-header" onclick="toggleSection('sec-bg')">Background <span class="arrow">›</span></div>
+    <div class="section-body">
+      <div class="radio-row">
+        <label><input type="radio" name="bg_type" value="back3" checked onchange="scheduleGen()"> Texture</label>
+        <label><input type="radio" name="bg_type" value="flat" onchange="scheduleGen()"> Flat Color</label>
+      </div>
+      <div id="flat-color-row" class="slider-row" style="display:none">
+        <label>Color</label>
+        <input type="color" id="bg_color" value="#1a1a2e" oninput="scheduleGen()">
+      </div>
+      <div class="slider-row">
+        <label>Overlay Hue</label>
+        <div class="hue-preview" id="ov-swatch"></div>
+        <input type="range" id="overlay_hue" min="0" max="360" value="180" oninput="updateSwatch();scheduleGen()">
+        <span class="val" id="overlay_hue_v">180</span>
+      </div>
+      <div class="slider-row">
+        <label>Overlay Strength</label>
+        <input type="range" id="overlay_strength" min="0" max="100" value="45" oninput="scheduleGen()">
+        <span class="val" id="overlay_strength_v">45</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="sec-body">
+    <div class="section-header" onclick="toggleSection('sec-body')">Body <span class="arrow">›</span></div>
+    <div class="section-body">
+      <div class="thumb-grid" id="grid-body"></div>
+      <div style="margin-top:12px">
+        <div class="slider-row">
+          <label>Color Hue</label>
+          <div class="hue-preview" id="body-swatch"></div>
+          <input type="range" id="body_hue" min="0" max="360" value="30" oninput="updateBodySwatch();scheduleGen()">
+          <span class="val" id="body_hue_v">30</span>
+        </div>
+        <div class="slider-row">
+          <label>Saturation</label>
+          <input type="range" id="body_sat" min="0" max="100" value="60" oninput="scheduleGen()">
+          <span class="val" id="body_sat_v">60</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="sec-knife">
+    <div class="section-header" onclick="toggleSection('sec-knife')">Blade — Right Hand <span class="arrow">›</span></div>
+    <div class="section-body"><div class="thumb-grid" id="grid-knife"></div></div>
+  </div>
+
+  <div class="section" id="sec-offhand">
+    <div class="section-header" onclick="toggleSection('sec-offhand')">Offhand — Left Hand <span class="arrow">›</span></div>
+    <div class="section-body"><div class="thumb-grid" id="grid-offhand"></div></div>
+  </div>
+
+  <div class="section" id="sec-necklace">
+    <div class="section-header" onclick="toggleSection('sec-necklace')">Necklace <span class="arrow">›</span></div>
+    <div class="section-body"><div class="thumb-grid" id="grid-necklace"></div></div>
+  </div>
+
+  <div class="section" id="sec-eyes">
+    <div class="section-header" onclick="toggleSection('sec-eyes')">Eyes <span class="arrow">›</span></div>
+    <div class="section-body">
+      <div class="sub-section" id="subsec-eye-left">
+        <div class="sub-section-header" onclick="toggleSubSection('subsec-eye-left')">Left Eye <span class="sarrow">›</span></div>
+        <div class="sub-section-body"><div class="thumb-grid" id="grid-eye-left"></div></div>
+      </div>
+      <div class="sub-section" id="subsec-eye-right">
+        <div class="sub-section-header" onclick="toggleSubSection('subsec-eye-right')">Right Eye <span class="sarrow">›</span></div>
+        <div class="sub-section-body"><div class="thumb-grid" id="grid-eye-right"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="sec-mouth">
+    <div class="section-header" onclick="toggleSection('sec-mouth')">Mouth <span class="arrow">›</span></div>
+    <div class="section-body"><div class="thumb-grid" id="grid-mouth"></div></div>
+  </div>
+
+  <div class="section" id="sec-pins">
+    <div class="section-header" onclick="toggleSection('sec-pins')">Pins <span class="arrow">›</span></div>
+    <div class="section-body">
+      <div id="pin-counter">Placed: <span id="pin-placed-count">0</span> / 5</div>
+      <div style="font-family:'Bloodcrow',serif;font-size:13px;color:#7a6848;letter-spacing:.04em;margin-bottom:10px;line-height:1.5">
+        Drag a pin onto the preview to place it on the doll. Up to 5 pins. Click a placed pin to remove it. Press Bewitch to apply.
+      </div>
+      <div class="thumb-grid" id="grid-pins"></div>
+      <button id="pin-clear" onclick="clearPins()">✕ Clear All Pins</button>
+    </div>
+  </div>
+
+
+  <div class="section" id="sec-name">
+    <div class="section-header" onclick="toggleSection('sec-name')">Name <span class="arrow">›</span></div>
+    <div class="section-body">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="name_input" placeholder="Enter name…"
+          onkeydown="if(event.key==='Enter') applyName()"
+          style="
+            flex:1;padding:10px 14px;
+            background:#180e18;
+            border:1px solid #3a2030;
+            border-radius:8px;
+            color:#e8d8a8;
+            font-family:'Bloodcrow',serif;
+            font-size:15px;
+            letter-spacing:.06em;
+            outline:none;
+            transition:border-color .2s;
+          "
+          onfocus="this.style.borderColor='#d4a84b'"
+          onblur="this.style.borderColor='#3a2030'"
+        >
+        <button onclick="applyName()" style="
+          padding:10px 14px;
+          background:#2a1820;border:1px solid #6a3848;border-radius:8px;
+          color:#d4a84b;font-family:'Bloodcrow',serif;font-size:14px;
+          cursor:pointer;white-space:nowrap;transition:background .2s;
+        " onmouseover="this.style.background='#3a2030'" onmouseout="this.style.background='#2a1820'">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /sidebar-content -->
+
+<div id="preview-area">
+  <div id="preview-wrap">
+    <img id="preview-img" src="" alt="Preview">
+    <div id="pin-overlay"></div>
+  </div>
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Conjuring…</p>
+  </div>
+  <!-- ritual reveal veil -->
+  <div id="ritual-veil">
+    <div class="veil-bg"></div>
+    <div class="glow-ring"></div>
+    <div class="glow-ring"></div>
+    <div class="glow-ring"></div>
+    <img id="bewitch-img" src="https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/bewitch.png" alt="">
+  </div>
+  <div id="selected-panel"></div>
+  <div id="pending-indicator"></div>
+  <div id="status">awaiting ritual…</div>
+  <div id="btn-area">
+    <button id="btn-rand" onclick="randomizeAll()">Randomize</button>
+    <button id="btn-save" onclick="saveHQ()">☽ Bind</button>
+    <button id="btn-clear" onclick="clearAll()">✕ Clear</button>
+  </div>
+  <div id="save-slots" style="display:none">
+    <div class="save-slot" id="slot-0" onclick="slotClick(0)"><span class="slot-num">I</span><button class="slot-del" onclick="deleteSlot(event,0)">✕</button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
+    <div class="save-slot" id="slot-1" onclick="slotClick(1)"><span class="slot-num">II</span><button class="slot-del" onclick="deleteSlot(event,1)">✕</button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
+    <div class="save-slot" id="slot-2" onclick="slotClick(2)"><span class="slot-num">III</span><button class="slot-del" onclick="deleteSlot(event,2)">✕</button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
+    <div class="save-slot" id="slot-3" onclick="slotClick(3)"><span class="slot-num">IV</span><button class="slot-del" onclick="deleteSlot(event,3)">✕</button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
+  </div>
+</div>
+
+<div id="toast-area"></div>
+
+<!-- staged item panel, bottom-right -->
+<div id="staged-panel" onclick="castCurse()">
+  <svg id="border-glow-svg" xmlns="http://www.w3.org/2000/svg">
+    <rect id="bgr" rx="9" ry="9"/>
+  </svg>
+  <div class="staged-item-row">
+    <img id="staged-icon" class="staged-item-icon" src="" alt="">
+    <div class="staged-item-info">
+      <div class="staged-item-label" id="staged-label">Selected</div>
+      <div class="staged-item-name" id="staged-name">—</div>
+    </div>
+  </div>
+  <div class="staged-hint">⛧ Tap to Bewitch</div>
+</div>
+
+<script>
+// State — staged (selected) vs equipped (on character)
+const sel = {
+  body_file: null, knife_file: null, offhand_file: null,
+  necklace_file: null, eye_left_file: null, eye_right_file: null, mouth_file: null
+};
+const equipped = {
+  body_file: null, knife_file: null, offhand_file: null,
+  necklace_file: null, eye_left_file: null, eye_right_file: null, mouth_file: null
+};
+
+// Placed pins: [{x:0-1, y:0-1, src:string}]
+let placedPins = [];
+let walletConnected = false;
+let isHolder = false;
+let activeSlot = -1;
+let dragPinSrc = null;  // src of pin being dragged
+
+let genTimer = null;
+let isGenerating = false;
+
+function toggleSection(id){
+  const target = document.getElementById(id);
+  const isOpen = target.classList.contains('open');
+  document.querySelectorAll('.section.open').forEach(s => s.classList.remove('open'));
+  if(!isOpen) target.classList.add('open');
+}
+
+function toggleSubSection(id){
+  document.getElementById(id).classList.toggle('open');
+}
+
+function v(id){ return document.getElementById(id).value; }
+function sv(id,val){ document.getElementById(id).textContent = val; }
+
+// Update slider value displays
+['overlay_hue','overlay_strength','body_hue','body_sat'].forEach(id=>{
+  const el=document.getElementById(id);
+  const lbl=document.getElementById(id+'_v');
+  if(el&&lbl) el.addEventListener('input',()=>lbl.textContent=el.value);
+});
+
+document.querySelectorAll('input[name=bg_type]').forEach(r=>{
+  r.addEventListener('change',()=>{
+    document.getElementById('flat-color-row').style.display =
+      r.value==='flat'&&r.checked ? 'flex' : 'none';
+  });
+});
+
+function hsvToHex(h,s,v){
+  // h 0-1, s 0-1, v 0-1
+  let r,g,b;
+  const i=Math.floor(h*6),f=h*6-i,p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);
+  switch(i%6){case 0:r=v;g=t;b=p;break;case 1:r=q;g=v;b=p;break;case 2:r=p;g=v;b=t;break;
+    case 3:r=p;g=q;b=v;break;case 4:r=t;g=p;b=v;break;case 5:r=v;g=p;b=q;break;}
+  return '#'+[r,g,b].map(x=>Math.round(x*255).toString(16).padStart(2,'0')).join('');
+}
+
+function updateSwatch(){
+  const h=parseInt(v('overlay_hue'))/360;
+  document.getElementById('ov-swatch').style.background=hsvToHex(h,0.7,0.9);
+}
+function updateBodySwatch(){
+  const h=parseInt(v('body_hue'))/360;
+  document.getElementById('body-swatch').style.background=hsvToHex(h,0.6,0.85);
+}
+updateSwatch(); updateBodySwatch();
+
+// Thumbnail grids
+const ITEMS_CSV = 'https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/items.csv';
+const RAW_BASE = 'https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main';
+
+function parseCSV(text){
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',');
+  return lines.slice(1).map(line => {
+    const vals = line.split(',');
+    const obj = {};
+    headers.forEach((h,i) => obj[h.trim()] = (vals[i]||'').trim());
+    return obj;
+  });
+}
+
+async function loadItems(){
+  const res = await fetch(ITEMS_CSV);
+  const text = await res.text();
+  const rows = parseCSV(text);
+
+  // Build data structure matching old format
+  const data = {
+    body: {common:[],rare:[],legendary:[],ultimate:[]},
+    knife: {common:[],rare:[],legendary:[],ultimate:[]},
+    necklace: {common:[],rare:[],legendary:[],ultimate:[]},
+    eyes: {common:[],rare:[],legendary:[],ultimate:[]},
+    offhand: [],
+    mouths: [],
+    pins: ['aqua.png','blue.png','brown.png','green.png','pink.png','purple.png','red.png','yellow.png']
+  };
+
+  rows.forEach(r => {
+    const cat = r.Category;
+    const rar = r.Rarity;
+    const filename = r.Filename;
+    if(!filename) return;
+    if(cat === 'offhand' || cat === 'mouths') {
+      if(data[cat]) data[cat].push(filename);
+    } else if(data[cat] && data[cat][rar] !== undefined) {
+      data[cat][rar].push(filename);
+    }
+  });
+
+  // Override makeWrap to use full GitHub URL
+  buildGridRarity('grid-body',    'body',     data.body,     'body_file');
+  buildGridRarity('grid-knife',   'knife',    data.knife,    'knife_file');
+  buildGridFlat(  'grid-offhand', 'offhand',  data.offhand,  'offhand_file');
+  buildGridFlat(  'grid-mouth',   'mouths',   data.mouths,   'mouth_file');
+  buildGridRarity('grid-necklace','necklace', data.necklace, 'necklace_file');
+  buildGridRarity('grid-eye-left','eyes',     data.eyes,     'eye_left_file');
+  buildGridRarity('grid-eye-right','eyes',    data.eyes,     'eye_right_file');
+  buildPinGrid(data.pins||[]);
+  applyHolderFilter();
+}
+
+function makeWrap(src, title, path, extraClass){
+  const wrap=document.createElement('div');
+  wrap.className='thumb-wrap'+(extraClass?' '+extraClass:'');
+  wrap.dataset.path=path;
+  const img=document.createElement('img');
+  img.className='thumb';
+  img.src=src; img.title=title;
+  const badge=document.createElement('span');
+  badge.className='thumb-badge';
+  wrap.appendChild(img);
+  wrap.appendChild(badge);
+  return wrap;
+}
+
+function buildGridFlat(gridId, folder, files, key){
+  const grid=document.getElementById(gridId);
+  grid.innerHTML='';
+  if(!files||!files.length) return;
+  files.forEach(fname=>{
+    const wrap=makeWrap(`https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/` + folder + '/' + fname, fname, fname);
+    wrap.onclick=()=>selectThumb(grid, wrap, key, fname);
+    grid.appendChild(wrap);
+  });
+}
+
+const RARITY_GLOW = {
+  rare:      'drop-shadow(0 0 5px #f0c020aa)',
+  legendary: 'drop-shadow(0 0 5px #60d8f8aa)',
+  ultimate:  'drop-shadow(0 0 7px #f870c0cc)',
+};
+
+function buildGridRarity(gridId, folder, data, key){
+  const gridEl = document.getElementById(gridId);
+  const existingBar = gridEl.previousElementSibling;
+  if(existingBar && existingBar.classList.contains('rarity-filter')) existingBar.remove();
+
+  const grid=document.getElementById(gridId);
+  grid.innerHTML='';
+  if(!data) return;
+
+  const isKnife = folder.includes('knife');
+  const order=['common','rare','legendary','ultimate'];
+  const available = order.filter(r => data[r]&&data[r].length);
+
+  // Build filter bar
+  const bar = document.createElement('div');
+  bar.className = 'rarity-filter';
+
+  function applyFilter(active){
+    bar.querySelectorAll('.rf-btn').forEach(b=>b.classList.remove('active'));
+    active.classList.add('active');
+    const r = active.dataset.rarity;
+    grid.querySelectorAll('.thumb').forEach(img=>{
+      img.style.display = (r==='all' || img.classList.contains(`rarity-${r}`)) ? '' : 'none';
+    });
+  }
+
+  const allBtn = document.createElement('button');
+  allBtn.className='rf-btn active'; allBtn.textContent='All'; allBtn.dataset.rarity='all';
+  allBtn.onclick=()=>applyFilter(allBtn);
+  bar.appendChild(allBtn);
+
+  available.forEach(r=>{
+    const btn=document.createElement('button');
+    btn.className=`rf-btn rf-${r}`; btn.textContent=r[0].toUpperCase()+r.slice(1); btn.dataset.rarity=r;
+    btn.onclick=()=>applyFilter(btn);
+    bar.appendChild(btn);
+  });
+
+  grid.before(bar);
+
+  // Populate thumbs
+  order.forEach(rarity=>{
+    const files=data[rarity];
+    if(!files||!files.length) return;
+    files.forEach(fname=>{
+      const path=`${rarity}/${fname}`;
+      const wrap=makeWrap(`https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/` + folder + '/' + path, path, path, `rarity-wrap-${rarity}`);
+      wrap.querySelector('.thumb').classList.add(`rarity-${rarity}`);
+      if(isKnife && RARITY_GLOW[rarity]) wrap.querySelector('.thumb').style.filter=RARITY_GLOW[rarity];
+      wrap.onclick=()=>selectThumb(grid, wrap, key, path);
+      grid.appendChild(wrap);
+    });
+  });
+}
+
+// Mark a wrap as staged (selected but not yet equipped)
+function selectThumb(grid, wrap, key, path){
+  grid.querySelectorAll('.thumb-wrap').forEach(w=>{
+    w.classList.remove('staged');
+    // keep equipped badge if equipped
+    const badge=w.querySelector('.thumb-badge');
+    if(w.classList.contains('equipped')) badge.textContent='✓';
+    else badge.textContent='';
+  });
+  wrap.classList.add('staged');
+  wrap.querySelector('.thumb-badge').textContent='◆';
+  sel[key]=path;
+  updateBewitchState();
+  showStagedPanel(key, path, wrap.querySelector('img').src);
+}
+
+// Sync equipped visuals across all grids
+function updateEquippedVisuals(){
+  const keyToGrid={
+    body_file:'grid-body', knife_file:'grid-knife', offhand_file:'grid-offhand',
+    necklace_file:'grid-necklace', eye_left_file:'grid-eye-left',
+    eye_right_file:'grid-eye-right', mouth_file:'grid-mouth'
+  };
+  for(const [key, gridId] of Object.entries(keyToGrid)){
+    const grid=document.getElementById(gridId);
+    if(!grid) continue;
+    grid.querySelectorAll('.thumb-wrap').forEach(w=>{
+      const isEquipped = equipped[key] && w.dataset.path===equipped[key];
+      const isStaged   = sel[key] && w.dataset.path===sel[key];
+      w.classList.toggle('equipped', isEquipped);
+      w.classList.toggle('staged', isStaged && !isEquipped);
+      const badge=w.querySelector('.thumb-badge');
+      if(isStaged && !isEquipped) badge.textContent='◆';
+      else if(isEquipped) badge.textContent='✓';
+      else badge.textContent='';
+    });
+  }
+}
+
+function updateSelectedPanel(){
+  const panel=document.getElementById('selected-panel');
+  const labels={
+    body_file:'Body',knife_file:'Knife',offhand_file:'Offhand',
+    necklace_file:'Necklace',eye_left_file:'L.Eye',eye_right_file:'R.Eye',mouth_file:'Mouth'
+  };
+  panel.innerHTML='';
+  for(const [k,label] of Object.entries(labels)){
+    if(!equipped[k]) continue;
+    const name=equipped[k].split('/').pop().replace(/\.png$/i,'').replace(/_/g,' ');
+    const tag=document.createElement('span');
+    tag.className='sel-tag';
+    tag.textContent=label+': '+name;
+    panel.appendChild(tag);
+  }
+}
+
+function showToast(text, type=''){
+  const area=document.getElementById('toast-area');
+  const t=document.createElement('div');
+  t.className='toast'+(type?' '+type:'');
+  t.textContent=text;
+  area.appendChild(t);
+  setTimeout(()=>t.remove(), 3000);
+}
+
+// ── Pin drag-and-drop ─────────────────────────────────────────────────────────
+function buildPinGrid(files){
+  const grid=document.getElementById('grid-pins');
+  if(!grid) return;
+  grid.innerHTML='';
+  // List all pins from /img/pins/ — if server doesn't send, use numbered fallback
+  const pinList = files.length ? files : Array.from({length:35},(_,i)=>`${i+1}.png`);
+  pinList.forEach(fname=>{
+    const img=document.createElement('img');
+    img.className='pin-drag-thumb';
+    img.src=`https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main/pins/${fname}`;
+    img.draggable=true;
+    img.addEventListener('dragstart',e=>{
+      dragPinSrc=img.src;
+      img.classList.add('dragging');
+      e.dataTransfer.effectAllowed='copy';
+    });
+    img.addEventListener('dragend',()=>img.classList.remove('dragging'));
+    grid.appendChild(img);
+  });
+}
+
+function initPinOverlay(){
+  const overlay=document.getElementById('pin-overlay');
+  const previewImg=document.getElementById('preview-img');
+
+  overlay.addEventListener('dragover',e=>{
+    if(!dragPinSrc) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect='copy';
+    overlay.classList.add('drop-active');
+  });
+  overlay.addEventListener('dragleave',()=>overlay.classList.remove('drop-active'));
+  overlay.addEventListener('drop',e=>{
+    e.preventDefault();
+    overlay.classList.remove('drop-active');
+    if(!dragPinSrc || placedPins.length>=5) return;
+    const rect=previewImg.getBoundingClientRect();
+    const nx=(e.clientX-rect.left)/rect.width;
+    const ny=(e.clientY-rect.top)/rect.height;
+    if(nx<0||nx>1||ny<0||ny>1) return;
+    addPlacedPin(nx, ny, dragPinSrc);
+    dragPinSrc=null;
+    updateBewitchState();
+  });
+}
+
+function addPlacedPin(nx, ny, src){
+  placedPins.push({x:nx, y:ny, src});
+  renderPlacedPins();
+}
+
+function renderPlacedPins(){
+  const overlay=document.getElementById('pin-overlay');
+  const previewImg=document.getElementById('preview-img');
+  // Remove existing placed-pin elements
+  overlay.querySelectorAll('.placed-pin').forEach(el=>el.remove());
+
+  // Size of overlay matches preview image display size
+  const w=previewImg.offsetWidth, h=previewImg.offsetHeight;
+
+  placedPins.forEach((pin,i)=>{
+    const wrap=document.createElement('div');
+    wrap.className='placed-pin';
+    wrap.style.left=(pin.x*100)+'%';
+    wrap.style.top=(pin.y*100)+'%';
+
+    const img=document.createElement('img');
+    img.src=pin.src;
+    img.style.cssText='width:32px;height:32px;object-fit:contain;display:block';
+
+    const rm=document.createElement('div');
+    rm.className='pin-remove';
+    rm.textContent='✕';
+    rm.onclick=(e)=>{
+      e.stopPropagation();
+      placedPins.splice(i,1);
+      renderPlacedPins();
+      updatePinCounter();
+      updateBewitchState();
+    };
+
+    wrap.appendChild(img);
+    wrap.appendChild(rm);
+    overlay.appendChild(wrap);
+  });
+  updatePinCounter();
+}
+
+function clearPins(){
+  placedPins=[];
+  renderPlacedPins();
+  updateBewitchState();
+}
+
+function updatePinCounter(){
+  const el=document.getElementById('pin-placed-count');
+  if(el) el.textContent=placedPins.length;
+}
+
+// ── Pending state ─────────────────────────────────────────────────────────────
+function checkPending(){
+  const keys=Object.keys(sel);
+  for(const k of keys){
+    if(sel[k]!==equipped[k]) return true;
+  }
+  if(placedPins.length>0) return true;
+  return false;
+}
+
+function updateBewitchState(){
+  const ind=document.getElementById('pending-indicator');
+  const pending=checkPending();
+
+  if(pending){
+    const changes=[];
+    const labels={body_file:'Body',knife_file:'Blade',offhand_file:'Offhand',
+      necklace_file:'Necklace',eye_left_file:'L.Eye',eye_right_file:'R.Eye',mouth_file:'Mouth'};
+    for(const [k,label] of Object.entries(labels)){
+      if(sel[k] && sel[k]!==equipped[k]){
+        const name=sel[k].split('/').pop().replace(/\.png$/i,'').replace(/_/g,' ');
+        changes.push(label+': '+name);
+      }
+    }
+    if(placedPins.length>0) changes.push(placedPins.length+' pin'+(placedPins.length>1?'s':''));
+    ind.textContent='⛧ '+changes.join(' · ')+' — ready to bewitch';
+    ind.classList.add('active');
+  } else {
+    ind.textContent='';
+    ind.classList.remove('active');
+  }
+}
+
+function showStagedPanel(key, path, iconSrc){
+  const labels={body_file:'Body',knife_file:'Blade',offhand_file:'Offhand',
+    necklace_file:'Necklace',eye_left_file:'L. Eye',eye_right_file:'R. Eye',mouth_file:'Mouth'};
+  const name=path.split('/').pop().replace(/\.png$/i,'').replace(/_/g,' ');
+  document.getElementById('staged-label').textContent=labels[key]||key;
+  document.getElementById('staged-name').textContent=name;
+  document.getElementById('staged-icon').src=iconSrc;
+  const panel=document.getElementById('staged-panel');
+  panel.classList.remove('visible');
+  void panel.offsetWidth;
+  panel.classList.add('visible');
+  // Update SVG border rect to actual panel dimensions
+  requestAnimationFrame(()=>{
+    const pw=panel.offsetWidth, ph=panel.offsetHeight;
+    const rx=9, pad=4;
+    const rw=pw+pad*2, rh=ph+pad*2;
+    const rect=document.getElementById('bgr');
+    rect.setAttribute('x', pad+1.5);
+    rect.setAttribute('y', pad+1.5);
+    rect.setAttribute('width', pw-3);
+    rect.setAttribute('height', ph-3);
+    // Perimeter of rounded rect
+    const perim=Math.round(2*(pw-3-2*rx)+2*(ph-3-2*rx)+2*Math.PI*rx);
+    rect.style.setProperty('--perim', `-${perim}`);
+  });
+}
+
+function hideStagedPanel(){
+  document.getElementById('staged-panel').classList.remove('visible');
+}
+
+function clearAll(){
+  const keys=Object.keys(sel);
+  // Clear staged
+  keys.forEach(k=>{ sel[k]=null; });
+  // Clear equipped
+  keys.forEach(k=>{ equipped[k]=null; });
+  // Clear all visual states on all grids
+  document.querySelectorAll('.thumb-wrap').forEach(w=>{
+    w.classList.remove('staged','equipped');
+    const b=w.querySelector('.thumb-badge');
+    if(b) b.textContent='';
+  });
+  clearPins();
+  hideStagedPanel();
+  updateSelectedPanel();
+  updateBewitchState();
+  // Re-select first body so preview isn't empty
+  const firstBody=document.querySelector('#grid-body .thumb-wrap');
+  if(firstBody){
+    const path=firstBody.dataset.path;
+    sel.body_file=path; equipped.body_file=path;
+    firstBody.classList.add('equipped');
+    firstBody.querySelector('.thumb-badge').textContent='✓';
+    updateBewitchState();
+    generate();
+  }
+}
+
+function selectRandom(gridId, key){
+  const grid=document.getElementById(gridId);
+  const wraps=[...grid.querySelectorAll('.thumb-wrap')].filter(w=>w.style.display!=='none');
+  if(!wraps.length) return;
+  const pick=wraps[Math.floor(Math.random()*wraps.length)];
+  sel[key]=pick.dataset.path;
+}
+
+async function randomizeAll(){
+  // Pick random items
+  selectRandom('grid-body','body_file');
+  selectRandom('grid-knife','knife_file');
+  selectRandom('grid-offhand','offhand_file');
+  selectRandom('grid-necklace','necklace_file');
+  selectRandom('grid-eye-left','eye_left_file');
+  selectRandom('grid-eye-right','eye_right_file');
+  selectRandom('grid-mouth','mouth_file');
+  document.getElementById('overlay_hue').value=Math.floor(Math.random()*360);
+  document.getElementById('body_hue').value=Math.floor(Math.random()*360);
+  document.getElementById('body_sat').value=40+Math.floor(Math.random()*50);
+  ['overlay_hue','body_hue','body_sat'].forEach(id=>{
+    const lbl=document.getElementById(id+'_v');
+    if(lbl) lbl.textContent=document.getElementById(id).value;
+  });
+  updateSwatch(); updateBodySwatch();
+  clearPins();
+  Object.assign(equipped, sel);
+  updateEquippedVisuals();
+  updateSelectedPanel();
+  updateBewitchState();
+
+  // Force-reset generating state and run animation
+  isGenerating = false;
+  const veil = document.getElementById('ritual-veil');
+  const img  = document.getElementById('preview-img');
+  veil.classList.remove('active','revealing');
+  veil.style.cssText='opacity:1;pointer-events:auto';
+  void veil.offsetWidth;
+  veil.classList.add('active');
+  isGenerating = true;
+  const ANIM_MS = 1400;
+  const animDone = new Promise(r=>setTimeout(r, ANIM_MS));
+  const fetchDone = compositeCanvas(buildParams());
+  try{
+    const [b64] = await Promise.all([fetchDone, animDone]);
+    img.style.opacity='0';
+    img.src='data:image/png;base64,'+b64;
+    veil.style.cssText='opacity:0;pointer-events:none';
+    veil.classList.remove('active','revealing');
+    img.classList.remove('curse-reveal');
+    void img.offsetWidth;
+    img.classList.add('curse-reveal');
+    img.addEventListener('animationend',()=>{img.classList.remove('curse-reveal');img.style.opacity='';},{once:true});
+    document.getElementById('status').textContent='randomized';
+  }catch(e){
+    veil.style.cssText='opacity:0;pointer-events:none';
+    veil.classList.remove('active','revealing');
+  }
+  isGenerating = false;
+}
+
+function scheduleGen(){
+  generate();
+}
+
+function applyName(){
+  generate();
+}
+
+function toggleSidebar(){
+  if(window.innerWidth<=768)
+    document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+async function connectWallet(){
+  if(!window.solana || !window.solana.isPhantom){
+    alert('Phantom wallet not found. Please install it from phantom.app');
+    return;
+  }
+  try{
+    const resp = await window.solana.connect();
+    const pubkey = resp.publicKey.toString();
+    walletConnected = true;
+
+    const btnW = document.getElementById('btn-wallet');
+    btnW.textContent = 'Disconnect';
+    btnW.classList.add('connected');
+    btnW.onclick = disconnectWallet;
+
+    document.getElementById('wallet-addr').textContent =
+      pubkey.slice(0,4)+'...'+pubkey.slice(-4);
+    document.getElementById('wallet-status').style.display='flex';
+
+    const badge = document.getElementById('wallet-badge');
+    badge.textContent = 'Checking…';
+    badge.className = 'wallet-badge';
+
+    isHolder = await checkHolder(pubkey);
+
+    badge.textContent = isHolder ? 'HOLDER' : 'NOT HOLDER';
+    badge.className = isHolder ? 'holder' : 'not-holder';
+
+    applyHolderFilter();
+  } catch(e){
+    console.error('Wallet connect error', e);
+  }
+}
+
+function disconnectWallet(){
+  if(window.solana) window.solana.disconnect();
+  walletConnected = false;
+  isHolder = false;
+  const btnW = document.getElementById('btn-wallet');
+  btnW.textContent = 'Connect Wallet';
+  btnW.classList.remove('connected');
+  btnW.onclick = connectWallet;
+  document.getElementById('wallet-status').style.display='none';
+  applyHolderFilter();
+}
+
+function applyHolderFilter(){
+  const nonCommon = ['rare','legendary','ultimate'];
+  nonCommon.forEach(r=>{
+    document.querySelectorAll(`.rarity-wrap-${r}`).forEach(el=>{
+      el.style.display = isHolder ? '' : 'none';
+    });
+    document.querySelectorAll(`.rf-${r}`).forEach(el=>{
+      el.style.display = isHolder ? '' : 'none';
+    });
+  });
+  // Show save slots when wallet connected; locked visually for non-holders
+  const slots = document.getElementById('save-slots');
+  if(slots) slots.style.display = walletConnected ? 'flex' : 'none';
+  if(walletConnected) renderSlots();
+  // Lock/unlock slot interaction for non-holders
+  document.querySelectorAll('.save-slot').forEach(el=>{
+    el.style.opacity = isHolder ? '' : '0.35';
+    el.style.pointerEvents = isHolder ? '' : 'none';
+  });
+}
+
+// ── Save Slots ──────────────────────────────────────────────
+const SLOTS_KEY = 'voodoo_slots';
+
+function getSlotsData(){
+  try{ return JSON.parse(localStorage.getItem(SLOTS_KEY)||'[null,null,null,null]'); }
+  catch{ return [null,null,null,null]; }
+}
+
+function compressImage(b64, maxW=120) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
+      } catch(e) {
+        console.error('[compressImage] error:', e);
+        resolve(b64.slice(0, 50000)); // fallback: truncate
+      }
+    };
+    img.onerror = (e) => {
+      console.error('[compressImage] image load failed:', e);
+      resolve(b64.slice(0, 50000));
+    };
+    // accept full data URL or raw b64
+    img.src = b64.startsWith('data:') ? b64 : 'data:image/png;base64,' + b64;
+  });
+}
+
+async function saveSlotData(idx, data){
+  const slots = getSlotsData();
+  if(data && data.image){
+    data = {...data, image: await compressImage(data.image)};
+  }
+  slots[idx] = data;
+  try {
+    localStorage.setItem(SLOTS_KEY, JSON.stringify(slots));
+  } catch(e) {
+    // localStorage full — clear oldest filled slot and retry
+    const fallback = [...slots];
+    for(let i=0;i<4;i++){ if(i!==idx && fallback[i]){ fallback[i]=null; break; } }
+    fallback[idx] = data;
+    try { localStorage.setItem(SLOTS_KEY, JSON.stringify(fallback)); } catch(e2){}
+  }
+}
+
+function renderSlots(){
+  const slots = getSlotsData();
+  for(let i=0;i<4;i++){
+    const el = document.getElementById(`slot-${i}`);
+    if(!el) continue;
+    const d = slots[i];
+    if(d){
+      el.classList.add('filled');
+      const img = el.querySelector('.slot-img');
+      if(img && d.image) img.src = 'data:image/jpeg;base64,'+d.image;
+    } else {
+      el.classList.remove('filled');
+      const img = el.querySelector('.slot-img');
+      if(img) img.src='';
+    }
+  }
+}
+
+function slotClick(idx){
+  const slots = getSlotsData();
+  toggleSlot(idx);
+  // If slot has data and we just activated it, load it
+  if(activeSlot === idx && slots[idx]) loadSlot(idx);
+}
+
+function toggleSlot(idx){
+  // Deactivate previously active slot
+  if(activeSlot !== -1){
+    document.getElementById(`slot-${activeSlot}`)?.classList.remove('active-slot');
+  }
+  if(activeSlot === idx){
+    activeSlot = -1; // toggle off
+  } else {
+    activeSlot = idx;
+    document.getElementById(`slot-${idx}`)?.classList.add('active-slot');
+  }
+}
+
+async function saveToSlot(imageB64){
+  console.log('[saveToSlot] called, walletConnected='+walletConnected+' activeSlot='+activeSlot+' imageB64 len='+(imageB64||'').length);
+  const slots = getSlotsData();
+  let idx = activeSlot !== -1 ? activeSlot : slots.findIndex(s => s === null);
+  if(idx === -1) idx = 0;
+  activeSlot = idx;
+  const snapshot = {
+    equipped: {...equipped},
+    sliders: {
+      overlay_hue: v('overlay_hue'),
+      overlay_strength: v('overlay_strength'),
+      body_hue: v('body_hue'),
+      body_sat: v('body_sat'),
+      bg_type: document.querySelector('input[name=bg_type]:checked').value,
+      bg_color: v('bg_color'),
+    },
+    pins: [...placedPins],
+    name: document.getElementById('name_input').value,
+    image: imageB64
+  };
+  console.log('[saveToSlot] saving to idx='+idx);
+  await saveSlotData(idx, snapshot);
+  console.log('[saveToSlot] done, slots now=', getSlotsData().map(s=>s?'filled':'null'));
+  renderSlots();
+  showToast(`Saved to slot ${['I','II','III','IV'][idx]}`);
+}
+
+function loadSlot(idx){
+  const slots = getSlotsData();
+  const d = slots[idx];
+  if(!d) return;
+
+  Object.assign(equipped, d.equipped);
+  Object.assign(sel, d.equipped);
+  updateEquippedVisuals();
+
+  // Restore sliders
+  ['overlay_hue','overlay_strength','body_hue','body_sat'].forEach(id=>{
+    const el=document.getElementById(id);
+    const lbl=document.getElementById(id+'_v');
+    if(el && d.sliders[id]!=null){ el.value=d.sliders[id]; if(lbl)lbl.textContent=el.value; }
+  });
+  if(d.sliders.bg_type){
+    document.querySelectorAll('input[name=bg_type]').forEach(r=>{ r.checked=(r.value===d.sliders.bg_type); });
+    document.getElementById('flat-color-row').style.display = d.sliders.bg_type==='flat'?'flex':'none';
+  }
+  const bgc=document.getElementById('bg_color');
+  if(bgc && d.sliders.bg_color) bgc.value=d.sliders.bg_color;
+
+  updateSwatch(); updateBodySwatch();
+
+  // Restore pins
+  clearPins();
+  if(d.pins) d.pins.forEach(p=>addPlacedPin(p.x,p.y,p.src||''));
+
+  // Restore name
+  const nameEl=document.getElementById('name_input');
+  if(nameEl) nameEl.value=d.name||'';
+
+  // Show saved image immediately then regenerate
+  const previewImg=document.getElementById('preview-img');
+  if(d.image) previewImg.src='data:image/jpeg;base64,'+d.image;
+
+  generate();
+  showToast(`Loaded slot ${['I','II','III','IV'][idx]}`);
+}
+
+async function deleteSlot(e, idx){
+  e.stopPropagation();
+  await saveSlotData(idx, null);
+  renderSlots();
+  showToast(`Slot ${['I','II','III','IV'][idx]} cleared`);
+}
+
+function buildParams(useStaged=false){
+  const src = useStaged ? sel : equipped;
+  const bg_type=document.querySelector('input[name=bg_type]:checked').value;
+  return {
+    bg_type,
+    bg_color: v('bg_color'),
+    overlay_hue: parseInt(v('overlay_hue'))/360,
+    overlay_sat: 0.7,
+    overlay_val: 0.9,
+    overlay_strength: parseInt(v('overlay_strength'))/100,
+    body_file: src.body_file,
+    body_hue: parseInt(v('body_hue'))/360,
+    body_sat: parseInt(v('body_sat'))/100,
+    body_val: 0.85,
+    knife_file: src.knife_file,
+    offhand_file: src.offhand_file,
+    necklace_file: src.necklace_file,
+    eye_left_file: src.eye_left_file,
+    eye_right_file: src.eye_right_file,
+    mouth_file: src.mouth_file,
+    pins: placedPins.map(p=>({x:p.x, y:p.y})),
+    name: document.getElementById('name_input').value.trim(),
+    preview_size: 800,
+  };
+}
+
+
+// ── Canvas Compositing Engine ──────────────────────────────
+const CDN = 'https://raw.githubusercontent.com/furdecimbit/voodoo-generator/main';
+
+function loadImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null); // soft fail
+    img.src = url;
+  });
+}
+
+function hsvToRgb(h, s, v) {
+  let r, g, b;
+  const i = Math.floor(h * 6);
+  const f = h * 6 - i;
+  const p = v * (1 - s);
+  const q = v * (1 - f * s);
+  const t = v * (1 - (1 - f) * s);
+  switch (i % 6) {
+    case 0: r=v; g=t; b=p; break;
+    case 1: r=q; g=v; b=p; break;
+    case 2: r=p; g=v; b=t; break;
+    case 3: r=p; g=q; b=v; break;
+    case 4: r=t; g=p; b=v; break;
+    case 5: r=v; g=p; b=q; break;
+  }
+  return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
+}
+
+function applyHueShift(ctx, w, h, hue, sat, val) {
+  if(hue === 0 && sat === 1 && val === 1) return;
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const data = imageData.data;
+  const [tr, tg, tb] = hsvToRgb(hue, sat, val);
+  for(let i = 0; i < data.length; i += 4) {
+    if(data[i+3] < 10) continue;
+    data[i]   = Math.round(data[i]   * tr / 255);
+    data[i+1] = Math.round(data[i+1] * tg / 255);
+    data[i+2] = Math.round(data[i+2] * tb / 255);
+  }
+  ctx.putImageData(imageData, 0, 0);
+}
+
+async function compositeCanvas(params) {
+  const W = params.preview_size || 600;
+  const H = W;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  if(params.bg_type === 'flat') {
+    ctx.fillStyle = params.bg_color || '#1a1a2e';
+    ctx.fillRect(0, 0, W, H);
+  } else {
+    const bgImg = await loadImage(CDN + '/back3.png');
+    if(bgImg) ctx.drawImage(bgImg, 0, 0, W, H);
+    else { ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0, 0, W, H); }
+  }
+
+  // Overlay tint
+  if(params.overlay_strength > 0) {
+    const [or_, og, ob] = hsvToRgb(params.overlay_hue, params.overlay_sat||0.7, params.overlay_val||0.9);
+    ctx.save();
+    ctx.globalAlpha = params.overlay_strength;
+    ctx.fillStyle = `rgb(${or_},${og},${ob})`;
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+  }
+
+  // Body
+  if(params.body_file) {
+    const burl = CDN + '/body/' + params.body_file;
+    const bodyImg = await loadImage(burl);
+    if(bodyImg) {
+      // Scale body to fit ~80% of canvas height
+      const sc = Math.min(W / bodyImg.width, H * 0.85 / bodyImg.height);
+      const bw = Math.round(bodyImg.width * sc);
+      const bh = Math.round(bodyImg.height * sc);
+      const bx = Math.round((W - bw) / 2);
+      const by = Math.round(H - bh - H * 0.03);
+
+      // Apply body hue to offscreen canvas
+      const bodyCanvas = document.createElement('canvas');
+      bodyCanvas.width = bw; bodyCanvas.height = bh;
+      const bctx = bodyCanvas.getContext('2d');
+      bctx.drawImage(bodyImg, 0, 0, bw, bh);
+      if(params.body_hue !== 0 || params.body_sat !== 1) {
+        applyHueShift(bctx, bw, bh, params.body_hue, params.body_sat || 0.6, params.body_val || 0.85);
+      }
+      ctx.drawImage(bodyCanvas, bx, by);
+
+      // Items relative to body
+      const cx = bx + bw/2;  // body center x
+      const top = by;
+      const headH = bh * 0.38;
+      const headCy = top + headH * 0.5;
+      const headR  = bw * 0.22;
+
+      // Eye positions
+      const eyeSize = Math.round(headR * 0.55);
+      const eyeGap  = Math.round(headR * 0.50);
+      const eyeY    = Math.round(headCy - headR * 0.05);
+      const eye1x = Math.round(cx - eyeGap);
+      const eye2x = Math.round(cx + eyeGap + 5);
+
+      // Mouth
+      const mouthSize = Math.round(headR * 0.9);
+      const mouthCx = Math.round(cx + 10);
+      const mouthCy = Math.round(eyeY + eyeSize/2 + headR * 0.55);
+
+      // Neck/necklace
+      const neckSize = Math.round(headR * 0.44);
+      const neckCx = Math.round(cx + neckSize*0.25 - 17);
+      const neckCy = Math.round(top + bh*0.48 + neckSize);
+
+      // Hands
+      const handY = top + bh * 0.68;
+      const knifeX = Math.round(bx + bw * 0.85);
+      const offhandX = Math.round(bx + bw * 0.15);
+      const knifeSize = Math.round(bh * 0.31);
+      const offhandSize = Math.round(bh * 0.23);
+
+      async function drawItem(url, cx2, cy2, size) {
+        const img = await loadImage(url);
+        if(!img) return;
+        const sc2 = size / Math.max(img.width, img.height);
+        const iw = Math.round(img.width * sc2);
+        const ih = Math.round(img.height * sc2);
+        ctx.drawImage(img, Math.round(cx2 - iw/2), Math.round(cy2 - ih/2), iw, ih);
+      }
+
+      // Draw items
+      const tasks = [];
+      if(params.eye_left_file)  tasks.push(drawItem(CDN+'/eyes/'+params.eye_left_file,  eye1x, eyeY, eyeSize));
+      if(params.eye_right_file) tasks.push(drawItem(CDN+'/eyes/'+params.eye_right_file, eye2x, eyeY, eyeSize));
+      if(params.mouth_file)     tasks.push(drawItem(CDN+'/mouths/'+params.mouth_file,   mouthCx, mouthCy, mouthSize));
+      if(params.necklace_file)  tasks.push(drawItem(CDN+'/necklace/'+params.necklace_file, neckCx, neckCy, neckSize*2.5));
+      if(params.knife_file)     tasks.push(drawItem(CDN+'/knife/'+params.knife_file,    knifeX, handY, knifeSize));
+      if(params.offhand_file)   tasks.push(drawItem(CDN+'/offhand/'+params.offhand_file, offhandX, handY, offhandSize));
+      await Promise.all(tasks);
+
+      // Name text
+      if(params.name) {
+        ctx.save();
+        ctx.font = `bold ${Math.round(W*0.045)}px serif`;
+        ctx.fillStyle = '#e8c060';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = '#000';
+        ctx.shadowBlur = 8;
+        ctx.fillText(params.name, W/2, H - H*0.02);
+        ctx.restore();
+      }
+    }
+  }
+
+  return canvas.toDataURL('image/png').split(',')[1];
+}
+
+async function checkHolder(pubkey) {
+  try {
+    const url = `https://mainnet.helius-rpc.com/?api-key=d9dba9ac-f923-4ed6-9a90-f389a71e9bcc`;
+    const payload = {jsonrpc:"2.0",id:"1",method:"getAssetsByOwner",
+      params:{ownerAddress:pubkey,page:1,limit:1000,displayOptions:{showCollectionMetadata:false}}};
+    const r = await fetch(url, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const items = (await r.json()).result?.items || [];
+    for(const asset of items) {
+      for(const g of asset.grouping||[]) {
+        if(g.group_value === 'DFfnpWWfzTj4TEPQTZMSbpyg4JpbYzRjoTm4pM93xEdy') return true;
+      }
+    }
+  } catch(e) { console.error('holder check failed', e); }
+  return false;
+}
+
+async function generate(){
+  if(isGenerating) return;
+  isGenerating=true;
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('status').textContent='generating…';
+  const t0=performance.now();
+  try{
+    const b64 = await compositeCanvas(buildParams());
+    document.getElementById('preview-img').src='data:image/png;base64,'+b64;
+    const ms=Math.round(performance.now()-t0);
+    document.getElementById('status').textContent=`${ms}ms`;
+  }catch(e){
+    document.getElementById('status').textContent='error: '+e.message;
+  }
+  document.getElementById('loading').classList.remove('show');
+  isGenerating=false;
+}
+
+async function castCurse({save=true}={}){
+  if(isGenerating) return;
+  const veil=document.getElementById('ritual-veil');
+  const img=document.getElementById('preview-img');
+
+  const labels={body_file:'Body',knife_file:'Blade',offhand_file:'Offhand',
+    necklace_file:'Necklace',eye_left_file:'L. Eye',eye_right_file:'R. Eye',mouth_file:'Mouth'};
+  const newlyEquipped=[];
+  for(const [k,label] of Object.entries(labels)){
+    if(sel[k] && sel[k]!==equipped[k]){
+      const name=sel[k].split('/').pop().replace(/\.png$/i,'').replace(/_/g,' ');
+      newlyEquipped.push({label, name});
+    }
+  }
+  Object.assign(equipped, sel);
+
+  function showVeil(){
+    // Remove active to reset animations, force reflow, re-add
+    veil.classList.remove('active','revealing');
+    veil.style.cssText='opacity:1;pointer-events:auto';
+    void veil.offsetWidth;
+    veil.classList.add('active');
+  }
+  function hideVeil(){
+    veil.style.cssText='opacity:0;pointer-events:none';
+    veil.classList.remove('active','revealing');
+  }
+
+  showVeil();
+  isGenerating=true;
+  document.getElementById('status').textContent='casting…';
+  const t0=performance.now();
+
+  // Fetch and animation run in parallel
+  // Animation is exactly 1.5s — reveal happens at the end
+  const ANIM_MS = 1400;
+  const animDone = new Promise(r=>setTimeout(r, ANIM_MS));
+  const fetchDone = compositeCanvas(buildParams());
+
+  try{
+    const [b64] = await Promise.all([fetchDone, animDone]);
+
+    // Animation done — swap image and fade in
+    img.style.opacity='0';
+    img.src='data:image/png;base64,'+b64;
+
+    hideVeil();
+
+    img.classList.remove('curse-reveal');
+    void img.offsetWidth;
+    img.classList.add('curse-reveal');
+    img.addEventListener('animationend',()=>{
+      img.classList.remove('curse-reveal');
+      img.style.opacity='';
+    },{once:true});
+
+    newlyEquipped.forEach((item,i)=>{
+      setTimeout(()=>showToast(`⛧ ${item.label}: ${item.name} — Bound`,'equipped-toast'), i*180);
+    });
+    if(placedPins.length>0) showToast(`⛧ ${placedPins.length} Pin${placedPins.length>1?'s':''} — Bound`,'equipped-toast');
+    updateEquippedVisuals();
+    updateSelectedPanel();
+    updateBewitchState();
+    hideStagedPanel();
+    document.getElementById('status').textContent=`${Math.round(performance.now()-t0)}ms`;
+    if(walletConnected && save) await saveToSlot(b64);
+  }catch(e){
+    hideVeil();
+    document.getElementById('status').textContent='error: '+e.message;
+  }
+  isGenerating=false;
+}
+
+async function saveHQ(){
+  if(isGenerating) return;
+  document.getElementById('status').textContent='binding…';
+  try{
+    const b64 = await compositeCanvas({...buildParams(), preview_size:1200});
+    const link = document.createElement('a');
+    link.download = 'voodoo_' + Date.now() + '.png';
+    link.href = 'data:image/png;base64,' + b64;
+    link.click();
+    document.getElementById('status').textContent='bound';
+    showToast('☽ Sealed & Downloaded');
+    if(walletConnected){
+      await saveToSlot(b64);
+    }
+  }catch(e){
+    document.getElementById('status').textContent='error: '+e.message;
+  }
+}
+
+// Init — first common body only
+loadItems().then(()=>{
+  const firstBody=document.querySelector('#grid-body .thumb-wrap');
+  if(firstBody){ sel.body_file=firstBody.dataset.path; }
+  Object.assign(equipped, sel);
+  updateEquippedVisuals();
+  updateSelectedPanel();
+  updateBewitchState();
+  document.getElementById('sec-body').classList.add('open');
+  initPinOverlay();
+  generate();
+});
+</script>
+</body>
+</html>
