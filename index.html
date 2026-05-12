@@ -1123,6 +1123,7 @@ async function loadItems(){
     }
   });
 
+  console.log('[loadItems] body common count:', data.body.common.length, data.body.common[0]);
   buildGridRarityFromItems('grid-body',     data.body,     'body_file');
   buildGridRarityFromItems('grid-knife',    data.knife,    'knife_file');
   buildGridFlatFromItems(  'grid-offhand',  data.offhand,  'offhand_file');
