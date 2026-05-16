@@ -554,7 +554,15 @@ def list_folder_rarity(base, exts=('png','PNG')):
 
 @app.route('/')
 def index():
-    return render_template_string(HTML)
+    return (VOODOO/'index.html').read_text(encoding='utf-8'), 200, {'Content-Type':'text/html; charset=utf-8'}
+
+@app.route('/<path:filename>')
+def serve_root_file(filename):
+    p = VOODOO / filename
+    if p.exists() and p.is_file():
+        return send_file(p)
+    from flask import abort
+    abort(404)
 
 @app.route('/list')
 def list_items():

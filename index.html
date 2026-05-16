@@ -25,14 +25,14 @@
   }
 
   /* ── SIDEBAR ── */
-  /* desktop: body is a grid — left col = sidebar+sidebar-content, right col = preview */
+  /* desktop: body is a grid — left col = sidebar+sidebar-content, center = preview, right = inventory */
   body{
     display:grid;
-    grid-template-columns:460px 1fr;
+    grid-template-columns:460px 1fr 460px;
     grid-template-rows:auto 1fr;
     grid-template-areas:
-      "sidebar  preview"
-      "items    preview";
+      "sidebar  preview  right"
+      "items    preview  right";
   }
   #sidebar{
     grid-area:sidebar;
@@ -314,6 +314,12 @@
   /* thumb wrapper for badges */
   .thumb-wrap{position:relative;display:inline-block;cursor:pointer}
   .thumb-wrap .thumb{cursor:pointer}
+  .rarity-wrap-rare      .thumb{box-shadow:0 0 8px 2px #c8a01055,0 0 2px #c8a010aa}
+  .rarity-wrap-legendary .thumb{box-shadow:0 0 8px 2px #40c0e055,0 0 2px #40c0e0aa}
+  .rarity-wrap-ultimate  .thumb{box-shadow:0 0 8px 2px #e050b055,0 0 2px #e050b0aa}
+  .rarity-wrap-rare      .thumb:hover{box-shadow:0 0 14px 3px #c8a010aa,0 0 4px #c8a010}
+  .rarity-wrap-legendary .thumb:hover{box-shadow:0 0 14px 3px #40c0e0aa,0 0 4px #40c0e0}
+  .rarity-wrap-ultimate  .thumb:hover{box-shadow:0 0 14px 3px #e050b0aa,0 0 4px #e050b0}
   .thumb-badge{
     position:absolute;top:-5px;right:-5px;
     width:16px;height:16px;border-radius:50%;
@@ -391,22 +397,9 @@
   }
   .placed-pin{
     position:absolute;
-    width:32px;height:32px;
-    transform:translate(-50%,-50%);
     pointer-events:auto;
     cursor:pointer;
-    filter:drop-shadow(0 0 3px #000a);
-    transition:filter .15s;
   }
-  .placed-pin:hover{filter:drop-shadow(0 0 6px #ff3020bb)}
-  .placed-pin .pin-remove{
-    position:absolute;top:-7px;right:-7px;
-    width:14px;height:14px;border-radius:50%;
-    background:#c01010;color:#fff;
-    font-size:9px;display:none;align-items:center;justify-content:center;
-    cursor:pointer;border:1px solid #ff4040;
-  }
-  .placed-pin:hover .pin-remove{display:flex}
 
   /* pending indicator above bewitch */
   #pending-indicator{
@@ -583,25 +576,7 @@
   }
 
   /* ── staged item panel (bottom-right fixed) ── */
-  #staged-panel{
-    position:fixed;bottom:80px;right:28px;
-    width:300px;
-    background:linear-gradient(160deg,#3a0808,#1a0404);
-    border:3px solid #7a1008;
-    border-radius:6px;
-    padding:14px 16px 12px;
-    display:none;
-    flex-direction:column;gap:10px;
-    z-index:150;
-    box-shadow:0 4px 32px #000c,0 0 20px #c8201022;
-    animation:panelSlideIn .3s ease;
-    cursor:pointer;
-    user-select:none;
-    overflow:visible;
-  }
-  #staged-panel:hover{background:linear-gradient(160deg,#4a0a0a,#220606);box-shadow:0 4px 40px #000e,0 0 30px #ff302044}
-  #staged-panel:active{transform:scale(.98)}
-  #staged-panel.visible{display:flex}
+  #staged-panel{display:none!important}
   @keyframes panelSlideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
   /* SVG traveling dot border */
   #border-glow-svg{
@@ -710,6 +685,181 @@
 
   input[type=color]{width:44px;height:32px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px}
 
+  /* ── SIDEBAR LOGO ── */
+  #sidebar-title{padding:14px 16px 10px;text-align:center;background:linear-gradient(180deg,#3d2b0f,#2c1e0a)}
+  #sidebar-logo{max-width:180px;width:80%;height:auto;object-fit:contain;display:block;margin:0 auto;filter:drop-shadow(0 0 12px #e8c06066)}
+
+  /* ── RIGHT PANEL ── */
+  #right-panel{
+    grid-area:right;
+    background:linear-gradient(180deg,#1a1208 0%,#141008 100%);
+    border-left:3px solid #7a5520;
+    box-shadow:inset 6px 0 24px #00000099;
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  #rp-header{
+    padding:12px 14px 8px;
+    font-family:'Bloodcrow',serif;font-size:18px;letter-spacing:.10em;
+    color:#c8a050;text-transform:uppercase;
+    border-bottom:1px solid #3a2810;
+    background:linear-gradient(180deg,#251a08,#1a1208);
+    flex-shrink:0;
+  }
+  #rp-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+  #rp-scroll::-webkit-scrollbar{width:4px}
+  #rp-scroll::-webkit-scrollbar-track{background:#0e0a06}
+  #rp-scroll::-webkit-scrollbar-thumb{background:#5a3a10;border-radius:2px}
+  #inventory-list{padding:8px 10px 4px;display:flex;flex-direction:column;gap:8px;}
+  .inv-item{
+    display:flex;align-items:center;gap:10px;
+    background:linear-gradient(90deg,#221808,#1a1208);
+    border:1px solid #3a2810;border-radius:5px;
+    padding:8px 10px;min-height:66px;
+  }
+  .inv-item.empty{
+    font-family:'Bloodcrow',serif;
+    border-style:dashed;border-color:#5a4020;
+    background:linear-gradient(90deg,#1e1408,#181006);
+  }
+  .inv-item.empty .inv-icon-empty{
+    width:52px;height:52px;border-radius:4px;flex-shrink:0;
+    background:#1a1006;border:1px dashed #5a3a18;
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;color:#8a6030;
+  }
+  .inv-item.empty .inv-label-empty{
+    font-family:'Bloodcrow',serif;font-size:15px;color:#9a7840;
+    letter-spacing:.05em;text-transform:uppercase;
+  }
+  .inv-icon{width:52px;height:52px;object-fit:contain;border-radius:4px;
+    background:#0e0a06;border:1px solid #4a3010;flex-shrink:0}
+  .inv-info{flex:1;min-width:0}
+  .inv-name{font-family:'Bloodcrow',serif;font-size:16px;color:#e8c878;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.04em}
+  .inv-meta{font-family:'Bloodcrow',serif;font-size:13px;color:#7a6040;
+    letter-spacing:.05em;text-transform:uppercase;margin-top:2px}
+  .inv-meta .inv-rarity-common  {color:#9a9878}
+  .inv-meta .inv-rarity-rare    {color:#c8a010}
+  .inv-meta .inv-rarity-legendary{color:#40c0e0}
+  .inv-meta .inv-rarity-ultimate{color:#e050b0}
+  .inv-stats{display:flex;flex-direction:row;gap:5px;align-items:center;flex-shrink:0}
+  .stat-pip{
+    font-family:'Bloodcrow',serif;font-size:12px;letter-spacing:.03em;
+    padding:2px 6px;border-radius:3px;min-width:28px;text-align:center;
+  }
+  .stat-pip.curse   {background:#2a0808;color:#ff6040;border:1px solid #6a1010}
+  .stat-pip.dark    {background:#08102a;color:#6080ff;border:1px solid #102060}
+  .stat-pip.hex     {background:#1a0828;color:#cc66ff;border:1px solid #5a1880}
+
+  /* ── STAT TOTALS TRIANGLE ── */
+  #stat-totals{
+    padding:10px 10px 12px;border-top:1px solid #3a2810;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+  }
+  #stat-totals-label{font-family:'Bloodcrow',serif;font-size:12px;color:#6a5030;
+    letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+  .stat-tri-row{display:flex;justify-content:center;gap:12px}
+  .stat-circle{
+    width:84px;height:84px;border-radius:50%;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:2px;border:2px solid;
+  }
+  .stat-circle.curse  {background:radial-gradient(circle,#2a0808,#140404);border-color:#8a1010;box-shadow:0 0 14px #ff202033}
+  .stat-circle.dark   {background:radial-gradient(circle,#08102a,#040814);border-color:#102888;box-shadow:0 0 14px #4060ff33}
+  .stat-circle.hex    {background:radial-gradient(circle,#180828,#0c0418);border-color:#5a1488;box-shadow:0 0 14px #cc44ff33}
+  .stat-circle-val{font-family:'Bloodcrow',serif;font-size:24px;font-weight:bold;line-height:1}
+  .stat-circle.curse .stat-circle-val{color:#ff5030}
+  .stat-circle.dark  .stat-circle-val{color:#6080ff}
+  .stat-circle.hex   .stat-circle-val{color:#cc66ff}
+  .stat-circle-lbl{font-family:'Bloodcrow',serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+  .stat-circle.curse .stat-circle-lbl{color:#cc3020}
+  .stat-circle.dark  .stat-circle-lbl{color:#4060cc}
+  .stat-circle.hex   .stat-circle-lbl{color:#9944cc}
+
+  /* ── RIGHT PANEL BUTTONS ── */
+  #rp-buttons{
+    flex-shrink:0;display:flex;flex-direction:column;gap:0;border-top:2px solid #4a3010;
+  }
+  .rp-btn{
+    width:100%;padding:20px 8px;border:none;border-bottom:1px solid #2a1c08;
+    font-family:'Bloodcrow',serif;font-size:19px;letter-spacing:.09em;
+    cursor:pointer;transition:background .15s,color .15s;text-transform:uppercase;
+    text-align:center;
+  }
+  .rp-btn:last-child{border-bottom:none}
+  #rp-rand{background:linear-gradient(90deg,#3a2808,#2a1c06);color:#d0a840}
+  #rp-rand:hover{background:linear-gradient(90deg,#4a3410,#38260a);color:#f0c840}
+  #rp-bind{background:linear-gradient(90deg,#0e1e0e,#081408);color:#50b050}
+  #rp-bind:hover{background:linear-gradient(90deg,#1a2e1a,#0e1e0e);color:#70d070}
+  #rp-clear{background:linear-gradient(90deg,#1e0e0e,#140808);color:#805040}
+  #rp-clear:hover{background:linear-gradient(90deg,#2e1414,#1e0a0a);color:#cc6040}
+
+  /* ── BEWITCH BOX ── */
+  @keyframes bwGlowTravel{
+    0%  { stroke-dashoffset: 0; }
+    100%{ stroke-dashoffset: var(--bw-perim); }
+  }
+  #bewitch-box{
+    margin-top:12px;position:relative;
+    border-radius:6px;overflow:hidden;
+    cursor:pointer;
+    border:2px solid #8a1010;
+    transition:border-color .2s,box-shadow .2s;
+    animation:panelSlideIn .3s ease;
+    background-image:url('panel_crop.png');
+    background-size:cover;background-position:center;
+  }
+  #bewitch-box:hover{border-color:#dd2010;box-shadow:0 0 28px #ff303066}
+  #bw-red-overlay{
+    position:absolute;inset:0;pointer-events:none;
+    background:rgba(120,0,0,0.45);z-index:0;
+  }
+  /* Traveling glow SVG — injected by JS, sits over border */
+  #bw-glow-svg{
+    position:absolute;inset:-2px;width:calc(100% + 4px);height:calc(100% + 4px);
+    pointer-events:none;z-index:3;overflow:visible;
+  }
+  #bw-glow-rect{
+    fill:none;
+    stroke:url(#bwGlowGrad);
+    stroke-width:10;
+    stroke-linecap:round;
+    stroke-dasharray: 60 9999;
+    stroke-dashoffset: var(--bw-perim, -9999);
+    animation: bwGlowTravel 2.4s linear infinite;
+    filter:url(#bwBlur);
+  }
+  #bewitch-inner{
+    position:relative;z-index:1;
+    display:flex;align-items:center;gap:16px;
+    padding:14px 18px;min-height:100px;
+  }
+  #bw-icon{
+    width:78px;height:78px;object-fit:contain;flex-shrink:0;
+    border-radius:5px;border:2px solid #8a1010;background:#0e0404;
+    box-shadow:0 0 12px #ff201022;
+  }
+  #bw-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;}
+  #bw-name{
+    font-family:'Bloodcrow',serif;font-size:21px;letter-spacing:.05em;
+    color:#f0c880;text-shadow:0 0 8px #e8a04055;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  #bw-type{
+    font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    color:#c08050;opacity:.85;
+  }
+  #bw-stats{display:flex;gap:7px;flex-wrap:wrap;margin-top:2px;}
+  #bw-stats .stat-pip{font-size:14px;padding:3px 8px;}
+  #bw-action{
+    flex-shrink:0;
+    font-family:'Bloodcrow',serif;font-size:28px;letter-spacing:.12em;
+    color:#ff4020;text-shadow:0 0 18px #ff402099;text-transform:uppercase;
+    padding:0 8px;
+    animation:cursePulse 1.8s ease-in-out infinite;
+  }
+  #pending-indicator{display:none}
+
   /* mobile */
   #menu-toggle{display:none}
   @media(max-width:768px){
@@ -809,7 +959,7 @@
 </video>
 
 <div id="sidebar">
-  <div id="sidebar-title">HEX &amp; THREAD</div>
+  <div id="sidebar-title"><img id="sidebar-logo" src="hexlogo.png" alt="Hex &amp; Stitch"></div>
   <div id="sidebar-subtitle">
     <img src="https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/icon.png" alt="">
     <span>Ritual Effigy Forge</span>
@@ -949,6 +1099,27 @@
 
   </div><!-- /sidebar-content -->
 
+<!-- ── RIGHT PANEL ── -->
+<div id="right-panel">
+  <div id="rp-header">Inventory</div>
+  <div id="rp-scroll">
+    <div id="inventory-list"></div>
+    <div id="stat-totals">
+      <div id="stat-totals-label">Total Power</div>
+      <div class="stat-tri-row">
+        <div class="stat-circle curse"><span class="stat-circle-val" id="total-curse">0</span><span class="stat-circle-lbl">Curse</span></div>
+        <div class="stat-circle dark"><span class="stat-circle-val" id="total-dark">0</span><span class="stat-circle-lbl">Darkness</span></div>
+        <div class="stat-circle hex"><span class="stat-circle-val" id="total-hex">0</span><span class="stat-circle-lbl">Hex</span></div>
+      </div>
+    </div>
+  </div>
+  <div id="rp-buttons">
+    <button class="rp-btn" id="rp-rand" onclick="randomizeAll()">Randomize</button>
+    <button class="rp-btn" id="rp-bind" onclick="saveHQ()">☽ Bind</button>
+    <button class="rp-btn" id="rp-clear" onclick="clearAll()">✕ Clear</button>
+  </div>
+</div>
+
 <div id="preview-area">
   <div id="preview-wrap">
     <img id="preview-img" src="" alt="Preview">
@@ -966,14 +1137,36 @@
     <div class="glow-ring"></div>
     <img id="bewitch-img" src="https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/bewitch.png" alt="">
   </div>
-  <div id="selected-panel"></div>
-  <div id="pending-indicator"></div>
-  <div id="status">awaiting ritual…</div>
-  <div id="btn-area">
-    <button id="btn-rand" onclick="randomizeAll()">Randomize</button>
-    <button id="btn-save" onclick="saveHQ()">☽ Bind</button>
-    <button id="btn-clear" onclick="clearAll()">✕ Clear</button>
+  <!-- Bewitch box: only visible when items pending -->
+  <div id="bewitch-box" onclick="castCurse()" style="display:none">
+    <svg id="bw-glow-svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="bwGlowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#ff3000" stop-opacity="0"/>
+          <stop offset="35%" stop-color="#ff5020" stop-opacity="0.8"/>
+          <stop offset="55%" stop-color="#ff9060" stop-opacity="1"/>
+          <stop offset="75%" stop-color="#ff5020" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#ff3000" stop-opacity="0"/>
+        </linearGradient>
+        <filter id="bwBlur" x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="4"/>
+        </filter>
+      </defs>
+      <rect id="bw-glow-rect" rx="6" ry="6"/>
+    </svg>
+    <div id="bw-red-overlay"></div>
+    <div id="bewitch-inner">
+      <img id="bw-icon" src="" alt="">
+      <div id="bw-info">
+        <div id="bw-name">—</div>
+        <div id="bw-type"></div>
+        <div id="bw-stats"></div>
+      </div>
+      <div id="bw-action">⛧ Bewitch</div>
+    </div>
   </div>
+  <div id="pending-indicator" style="display:none"></div>
+  <div id="status">awaiting ritual…</div>
   <div id="save-slots" style="display:none">
     <div class="save-slot" id="slot-0" onclick="slotClick(0)"><span class="slot-num">I</span><button class="slot-del" onclick="deleteSlot(event,0)">✕</button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
     <div class="save-slot" id="slot-1" onclick="slotClick(1)"><span class="slot-num">II</span><button class="slot-del" onclick="deleteSlot(event,1)">✕</button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
@@ -1101,6 +1294,7 @@ async function loadItems(){
 
   // URL lookup: path -> full URL
   window.itemURLMap = {};
+  window.itemInfoMap = {};
 
   rows.forEach(r => {
     const cat = r.Category;
@@ -1117,6 +1311,7 @@ async function loadItems(){
       path = rar + '/' + filename;
     }
     window.itemURLMap[path] = url;
+    window.itemInfoMap[path] = {category: cat, rarity: rar, title: r.Title||''};
 
     const item = {url, path, filename, rarity: rar};
     if(cat === 'offhand' || cat === 'mouths') {
@@ -1322,19 +1517,11 @@ function updateEquippedVisuals(){
 
 function updateSelectedPanel(){
   const panel=document.getElementById('selected-panel');
+  if(panel) panel.innerHTML=''; // kept hidden, inventory panel shows items
   const labels={
     body_file:'Body',knife_file:'Knife',offhand_file:'Offhand',
     necklace_file:'Necklace',eye_left_file:'L.Eye',eye_right_file:'R.Eye',mouth_file:'Mouth'
   };
-  panel.innerHTML='';
-  for(const [k,label] of Object.entries(labels)){
-    if(!equipped[k]) continue;
-    const name=equipped[k].split('/').pop().replace(/\.png$/i,'').replace(/_/g,' ');
-    const tag=document.createElement('span');
-    tag.className='sel-tag';
-    tag.textContent=label+': '+name;
-    panel.appendChild(tag);
-  }
 }
 
 function showToast(text, type=''){
@@ -1387,14 +1574,76 @@ function initPinOverlay(){
     const nx=(e.clientX-rect.left)/rect.width;
     const ny=(e.clientY-rect.top)/rect.height;
     if(nx<0||nx>1||ny<0||ny>1) return;
-    addPlacedPin(nx, ny, dragPinSrc);
+    const pin = computePinPlacement(nx, ny, dragPinSrc);
     dragPinSrc=null;
-    updateBewitchState();
+    placedPins.push(pin);
+    renderPlacedPins();
+    compositeCanvas(buildParams()).then(b64=>{
+      document.getElementById('preview-img').src='data:image/png;base64,'+b64;
+    });
   });
 }
 
+// Compute edge-snapped pin placement using cached body alpha
+function computePinPlacement(nx, ny, src){
+  const bc = window._bodyCache;
+  if(!bc) return {x:nx, y:ny, src, cx:nx, cy:ny, rot:0};
+  const {data, IW, IH, sc, offset_x, offset_y, W, H} = bc;
+
+  function bAlpha(x,y){
+    x=Math.max(0,Math.min(IW-1,Math.round(x)));
+    y=Math.max(0,Math.min(IH-1,Math.round(y)));
+    return data[(y*IW+x)*4+3];
+  }
+
+  // Canvas drop point
+  let dpx=nx*W, dpy=ny*H;
+  // Body image coords of drop point
+  let bpx=(dpx-offset_x)/sc, bpy=(dpy-offset_y)/sc;
+
+  // If drop point is outside body (alpha < 64), find nearest body edge pixel
+  if(bAlpha(bpx,bpy) < 64){
+    let bestDist=Infinity, bestX=bpx, bestY=bpy;
+    const maxR=Math.round(300/sc); // search up to 300 canvas px
+    for(let r=2; r<=maxR; r+=2){
+      let found=false;
+      for(let ang=0; ang<360; ang+=3){
+        const rad=ang*Math.PI/180;
+        const tx=bpx+r*Math.cos(rad), ty=bpy+r*Math.sin(rad);
+        if(bAlpha(tx,ty)>128){
+          const d=r;
+          if(d<bestDist){ bestDist=d; bestX=tx; bestY=ty; found=true; }
+        }
+      }
+      if(found) break;
+    }
+    bpx=bestX; bpy=bestY;
+    dpx=bpx*sc+offset_x; dpy=bpy*sc+offset_y;
+  }
+
+  // Compute inward normal via weighted alpha gradient
+  let gx=0, gy=0;
+  const R=18;
+  for(let dy=-R;dy<=R;dy+=2){
+    for(let dx=-R;dx<=R;dx+=2){
+      const a=bAlpha(bpx+dx,bpy+dy);
+      gx+=dx*a; gy+=dy*a;
+    }
+  }
+  const gLen=Math.sqrt(gx*gx+gy*gy)||1;
+  const iux=gx/gLen, iuy=gy/gLen;
+
+  // rot: pin local +y (tip) points inward → atan2(-iux, iuy)
+  const rot=Math.atan2(-iux, iuy);
+
+  const PIN_SCALE=0.18;
+  // We don't have pinImg here, estimate pH from typical 537px
+  // Store rot and adjusted drop point; compositeCanvas will draw using these
+  return {x:dpx/W, y:dpy/H, src, rot, iux, iuy};
+}
+
 function addPlacedPin(nx, ny, src){
-  placedPins.push({x:nx, y:ny, src});
+  placedPins.push(computePinPlacement(nx, ny, src));
   renderPlacedPins();
 }
 
@@ -1413,23 +1662,23 @@ function renderPlacedPins(){
     wrap.style.left=(pin.x*100)+'%';
     wrap.style.top=(pin.y*100)+'%';
 
-    const img=document.createElement('img');
-    img.src=pin.src;
-    img.style.cssText='width:32px;height:32px;object-fit:contain;display:block';
-
-    const rm=document.createElement('div');
-    rm.className='pin-remove';
-    rm.textContent='✕';
-    rm.onclick=(e)=>{
+    // Invisible hit area covering the rendered pin
+    wrap.style.width='40px';
+    wrap.style.height='100px';
+    wrap.style.cursor='pointer';
+    // origin at tip point, extending toward head (outward = -inward direction)
+    if(pin.rot!=null) wrap.style.transform=`translate(-50%,-90%) rotate(${pin.rot}rad)`;
+    else wrap.style.transform='translate(-50%,-90%)';
+    const idx=i;
+    wrap.onclick=(e)=>{
       e.stopPropagation();
-      placedPins.splice(i,1);
+      placedPins.splice(idx,1);
       renderPlacedPins();
       updatePinCounter();
-      updateBewitchState();
+      compositeCanvas(buildParams()).then(b64=>{
+        document.getElementById('preview-img').src='data:image/png;base64,'+b64;
+      });
     };
-
-    wrap.appendChild(img);
-    wrap.appendChild(rm);
     overlay.appendChild(wrap);
   });
   updatePinCounter();
@@ -1439,6 +1688,9 @@ function clearPins(){
   placedPins=[];
   renderPlacedPins();
   updateBewitchState();
+  compositeCanvas(buildParams()).then(b64=>{
+    document.getElementById('preview-img').src='data:image/png;base64,'+b64;
+  });
 }
 
 function updatePinCounter(){
@@ -1452,12 +1704,13 @@ function checkPending(){
   for(const k of keys){
     if(sel[k]!==equipped[k]) return true;
   }
-  if(placedPins.length>0) return true;
+  // pins are instant, not pending
   return false;
 }
 
 function updateBewitchState(){
   const ind=document.getElementById('pending-indicator');
+  const box=document.getElementById('bewitch-box');
   const pending=checkPending();
 
   if(pending){
@@ -1471,39 +1724,49 @@ function updateBewitchState(){
       }
     }
     if(placedPins.length>0) changes.push(placedPins.length+' pin'+(placedPins.length>1?'s':''));
-    ind.textContent='⛧ '+changes.join(' · ')+' — ready to bewitch';
-    ind.classList.add('active');
+    if(box){
+      box.style.display='';
+      requestAnimationFrame(syncBewitchWidth);
+    }
   } else {
-    ind.textContent='';
-    ind.classList.remove('active');
+    if(box) box.style.display='none';
   }
 }
 
+function syncBewitchWidth(){
+  const box=document.getElementById('bewitch-box');
+  const img=document.getElementById('preview-img');
+  if(!box||!img||box.style.display==='none') return;
+  const w=img.offsetWidth;
+  if(w>0){ box.style.width=w+'px'; box.style.maxWidth=w+'px'; }
+  initBewitchGlow(box);
+}
+
+function initBewitchGlow(box){
+  const rect=document.getElementById('bw-glow-rect');
+  if(!rect) return;
+  const w=box.offsetWidth+4, h=box.offsetHeight+4;
+  rect.setAttribute('x','1'); rect.setAttribute('y','1');
+  rect.setAttribute('width',w-2); rect.setAttribute('height',h-2);
+  const rx=6;
+  const perim=Math.round(2*(w-2-2*rx)+2*(h-2-2*rx)+2*Math.PI*rx);
+  rect.style.setProperty('--bw-perim',-perim);
+  rect.style.strokeDasharray=`40 ${perim+40}`;
+}
+
 function showStagedPanel(key, path, iconSrc){
-  const labels={body_file:'Body',knife_file:'Blade',offhand_file:'Offhand',
-    necklace_file:'Necklace',eye_left_file:'L. Eye',eye_right_file:'R. Eye',mouth_file:'Mouth'};
-  const name=path.split('/').pop().replace(/\.png$/i,'').replace(/_/g,' ');
-  document.getElementById('staged-label').textContent=labels[key]||key;
-  document.getElementById('staged-name').textContent=name;
-  document.getElementById('staged-icon').src=iconSrc;
-  const panel=document.getElementById('staged-panel');
-  panel.classList.remove('visible');
-  void panel.offsetWidth;
-  panel.classList.add('visible');
-  // Update SVG border rect to actual panel dimensions
-  requestAnimationFrame(()=>{
-    const pw=panel.offsetWidth, ph=panel.offsetHeight;
-    const rx=9, pad=4;
-    const rw=pw+pad*2, rh=ph+pad*2;
-    const rect=document.getElementById('bgr');
-    rect.setAttribute('x', pad+1.5);
-    rect.setAttribute('y', pad+1.5);
-    rect.setAttribute('width', pw-3);
-    rect.setAttribute('height', ph-3);
-    // Perimeter of rounded rect
-    const perim=Math.round(2*(pw-3-2*rx)+2*(ph-3-2*rx)+2*Math.PI*rx);
-    rect.style.setProperty('--perim', `-${perim}`);
-  });
+  const name = path.split('/').pop().replace(/\.png$/i,'').replace(/_/g,' ');
+  const stats = itemStats(path);
+  const info = (window.itemInfoMap||{})[path]||{};
+  const typeLabel = [info.category, info.rarity].filter(Boolean).join(' · ').toUpperCase();
+  document.getElementById('bw-icon').src = iconSrc;
+  document.getElementById('bw-name').textContent = name;
+  document.getElementById('bw-type').textContent = typeLabel;
+  const bwStats = document.getElementById('bw-stats');
+  bwStats.innerHTML =
+    `<span class="stat-pip curse">${stats.curse}</span>` +
+    `<span class="stat-pip dark">${stats.darkness}</span>` +
+    `<span class="stat-pip hex">${stats.hex}</span>`;
 }
 
 function hideStagedPanel(){
@@ -1567,6 +1830,7 @@ async function randomizeAll(){
   Object.assign(equipped, sel);
   updateEquippedVisuals();
   updateSelectedPanel();
+  updateInventory();
   updateBewitchState();
 
   // Force-reset generating state and run animation
@@ -1861,12 +2125,80 @@ function buildParams(useStaged=false){
     eye_left_file: src.eye_left_file,
     eye_right_file: src.eye_right_file,
     mouth_file: src.mouth_file,
-    pins: placedPins.map(p=>({x:p.x, y:p.y})),
+    pins: placedPins.map(p=>({x:p.x, y:p.y, src:p.src})),
     name: document.getElementById('name_input').value.trim(),
     preview_size: 800,
   };
 }
 
+
+// ── Item Stats ─────────────────────────────────────────────
+function hashStr(s){
+  let h=5381;
+  for(let i=0;i<s.length;i++) h=((h<<5)+h+s.charCodeAt(i))|0;
+  return Math.abs(h);
+}
+const STAT_RANGES={common:[2,18],rare:[15,42],legendary:[35,70],ultimate:[60,100]};
+function itemStats(path){
+  const filename=path.split('/').pop();
+  const rarity=(path.split('/')[0]||'common');
+  const h=hashStr(filename);
+  const [lo,hi]=STAT_RANGES[rarity]||STAT_RANGES.common;
+  const range=hi-lo+1;
+  return{
+    curse:    lo+(h%range),
+    darkness: lo+((h>>>5)%range),
+    hex:      lo+((h>>>10)%range),
+  };
+}
+
+const TYPE_LABELS={
+  body_file:'Body',knife_file:'Blade',offhand_file:'Offhand',
+  necklace_file:'Necklace',eye_left_file:'L.Eye',eye_right_file:'R.Eye',mouth_file:'Mouth'
+};
+
+const TYPE_ICONS={body_file:'⬟',knife_file:'🗡',offhand_file:'✋',necklace_file:'◎',eye_left_file:'◉',eye_right_file:'◉',mouth_file:'⌇'};
+
+function updateInventory(){
+  const list=document.getElementById('inventory-list');
+  list.innerHTML='';
+  let totalCurse=0, totalDark=0, totalHex=0;
+  const rarityColor={'common':'inv-rarity-common','rare':'inv-rarity-rare','legendary':'inv-rarity-legendary','ultimate':'inv-rarity-ultimate'};
+
+  for(const [key,label] of Object.entries(TYPE_LABELS)){
+    const path=equipped[key];
+    const item=document.createElement('div');
+
+    if(!path){
+      item.className='inv-item empty';
+      item.innerHTML=`<div class="inv-icon-empty">${TYPE_ICONS[key]||'·'}</div><div class="inv-label-empty">${label}</div>`;
+    } else {
+      const filename=path.split('/').pop().replace(/\.(png|PNG)$/,'').replace(/_/g,' ');
+      const rarity=path.split('/')[0]||'common';
+      const url=(window.itemURLMap||{})[path]||'';
+      const stats=itemStats(path);
+      totalCurse+=stats.curse; totalDark+=stats.darkness; totalHex+=stats.hex;
+      const rc=rarityColor[rarity]||'inv-rarity-common';
+      item.className='inv-item';
+      item.innerHTML=`
+        <img class="inv-icon" src="${url}" alt="">
+        <div class="inv-info" style="flex:1;min-width:0">
+          <div class="inv-name">${filename}</div>
+          <div class="inv-meta"><span class="${rc}">${rarity[0].toUpperCase()+rarity.slice(1)}</span> · ${label}</div>
+        </div>
+        <div class="inv-stats">
+          <div class="stat-pip curse">${stats.curse}</div>
+          <div class="stat-pip dark">${stats.darkness}</div>
+          <div class="stat-pip hex">${stats.hex}</div>
+        </div>`;
+    }
+    list.appendChild(item);
+  }
+
+  document.getElementById('total-curse').textContent=totalCurse;
+  document.getElementById('total-dark').textContent=totalDark;
+  document.getElementById('total-hex').textContent=totalHex;
+}
 
 // ── Canvas Compositing Engine ──────────────────────────────
 const CDN = 'https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main';
@@ -2019,6 +2351,62 @@ async function compositeCanvas(params) {
       bctx.drawImage(bodyImg, 0, 0);
       if(params.body_hue!==0||params.body_sat!==1)
         applyHueShift(bctx,IW,IH,params.body_hue,params.body_sat||0.6,params.body_val||0.85);
+
+      // Cache body alpha for pin placement
+      {
+        const _ec=document.createElement('canvas'); _ec.width=IW; _ec.height=IH;
+        const _ex=_ec.getContext('2d'); _ex.drawImage(bodyImg,0,0);
+        window._bodyCache={data:_ex.getImageData(0,0,IW,IH).data, IW, IH, sc, offset_x, offset_y, W, H};
+      }
+
+      // Draw pins BEFORE body so they appear behind it
+      if(params.pins && params.pins.length){
+        // Build body alpha lookup in body-image space
+        const edc = document.createElement('canvas');
+        edc.width=IW; edc.height=IH;
+        const edctx = edc.getContext('2d');
+        edctx.drawImage(bodyImg,0,0);
+        const edata = edctx.getImageData(0,0,IW,IH).data;
+        function bAlpha(x,y){
+          x=Math.max(0,Math.min(IW-1,Math.round(x)));
+          y=Math.max(0,Math.min(IH-1,Math.round(y)));
+          return edata[(y*IW+x)*4+3];
+        }
+
+        for(const pin of params.pins){
+          const pinImg = await loadImage(pin.src);
+          if(!pinImg) continue;
+
+          const PIN_SCALE=0.18;
+          const pW=Math.round(pinImg.width*PIN_SCALE);
+          const pH=Math.round(pinImg.height*PIN_SCALE);
+
+          const dpx=pin.x*W, dpy=pin.y*H;
+
+          let iux, iuy, rot;
+          if(pin.iux!=null){
+            iux=pin.iux; iuy=pin.iuy; rot=pin.rot;
+          } else {
+            const bpx=(dpx-offset_x)/sc, bpy=(dpy-offset_y)/sc;
+            let gx=0,gy=0; const R=18;
+            for(let dy=-R;dy<=R;dy+=2) for(let dx=-R;dx<=R;dx+=2){const a=bAlpha(bpx+dx,bpy+dy);gx+=dx*a;gy+=dy*a;}
+            const gLen=Math.sqrt(gx*gx+gy*gy)||1;
+            iux=gx/gLen; iuy=gy/gLen; rot=Math.atan2(-iux,iuy);
+          }
+
+          // Tip 20px inside body: shift drop point inward by 20px
+          const tipX=dpx+iux*20, tipY=dpy+iuy*20;
+          const cx2=tipX-iux*(pH/2);
+          const cy2=tipY-iuy*(pH/2);
+
+          ctx.save();
+          ctx.translate(cx2,cy2);
+          ctx.rotate(rot);
+          ctx.drawImage(pinImg,-pW/2,-pH/2,pW,pH);
+          ctx.restore();
+        }
+      }
+
       ctx.drawImage(bodyCanvas,offset_x,offset_y,Math.round(IW*sc),Math.round(IH*sc));
 
       // Item sizes
@@ -2115,15 +2503,68 @@ async function compositeCanvas(params) {
       if(params.offhand_file)   tasks.push(drawItem(iurl('offhand', params.offhand_file),   off_cx,off_cy,off_size*1.0));
       await Promise.all(tasks);
 
+      // Finger overlay: body texture clipped to finger shape, drawn over knife
+      const fingerImg = await loadImage('finger.png').then(r=>r||loadImage('/img/finger.png'));
+      if(fingerImg){
+        const fc=document.createElement('canvas'); fc.width=IW; fc.height=IH;
+        const fctx=fc.getContext('2d');
+        fctx.drawImage(bodyCanvas,0,0);           // body texture + hue
+        fctx.globalCompositeOperation='destination-in';
+        fctx.drawImage(fingerImg,0,0,IW,IH);      // clip to finger shape
+        ctx.drawImage(fc,offset_x,offset_y,Math.round(IW*sc),Math.round(IH*sc));
+      }
+
       if(params.name){
         ctx.save();
-        ctx.font=`${Math.round(W*0.048)}px Bloodcrow,serif`;
-        ctx.fillStyle='#e8c060';ctx.textAlign='center';
+        const fsize=Math.round(W*0.048);
+        ctx.font=`${fsize}px Bloodcrow,serif`;
+        ctx.fillStyle='#e8c060';
         ctx.shadowColor='#000';ctx.shadowBlur=8;
-        ctx.fillText(params.name,W/2,H-Math.round(H*0.02)-30);
+        // Very slight upward curve: large radius arc centered below text baseline
+        const text=params.name;
+        const letterSpacing=fsize*0.12;
+        const chars=[...text];
+        // Measure total width with spacing
+        let totalW=0;
+        const widths=chars.map(ch=>{const w=ctx.measureText(ch).width+letterSpacing;totalW+=w;return w;});
+        const R=W*0.7;
+        const baseY=H-Math.round(H*0.02)-30;
+        const cy=baseY-R;
+        const cx=W/2;
+        const totalAngle=totalW/R;
+        // Fix: iterate left→right by going from a=π/2+totalAngle/2 down to π/2-totalAngle/2
+        let angle=-totalAngle/2;
+        ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+        for(let i=0;i<chars.length;i++){
+          const cw=widths[i];
+          // Corrected sign: first char on LEFT (a starts high = cos negative = x left of cx)
+          const a=Math.PI/2-angle-cw/(2*R);
+          const px=cx+R*Math.cos(a);
+          const py=cy+R*Math.sin(a);
+          ctx.save();
+          ctx.translate(px,py);
+          ctx.rotate(Math.PI/2-a);
+          ctx.fillText(chars[i],-cw/2,0);
+          ctx.restore();
+          angle+=cw/R;
+        }
         ctx.restore();
       }
     }
+  }
+
+  // Watermark: hexlogo.png bottom-right corner
+  const logoImg = await loadImage('hexlogo.png');
+  if(logoImg){
+    const maxLogoH = Math.round(W * 0.09);
+    const lsc = maxLogoH / logoImg.height;
+    const lw = Math.round(logoImg.width * lsc);
+    const lh = maxLogoH;
+    const pad = Math.round(W * 0.018);
+    ctx.save();
+    ctx.globalAlpha = 0.45;
+    ctx.drawImage(logoImg, W - lw - pad, H - lh - pad, lw, lh);
+    ctx.restore();
   }
 
   return canvas.toDataURL('image/png').split(',')[1];
@@ -2222,9 +2663,9 @@ async function castCurse({save=true}={}){
     newlyEquipped.forEach((item,i)=>{
       setTimeout(()=>showToast(`⛧ ${item.label}: ${item.name} — Bound`,'equipped-toast'), i*180);
     });
-    if(placedPins.length>0) showToast(`⛧ ${placedPins.length} Pin${placedPins.length>1?'s':''} — Bound`,'equipped-toast');
     updateEquippedVisuals();
     updateSelectedPanel();
+    updateInventory();
     updateBewitchState();
     hideStagedPanel();
     document.getElementById('status').textContent=`${Math.round(performance.now()-t0)}ms`;
@@ -2262,9 +2703,11 @@ loadItems().then(()=>{
   Object.assign(equipped, sel);
   updateEquippedVisuals();
   updateSelectedPanel();
+  updateInventory();
   updateBewitchState();
   document.getElementById('sec-body').classList.add('open');
   initPinOverlay();
+  window.addEventListener('resize', syncBewitchWidth);
   generate();
 });
 </script>
