@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Voodoo Generator</title>
+<title>Ritual Effigy Forge</title>
+<link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
@@ -20,8 +21,13 @@
     position:relative;
   }
   #bg-video{
-    position:fixed;top:0;left:0;width:100%;height:100%;
-    object-fit:cover;z-index:-1;opacity:0.45;pointer-events:none;
+    position:absolute;top:0;left:0;width:100%;height:100%;
+    object-fit:cover;z-index:0;opacity:1;pointer-events:none;
+    border-radius:0;
+  }
+  #preview-area::before{
+    content:'';position:absolute;inset:0;
+    background:#000;opacity:0.55;z-index:1;pointer-events:none;
   }
 
   /* ── SIDEBAR ── */
@@ -29,67 +35,88 @@
   body{
     display:grid;
     grid-template-columns:460px 1fr 460px;
-    grid-template-rows:auto 1fr;
+    grid-template-rows:100vh;
     grid-template-areas:
-      "sidebar  preview  right"
-      "items    preview  right";
+      "left  preview  right";
+    height:100vh;overflow:hidden;
   }
   #sidebar{
-    grid-area:sidebar;
+    grid-area:left;
     background:linear-gradient(180deg,#3d2b0f 0%,#2c1e0a 40%,#1e1508 100%);
-    display:flex;flex-direction:column;gap:0;flex-shrink:0;
+    background-image:linear-gradient(180deg,#3d2b0fcc 0%,#2c1e0acc 40%,#1e1508cc 100%),url('verticalback.png');
+    background-size:cover;background-position:center;background-blend-mode:normal;
+    display:flex;flex-direction:column;gap:0;
     border-right:3px solid #7a5520;
     box-shadow:inset -6px 0 24px #00000099,inset 2px 0 8px #c8901410;
+    height:100vh;overflow-y:auto;
   }
+  #sidebar::-webkit-scrollbar{width:6px}
+  #sidebar::-webkit-scrollbar-track{background:#140e04}
+  #sidebar::-webkit-scrollbar-thumb{background:#7a5520;border-radius:3px}
   #sidebar-content{
-    grid-area:items;
     background:linear-gradient(180deg,#1e1508 0%,#141008 100%);
-    overflow-y:auto;display:flex;flex-direction:column;gap:0;
-    border-right:3px solid #7a5520;
-    box-shadow:inset -6px 0 24px #00000099,4px 0 32px #00000077;
+    display:flex;flex-direction:column;gap:0;
   }
   #sidebar-content::-webkit-scrollbar{width:6px}
   #sidebar-content::-webkit-scrollbar-track{background:#140e04}
   #sidebar-content::-webkit-scrollbar-thumb{background:#7a5520;border-radius:3px}
   #preview-area{grid-area:preview}
+  /* preview-body: just wraps the preview image, no flex:1 */
+  #preview-body{display:flex;flex-direction:column;width:100%;align-items:center;}
 
   /* title */
-  #sidebar-title{
-    padding:20px 18px 6px;
-    font-family:'Bloodcrow',serif;
-    font-size:46px;
-    color:#e8c060;
-    letter-spacing:.06em;
-    text-align:center;
-    background:linear-gradient(180deg,#3d2b0f,#2c1e0a);
-    position:relative;
-    text-shadow:0 0 28px #e8c06099, 0 2px 6px #000;
+  #sidebar-header{
+    width:100%;border-bottom:2px solid #7a5520;
+    flex-shrink:0;overflow:hidden;
+  }
+  #sidebar-header img{
+    width:100%;height:110%;display:block;object-fit:cover;object-position:center;
+    margin-top:-5%;
+  }
+  .sh-title{display:none;
     animation:titlePulse 3.5s ease-in-out infinite;
-    line-height:1;
+    pointer-events:none;
   }
-  #sidebar-subtitle{
-    display:flex;align-items:center;justify-content:center;gap:10px;
-    padding:4px 18px 16px;
-    background:linear-gradient(180deg,#2c1e0a,#251a08);
-    border-bottom:2px solid #7a5520;
-    position:relative;
+  #music-row{
+    display:flex;align-items:center;justify-content:center;
+    border-top:1px solid #3a2808;
+    padding:8px 16px;flex-shrink:0;
+    background:transparent;
   }
-  #sidebar-subtitle::after{
-    content:'';position:absolute;bottom:-1px;left:10%;right:10%;
-    height:1px;background:linear-gradient(90deg,transparent,#c8a04088,transparent);
+  #mbar-inner{
+    display:flex;align-items:center;gap:0;
+    background:linear-gradient(90deg,#1a1208,#141008,#1a1208);
+    border:1px solid #4a3010;border-radius:20px;
+    overflow:hidden;height:36px;
   }
-  #sidebar-subtitle img{
-    height:1.6em;width:auto;object-fit:contain;
-    filter:drop-shadow(0 0 6px #e8c06088);
-    flex-shrink:0;
+  .mbar-sep{width:1px;background:#3a2808;align-self:stretch;flex-shrink:0;}
+  .mbar-btn{
+    display:flex;align-items:center;gap:6px;flex-shrink:0;
+    background:none;border:none;
+    padding:0 14px;height:100%;
+    color:#8a7040;cursor:pointer;font-family:'Bloodcrow',serif;font-size:13px;letter-spacing:.06em;
+    transition:color .2s,background .2s;white-space:nowrap;
   }
-  #sidebar-subtitle span{
-    font-family:'Bloodcrow',serif;
-    font-size:20px;letter-spacing:.10em;
-    color:#c8a050;text-transform:uppercase;
-    text-shadow:0 0 10px #c8a05055;
-    white-space:nowrap;
+  .mbar-btn:hover{color:#c8a050;background:#221a0a;}
+  .mbar-btn.active{color:#e8c060;}
+  .mbar-group{display:flex;align-items:center;padding:0 12px 0 4px;}
+  .mbar-vol{
+    height:3px;width:90px;
+    -webkit-appearance:none;appearance:none;
+    background:linear-gradient(to right,#e8c060 20%,#3a2808 20%);
+    border-radius:2px;cursor:pointer;outline:none;
   }
+  .mbar-vol::-webkit-slider-thumb{
+    -webkit-appearance:none;width:11px;height:11px;border-radius:50%;
+    background:#e8c060;box-shadow:0 0 5px #e8c06099;cursor:pointer;
+  }
+  .mbar-vol::-moz-range-thumb{
+    width:11px;height:11px;border-radius:50%;border:none;
+    background:#e8c060;cursor:pointer;
+  }
+  /* keep old ids working */
+  #music-btn{display:none;}
+  #music-vol-legacy{display:none;}
   @keyframes titlePulse{
     0%,100%{text-shadow:0 0 20px #e8c06077,0 2px 6px #000}
     50%{text-shadow:0 0 44px #e8c060bb,0 0 90px #e8c06033,0 2px 6px #000}
@@ -97,32 +124,122 @@
 
   /* wallet bar */
   #wallet-bar{
-    padding:8px 16px 12px;
-    display:flex;align-items:center;gap:10px;
+    padding:12px 16px;
+    display:flex;flex-direction:column;gap:10px;
     border-bottom:1px solid #3a2810;
   }
   #btn-wallet{
-    padding:7px 16px;
-    font-family:'Bloodcrow',serif;font-size:13px;letter-spacing:.06em;
+    width:100%;padding:12px 16px;
+    font-family:'Bloodcrow',serif;font-size:17px;letter-spacing:.08em;
     background:linear-gradient(180deg,#2a1e10,#1a1208);
-    border:1px solid #7a5520;border-radius:4px;
+    border:1px solid #7a5520;border-radius:6px;
     color:#c8a050;cursor:pointer;
     transition:background .2s,box-shadow .2s;
-    white-space:nowrap;
   }
-  #btn-wallet:hover{background:linear-gradient(180deg,#3a2810,#2a1a08);box-shadow:0 0 12px #c8a05033}
-  #btn-wallet.connected{border-color:#307030;color:#70cc70;background:linear-gradient(180deg,#1a2e1a,#101e10)}
-  #wallet-status{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+  #btn-wallet:hover{background:linear-gradient(180deg,#3a2810,#2a1a08);box-shadow:0 0 16px #c8a05044}
+  #btn-wallet.connected{
+    width:auto;align-self:flex-end;
+    padding:5px 12px;font-size:12px;letter-spacing:.05em;
+    border-color:#307030;color:#70cc70;background:linear-gradient(180deg,#1a2e1a,#101e10);
+  }
+  #wallet-status{display:flex;flex-direction:column;gap:8px;}
+  #wallet-status-row{display:flex;align-items:center;gap:8px;}
+  #btn-disconnect{
+    margin-left:auto;flex-shrink:0;
+    font-family:'Bloodcrow',serif;font-size:14px;letter-spacing:.06em;
+    background:linear-gradient(180deg,#2a0808,#1a0404);border:1px solid #7a2020;border-radius:5px;
+    color:#cc4040;padding:6px 16px;cursor:pointer;transition:box-shadow .2s,border-color .2s;
+  }
+  #btn-disconnect:hover{box-shadow:0 0 12px #cc404077;border-color:#ee4040;}
   #wallet-addr{
-    font-family:'Bloodcrow',serif;font-size:12px;letter-spacing:.04em;
-    color:#a09070;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    font-family:'Bloodcrow',serif;font-size:19px;letter-spacing:.06em;
+    color:#c8a050;white-space:nowrap;
   }
   #wallet-badge{
-    font-family:'Bloodcrow',serif;font-size:12px;letter-spacing:.06em;
-    padding:2px 8px;border-radius:3px;white-space:nowrap;flex-shrink:0;
+    font-family:'Bloodcrow',serif;font-size:17px;letter-spacing:.06em;
+    color:#e8c060;white-space:nowrap;
   }
-  #wallet-badge.holder{background:#1a3a1a;color:#70cc70;border:1px solid #308030}
-  #wallet-badge.not-holder{background:#2a0a0a;color:#cc4040;border:1px solid #602020}
+  #wallet-hint{
+    padding:18px 16px;
+    font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.06em;line-height:1.6;
+    color:#7a6035;text-align:center;border-bottom:1px solid #2a1a08;
+  }
+
+  /* sidebar section labels (wallet, packs, inventory) */
+  .sidebar-section-label{
+    padding:12px 16px;
+    display:flex;align-items:center;gap:10px;
+    font-family:'Bloodcrow',serif;font-size:20px;letter-spacing:.12em;text-transform:uppercase;
+    color:#e8d09a;background:linear-gradient(90deg,#2a1e0a,#1a1206);
+    border-top:1px solid #4a3010;border-bottom:2px solid #4a3010;
+    cursor:pointer;user-select:none;
+  }
+  .sidebar-section-label .ssl-icon{
+    display:flex;align-items:center;justify-content:center;
+    width:34px;height:34px;border-radius:6px;flex-shrink:0;
+    background:#1a1006;border:1px solid #6a4a18;color:#c8a050;
+  }
+  .toggle-arrow{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:18px;height:18px;flex-shrink:0;
+    transition:transform .25s;
+  }
+  .toggle-arrow svg{display:block;}
+  .sidebar-section-label .toggle-arrow{ margin-left:auto; }
+  .sidebar-section-label.open .toggle-arrow{ transform:rotate(90deg); }
+  .sidebar-section-body{
+    max-height:0;overflow:hidden;transition:max-height .3s ease;
+    background:#110d04;border-bottom:1px solid #2a1a08;
+  }
+  .sidebar-section-body.open{ max-height:600px; }
+
+  /* wallet section body */
+  #wallet-section-body{ padding:14px 16px;display:flex;flex-direction:column;gap:8px; }
+  #wallet-status-inner{ display:flex;flex-direction:column;gap:8px; }
+  #wallet-status-row{ display:flex;align-items:center;gap:10px;flex-wrap:wrap; }
+  #btn-disconnect{
+    padding:6px 14px;font-family:'Bloodcrow',serif;font-size:16px;
+    background:#3a0808;color:#e07060;border:1px solid #7a2020;border-radius:4px;cursor:pointer;
+  }
+  #sync-indicator{
+    display:none;align-items:center;gap:8px;
+    font-family:'Bloodcrow',serif;font-size:17px;color:#c8a050;letter-spacing:.06em;
+  }
+  #sync-indicator.show{ display:flex; }
+  #sync-spinner{
+    animation:spin 1s linear infinite;display:inline-flex;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* pack section */
+  #pack-section-body{ padding:12px 14px; }
+
+  #sidebar-inventory-label{
+    padding:12px 16px;
+    display:flex;align-items:center;gap:10px;
+    font-family:'Bloodcrow',serif;font-size:20px;letter-spacing:.12em;text-transform:uppercase;
+    color:#e8d09a;background:linear-gradient(90deg,#2a1e0a,#1a1206);
+    border-top:1px solid #4a3010;border-bottom:2px solid #4a3010;
+    cursor:pointer;user-select:none;
+  }
+  #sidebar-inventory-label .inv-bag-icon{
+    display:flex;align-items:center;justify-content:center;
+    width:34px;height:34px;border-radius:6px;flex-shrink:0;
+    background:#1a1006;border:1px solid #6a4a18;
+    color:#c8a050;
+  }
+  #sidebar-inventory-label .toggle-arrow{ margin-left:auto; }
+  #sidebar-inventory-label.open .toggle-arrow{ transform:rotate(90deg); }
+  #sidebar-inventory-label.open{ background:linear-gradient(90deg,#3a0a0a,#280808); border-bottom-color:#6a1818; }
+  #inventory-section-body{ overflow:hidden;max-height:0;transition:max-height .35s ease; }
+  #inventory-section-body.open{ max-height:9999px; }
+
+  /* new item blink */
+  @keyframes newItemPulse{
+    0%,100%{ box-shadow:0 0 0px #e8c05000; }
+    50%{ box-shadow:0 0 10px 3px #e8c05088; border-color:#e8c050; }
+  }
+  .thumb-wrap.new-item{ animation:newItemPulse 1.2s ease-in-out infinite; }
 
   /* sections */
   .section{
@@ -135,7 +252,7 @@
     letter-spacing:.08em;
     color:#c49a50;
     cursor:pointer;
-    display:flex;align-items:center;justify-content:space-between;
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
     user-select:none;
     transition:color .2s,background .2s;
     text-transform:uppercase;
@@ -158,8 +275,8 @@
     transition:max-height .4s cubic-bezier(.4,0,.2,1),padding .4s;
   }
   .section.open .section-body{max-height:2000px;padding:12px 14px}
-  .section-header .arrow{font-size:14px;transition:transform .25s;opacity:.5}
-  .section.open .section-header .arrow{transform:rotate(90deg)}
+  .section-header .toggle-arrow{margin-left:auto;}
+  .section.open .section-header .toggle-arrow{transform:rotate(90deg)}
 
   /* thumb grid */
   .thumb-grid{display:flex;flex-wrap:wrap;gap:6px}
@@ -244,8 +361,8 @@
     transition:max-height .3s cubic-bezier(.4,0,.2,1),padding .3s;
   }
   .sub-section.open .sub-section-body{max-height:1200px;padding:9px 10px}
-  .sub-section-header .sarrow{font-size:12px;transition:transform .2s;opacity:.5}
-  .sub-section.open .sub-section-header .sarrow{transform:rotate(90deg)}
+  .sub-section-header .toggle-arrow{margin-left:auto;}
+  .sub-section.open .sub-section-header .toggle-arrow{transform:rotate(90deg)}
 
   /* sliders */
   .slider-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
@@ -353,9 +470,8 @@
 
   /* toast notifications */
   #toast-area{
-    position:fixed;bottom:32px;right:32px;
-    display:flex;flex-direction:column;gap:8px;
-    z-index:200;pointer-events:none;
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    width:100%;pointer-events:none;margin-bottom:8px;
   }
   .toast{
     background:linear-gradient(180deg,#2e1e08,#1a1004);
@@ -367,16 +483,17 @@
     white-space:nowrap;
   }
   .toast.equipped-toast{border-color:#40bb40;color:#90ee90}
-  @keyframes toastIn{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:none}}
-  @keyframes toastOut{to{opacity:0;transform:translateX(50px)}}
+  @keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes toastOut{to{opacity:0;transform:translateY(10px)}}
 
   /* preview area */
   #preview-area{
     flex:1;display:flex;flex-direction:column;
     align-items:center;justify-content:flex-start;
-    padding:28px 24px 20px;background:transparent;position:relative;
+    padding:28px 24px 20px;background:transparent;position:relative;overflow:hidden;
   }
-  #preview-wrap{position:relative;display:inline-block}
+  #preview-area > *:not(#bg-video){position:relative;z-index:1}
+  #preview-wrap{position:relative;display:inline-block;z-index:1;overflow:hidden;border-radius:8px;}
   #preview-img{
     max-width:100%;max-height:calc(100vh - 140px);
     border-radius:8px;
@@ -384,7 +501,27 @@
     display:block;
     border:1px solid #4a3010;
   }
-  /* pin drop overlay */
+  /* pin drop overlay — hidden, moved to menu bar */
+  #preview-action-btns{display:none;}
+  #preview-action-btns-hidden{
+    position:absolute;bottom:12px;left:12px;
+    display:flex;flex-direction:column;gap:8px;z-index:10;
+  }
+  #preview-btn-rand, #preview-btn-clear{
+    width:44px;height:44px;
+    background:#0e0a06cc;border:1px solid #4a3010;border-radius:8px;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .2s,border-color .2s;
+    backdrop-filter:blur(4px);
+    padding:0;
+  }
+  #preview-btn-rand svg{stroke:#a08040;}
+  #preview-btn-rand:hover{background:#1a1208ee;border-color:#c8a050;}
+  #preview-btn-rand:hover svg{stroke:#e8c060;}
+  #preview-btn-clear svg{stroke:#a08040;}
+  #preview-btn-clear:hover{background:#2a0808ee;border-color:#aa3030;}
+  #preview-btn-clear:hover svg{stroke:#ff6050;}
   #pin-overlay{
     position:absolute;inset:0;
     pointer-events:auto;
@@ -615,24 +752,49 @@
   }
   @keyframes hintPulse{0%,100%{opacity:.7}50%{opacity:1;text-shadow:0 0 10px #ff604088}}
 
-  #status{
-    position:absolute;bottom:14px;right:18px;
-    font-family:'Bloodcrow',serif;
-    font-size:18px;font-style:italic;
-    color:#8a7060;
-    letter-spacing:.03em;
+  #status{display:none}
+  #app-footer{
+    margin-top:auto;
+    text-shadow:0 1px 4px #000;
+    text-align:center;padding:6px 12px 12px;
+    font-family:'Bloodcrow',serif;font-size:11px;
+    color:#5a4025;letter-spacing:.04em;
+    border-top:1px solid #2a1808;
+    width:100%;position:relative;z-index:1;
   }
+  #app-footer a{color:#7a5830;text-decoration:none;}
+  #app-footer .copy-sym{font-family:serif;font-style:normal;}
+  #app-footer-rp{display:none;}
+  #app-footer .copy-sym{font-family:serif;font-style:normal;}
+  #app-footer a{color:#9a7840;text-decoration:none;pointer-events:auto;}
+  #app-footer a:hover{color:#c8a050;}
 
   /* save slots */
+  #slots-section{
+    width:100%;display:none;
+    margin-top:18px;
+    border-top:1px solid #3a2808;
+    padding:0;
+  }
+  #slots-section-label{
+    font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.1em;text-transform:uppercase;
+    color:#c8a050;text-align:center;
+    padding:9px 0 7px;
+    background:linear-gradient(90deg,#1a1005,#2a1a08,#1a1005);
+    border-bottom:1px solid #4a3010;
+    margin-bottom:10px;
+  }
   #save-slots{
-    display:flex;gap:10px;
-    padding:10px 0 4px;
-    width:100%;justify-content:center;
+    display:flex;gap:0;
+    padding:0 10px 10px;
+    width:100%;justify-content:space-between;
     flex-wrap:nowrap;
+    box-sizing:border-box;
   }
   .save-slot{
     position:relative;
-    width:80px;height:80px;
+    width:calc(25% - 8px);
+    aspect-ratio:1/1;
     border:2px solid #4a3010;
     border-radius:6px;
     background:#0e0b07;
@@ -670,51 +832,52 @@
   }
   .save-slot.filled .slot-del{display:flex;align-items:center;justify-content:center}
   .slot-del:hover{background:#4a0808;color:#ff6060}
+  .slot-save-btn{
+    position:absolute;top:2px;right:2px;
+    width:18px;height:18px;
+    background:#0a1a0a;border:1px solid #2a4a2a;
+    border-radius:3px;color:#508050;font-size:10px;
+    cursor:pointer;display:flex;z-index:3;
+    align-items:center;justify-content:center;
+    padding:0;transition:background .15s,color .15s,border-color .15s;
+  }
+  .slot-save-btn:hover{background:#142814;color:#80d080;border-color:#508050;}
+  .save-slot.filled .slot-save-btn{display:none;}
   .save-slot.active-slot{
     border-color:#e8c050;
     box-shadow:0 0 18px #e8c05066, inset 0 0 8px #e8c05022;
   }
   .save-slot.active-slot .slot-num{color:#e8c050}
 
-  @media(max-width:768px){
-    #save-slots{gap:6px;padding:8px 10px 4px}
-    .save-slot{width:calc(25% - 5px);height:0;padding-bottom:calc(25% - 5px)}
-    .save-slot .slot-img{position:absolute;inset:0;height:100%}
-    .save-slot .slot-empty-label{font-size:9px}
-  }
-
   input[type=color]{width:44px;height:32px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px}
 
   /* ── SIDEBAR LOGO ── */
-  #sidebar-title{padding:14px 16px 10px;text-align:center;background:linear-gradient(180deg,#3d2b0f,#2c1e0a)}
-  #sidebar-logo{max-width:180px;width:80%;height:auto;object-fit:contain;display:block;margin:0 auto;filter:drop-shadow(0 0 12px #e8c06066)}
 
   /* ── RIGHT PANEL ── */
   #right-panel{
     grid-area:right;
-    background:linear-gradient(180deg,#1a1208 0%,#141008 100%);
+    background-image:linear-gradient(180deg,#1a1208cc 0%,#141008cc 100%),url('verticalback.png');
+    background-size:cover;background-position:center;
     border-left:3px solid #7a5520;
     box-shadow:inset 6px 0 24px #00000099;
     display:flex;flex-direction:column;overflow:hidden;
   }
   #rp-header{
-    padding:12px 14px 8px;
-    font-family:'Bloodcrow',serif;font-size:18px;letter-spacing:.10em;
-    color:#c8a050;text-transform:uppercase;
-    border-bottom:1px solid #3a2810;
-    background:linear-gradient(180deg,#251a08,#1a1208);
-    flex-shrink:0;
+    flex-shrink:0;overflow:hidden;
+    border-bottom:2px solid #7a5520;
   }
-  #rp-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+  #rp-header img{width:100%;height:110%;display:block;object-fit:cover;object-position:center;margin-top:-5%;}
+  #rp-equipped-toggle{display:none;}
+  #rp-scroll{overflow-y:auto;display:flex;flex-direction:column;}
   #rp-scroll::-webkit-scrollbar{width:4px}
   #rp-scroll::-webkit-scrollbar-track{background:#0e0a06}
   #rp-scroll::-webkit-scrollbar-thumb{background:#5a3a10;border-radius:2px}
-  #inventory-list{padding:8px 10px 4px;display:flex;flex-direction:column;gap:8px;}
+  #inventory-list{padding:6px 8px 4px;display:flex;flex-direction:column;gap:5px;}
   .inv-item{
-    display:flex;align-items:center;gap:10px;
+    display:flex;align-items:center;gap:8px;
     background:linear-gradient(90deg,#221808,#1a1208);
     border:1px solid #3a2810;border-radius:5px;
-    padding:8px 10px;min-height:66px;
+    padding:5px 8px;min-height:0;
   }
   .inv-item.empty{
     font-family:'Bloodcrow',serif;
@@ -722,63 +885,71 @@
     background:linear-gradient(90deg,#1e1408,#181006);
   }
   .inv-item.empty .inv-icon-empty{
-    width:52px;height:52px;border-radius:4px;flex-shrink:0;
+    width:38px;height:38px;border-radius:4px;flex-shrink:0;
     background:#1a1006;border:1px dashed #5a3a18;
     display:flex;align-items:center;justify-content:center;
-    font-size:20px;color:#8a6030;
   }
   .inv-item.empty .inv-label-empty{
-    font-family:'Bloodcrow',serif;font-size:15px;color:#9a7840;
+    font-family:'Bloodcrow',serif;font-size:14px;color:#9a7840;
     letter-spacing:.05em;text-transform:uppercase;
   }
-  .inv-icon{width:52px;height:52px;object-fit:contain;border-radius:4px;
-    background:#0e0a06;border:1px solid #4a3010;flex-shrink:0}
+  .inv-icon{width:38px;height:38px;object-fit:contain;border-radius:4px;
+    background:#0e0a06;border:1px solid #4a3010;flex-shrink:0;}
+  .inv-icon.mouth-icon{background:#fff;}
+  .inv-icon.rarity-common   {box-shadow:0 0 6px #aaaaaa55;}
+  .inv-icon.rarity-rare     {box-shadow:0 0 8px #e8c04088;}
+  .inv-icon.rarity-legendary{box-shadow:0 0 10px #40c0e099;}
+  .inv-icon.rarity-ultimate {box-shadow:0 0 12px #e050b0aa;}
   .inv-info{flex:1;min-width:0}
-  .inv-name{font-family:'Bloodcrow',serif;font-size:16px;color:#e8c878;
+  .inv-name{font-family:'Bloodcrow',serif;font-size:18px;color:#e8c878;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.04em}
-  .inv-meta{font-family:'Bloodcrow',serif;font-size:13px;color:#7a6040;
-    letter-spacing:.05em;text-transform:uppercase;margin-top:2px}
-  .inv-meta .inv-rarity-common  {color:#9a9878}
-  .inv-meta .inv-rarity-rare    {color:#c8a010}
-  .inv-meta .inv-rarity-legendary{color:#40c0e0}
-  .inv-meta .inv-rarity-ultimate{color:#e050b0}
-  .inv-stats{display:flex;flex-direction:row;gap:5px;align-items:center;flex-shrink:0}
+  .inv-meta{font-family:'Bloodcrow',serif;font-size:12px;color:#7a6040;
+    letter-spacing:.05em;text-transform:uppercase;margin-top:1px}
+  .inv-meta .inv-rarity-common  {color:#aaaaaa}
+  .inv-meta .inv-rarity-rare    {color:#e8c040}
+  .inv-meta .inv-rarity-legendary{color:#60b0f0}
+  .inv-meta .inv-rarity-ultimate{color:#ff88cc}
+  .inv-stats{display:flex;flex-direction:row;gap:5px;align-items:center;flex-shrink:0;margin-left:auto;}
   .stat-pip{
-    font-family:'Bloodcrow',serif;font-size:12px;letter-spacing:.03em;
-    padding:2px 6px;border-radius:3px;min-width:28px;text-align:center;
+    font-family:'Bloodcrow',serif;font-size:22px;font-weight:bold;line-height:1;letter-spacing:.03em;
+    text-align:center;background:none;border:none;padding:0;min-width:0;
   }
-  .stat-pip.curse   {background:#2a0808;color:#ff6040;border:1px solid #6a1010}
-  .stat-pip.dark    {background:#08102a;color:#6080ff;border:1px solid #102060}
-  .stat-pip.hex     {background:#1a0828;color:#cc66ff;border:1px solid #5a1880}
+  .stat-pip+.stat-pip::before{content:'·';color:#5a4020;margin-right:5px;font-size:14px;font-weight:normal;text-shadow:none;}
+  .stat-pip.curse   {color:#ff6040;text-shadow:0 0 10px #ff302088}
+  .stat-pip.dark    {color:#a0b8ff;text-shadow:0 0 10px #4060ff88}
+  .stat-pip.hex     {color:#dd88ff;text-shadow:0 0 10px #cc44ff88}
 
   /* ── STAT TOTALS TRIANGLE ── */
   #stat-totals{
-    padding:10px 10px 12px;border-top:1px solid #3a2810;
-    display:flex;flex-direction:column;align-items:center;gap:8px;
+    padding:6px 10px 6px;border-top:1px solid #3a2810;
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    margin-top:4px;
   }
   #stat-totals-label{font-family:'Bloodcrow',serif;font-size:12px;color:#6a5030;
     letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
   .stat-tri-row{display:flex;justify-content:center;gap:12px}
   .stat-circle{
-    width:84px;height:84px;border-radius:50%;
+    width:100px;height:100px;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:2px;border:2px solid;
+    gap:3px;position:relative;padding-bottom:18px;
+    background-size:contain;background-repeat:no-repeat;background-position:center;
+    border:none;
   }
-  .stat-circle.curse  {background:radial-gradient(circle,#2a0808,#140404);border-color:#8a1010;box-shadow:0 0 14px #ff202033}
-  .stat-circle.dark   {background:radial-gradient(circle,#08102a,#040814);border-color:#102888;box-shadow:0 0 14px #4060ff33}
-  .stat-circle.hex    {background:radial-gradient(circle,#180828,#0c0418);border-color:#5a1488;box-shadow:0 0 14px #cc44ff33}
-  .stat-circle-val{font-family:'Bloodcrow',serif;font-size:24px;font-weight:bold;line-height:1}
-  .stat-circle.curse .stat-circle-val{color:#ff5030}
-  .stat-circle.dark  .stat-circle-val{color:#6080ff}
-  .stat-circle.hex   .stat-circle-val{color:#cc66ff}
-  .stat-circle-lbl{font-family:'Bloodcrow',serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
-  .stat-circle.curse .stat-circle-lbl{color:#cc3020}
-  .stat-circle.dark  .stat-circle-lbl{color:#4060cc}
-  .stat-circle.hex   .stat-circle-lbl{color:#9944cc}
+  .stat-circle.curse{background-image:url('cursepanel.png')}
+  .stat-circle.dark {background-image:url('darknesspanel.png')}
+  .stat-circle.hex  {background-image:url('hexpanel.png')}
+  .stat-circle-val{font-family:'Bloodcrow',serif;font-size:36px;font-weight:bold;line-height:1;position:relative;z-index:1}
+  .stat-circle.curse .stat-circle-val{color:#ff6040;text-shadow:0 0 10px #ff302088}
+  .stat-circle.dark  .stat-circle-val{color:#a0b8ff;text-shadow:0 0 10px #4060ff88}
+  .stat-circle.hex   .stat-circle-val{color:#dd88ff;text-shadow:0 0 10px #cc44ff88}
+  .stat-circle-lbl{font-family:'Bloodcrow',serif;font-size:11px;letter-spacing:.07em;text-transform:uppercase;position:relative;z-index:1}
+  .stat-circle.curse .stat-circle-lbl{color:#cc5030}
+  .stat-circle.dark  .stat-circle-lbl{color:#6080cc}
+  .stat-circle.hex   .stat-circle-lbl{color:#aa55cc}
 
   /* ── RIGHT PANEL BUTTONS ── */
   #rp-buttons{
-    flex-shrink:0;display:flex;flex-direction:column;gap:0;border-top:2px solid #4a3010;
+    flex-shrink:0;display:flex;flex-direction:column;gap:0;border-top:1px solid #3a2808;margin-top:0;
   }
   .rp-btn{
     width:100%;padding:20px 8px;border:none;border-bottom:1px solid #2a1c08;
@@ -789,10 +960,14 @@
   .rp-btn:last-child{border-bottom:none}
   #rp-rand{background:linear-gradient(90deg,#3a2808,#2a1c06);color:#d0a840}
   #rp-rand:hover{background:linear-gradient(90deg,#4a3410,#38260a);color:#f0c840}
-  #rp-bind{background:linear-gradient(90deg,#0e1e0e,#081408);color:#50b050}
+  #rp-bind{
+    background:linear-gradient(90deg,#0e1e0e,#081408);color:#50b050;
+    border:2px solid #4a3010 !important;
+    border-radius:12px;
+    margin:0 12px;width:calc(100% - 24px);
+    box-sizing:border-box;
+  }
   #rp-bind:hover{background:linear-gradient(90deg,#1a2e1a,#0e1e0e);color:#70d070}
-  #rp-clear{background:linear-gradient(90deg,#1e0e0e,#140808);color:#805040}
-  #rp-clear:hover{background:linear-gradient(90deg,#2e1414,#1e0a0a);color:#cc6040}
 
   /* ── BEWITCH BOX ── */
   @keyframes bwGlowTravel{
@@ -850,7 +1025,7 @@
     color:#c08050;opacity:.85;
   }
   #bw-stats{display:flex;gap:7px;flex-wrap:wrap;margin-top:2px;}
-  #bw-stats .stat-pip{font-size:14px;padding:3px 8px;}
+  #bw-stats .stat-pip{font-size:14px;padding:3px 8px;background:rgba(0,0,0,0.4);border-radius:3px;border:1px solid rgba(255,255,255,0.12);}
   #bw-action{
     flex-shrink:0;
     font-family:'Bloodcrow',serif;font-size:28px;letter-spacing:.12em;
@@ -863,75 +1038,169 @@
   /* mobile */
   #menu-toggle{display:none}
   @media(max-width:768px){
-    body{
-      flex-direction:column;
-      overflow:auto;
-      height:auto;
-      min-height:100vh;
-    }
 
-    /* reset desktop grid, switch to flex-column */
+    /* ── RESET DESKTOP GRID → FLEX COLUMN ── */
     body{
       display:flex;
       flex-direction:column;
       height:auto;
       min-height:100vh;
-      overflow:auto;
+      overflow-y:auto;
+      overflow-x:hidden;
     }
 
-    /* ── 1. TITLE + SUBTITLE ── */
-    #sidebar{
-      order:0;
-      width:100%;
-      grid-area:unset;
-      border-right:none;
-      border-bottom:1px solid #4a3010;
-      background:linear-gradient(180deg,#3d2b0f,#1e1508);
-      box-shadow:none;
-    }
-    #sidebar-title{font-size:30px;padding:12px 16px 4px;cursor:default}
-
-    /* ── 2. PREVIEW: sticky below title ── */
+    /* ── 1. PREVIEW FIRST ── */
     #preview-area{
+      order:0;
+      grid-area:unset;
+      width:100%;
+      flex:none;
+      height:auto;
+      position:relative;
+      padding:0;
+      display:block;
+      background:#0c0a0c;
+      overflow:hidden;
+    }
+    #preview-area::before{
+      content:'';position:absolute;inset:0;
+      background:#000;opacity:0.45;z-index:1;pointer-events:none;
+    }
+    #bg-video{
+      position:absolute;top:0;left:0;width:100%;height:100%;
+      object-fit:cover;opacity:0.4;z-index:0;
+    }
+    #preview-body{flex:none;}
+    #preview-wrap{width:100%;margin:8px 0 0;}
+    .mbar-label{display:none;}
+    .mbar-btn{padding:0 12px;}
+    .mbar-group{display:none;}
+    #preview-area{padding-bottom:0;}
+    /* copyright: hide in preview-area, show in right panel */
+    #app-footer{display:none;}
+    #app-footer-rp{
+      display:block;
+      text-shadow:0 1px 4px #000;
+      text-align:center;padding:6px 12px 10px;
+      font-family:'Bloodcrow',serif;font-size:11px;
+      color:#5a4025;letter-spacing:.04em;
+      border-top:1px solid #2a1808;
+    }
+    #app-footer-rp a{color:#7a5830;text-decoration:none;}
+    #app-footer-rp .copy-sym{font-family:serif;font-style:normal;}
+    #preview-img{width:100%;height:auto;max-height:none;}
+    #preview-action-btns{bottom:6px;left:6px;}
+    #preview-btn-rand,#preview-btn-clear{width:40px;height:40px;}
+    #bewitch-box{margin:4px 8px 0;}
+    #bw-action{font-size:20px;padding:0 4px;}
+    #loading{position:absolute;inset:0;z-index:20;}
+    #status,#pending-indicator{display:none;}
+    #toast-area{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:300;}
+
+    /* ── 2. LEFT SIDEBAR ── */
+    #sidebar{
       order:1;
       grid-area:unset;
-      position:sticky;
-      top:0;
-      z-index:30;
       width:100%;
-      padding:8px 10px;
-      background:rgba(8,6,8,0.94);
-      backdrop-filter:blur(4px);
-      align-items:center;
+      border-right:none;
+      border-top:2px solid #4a3010;
+      height:auto;
+      overflow:visible;
+      background:linear-gradient(180deg,#3d2b0fcc 0%,#1e1508cc 100%),url('verticalback.png');
+      background-size:cover;background-position:center;
+      box-shadow:none;
       flex-shrink:0;
     }
-    #preview-wrap{width:calc(100vw - 20px)}
-    #preview-img{width:100%;max-height:none;height:auto}
-
-    /* ── BUTTONS inside preview area ── */
-    #btn-area{
-      width:100%;
-      flex-direction:row;
-      flex-wrap:nowrap;
-      gap:6px;
-      margin:8px 0 0;
-      padding:0;
-    }
-    #btn-area button{flex:1;padding:9px 4px;font-size:14px;min-width:0}
-
-    /* ── 3. ITEM MENU ── */
+    #sidebar-header{ display:none; }
     #sidebar-content{
+      height:auto;overflow:visible;
+      border-right:none;box-shadow:none;
+    }
+
+    /* hide volume sliders on mobile — on/off only */
+    .mbar-group{display:none;}
+
+    #sidebar{margin-top:0;padding-top:0;border-top:6px solid #2a1a06;}
+    #preview-area{margin-bottom:0;padding-bottom:0;}
+
+    /* copyright under stat-totals */
+    /* section headers: compact + consistent */
+    .sidebar-section-label,.sidebar-section-label *{font-size:13px !important;}
+    .sidebar-section-label{padding:9px 12px;}
+    .section-header{padding:8px 12px;font-size:13px !important;}
+    .section.open .section-body{padding:8px 10px;}
+    .section-body label,.slider-row label{font-size:12px;}
+    #wallet-label-text{font-size:13px;}
+    #wallet-addr{font-size:12px !important;}
+
+    /* thumb grids: 4 per row on small screens */
+    .thumb-grid{grid-template-columns:repeat(4,1fr);gap:5px;}
+
+    /* ── 3. RIGHT PANEL ── */
+    #right-panel{
       order:2;
       grid-area:unset;
       width:100%;
+      border-left:none;
+      border-top:2px solid #4a3010;
       height:auto;
       overflow:visible;
-      border-right:none;
-      border-top:2px solid #6a4a1a;
-      box-shadow:none;
+      display:flex;flex-direction:column;
+      background-image:linear-gradient(180deg,#1a1208cc 0%,#141008cc 100%),url('verticalback.png');
+      background-size:cover;background-position:center;
+    }
+    #rp-header{display:none;}
+    /* equipped items toggle — mobile only */
+    #rp-equipped-toggle{
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      margin:12px auto 0;
+      padding:9px 24px;
+      cursor:pointer;
+      font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.08em;text-transform:uppercase;
+      color:#c8a050;
+      background:linear-gradient(135deg,#1e1208,#2a1a08);
+      border:1px solid #5a3a18;border-radius:20px;
+      width:fit-content;
+      user-select:none;
+      transition:border-color .2s,box-shadow .2s;
+    }
+    #rp-equipped-toggle:hover{border-color:#c8a050;box-shadow:0 0 10px #c8a05033;}
+    #rp-equipped-toggle.open #rp-equipped-arrow-svg{transform:rotate(180deg);}
+    #rp-equipped-arrow-svg{transition:transform .3s ease;flex-shrink:0;}
+    /* slide animation */
+    #rp-scroll{
+      display:block;
+      overflow:hidden;
+      max-height:0;
+      transition:max-height .35s ease;
+    }
+    #rp-scroll.open{max-height:600px;}
+    #inventory-list{padding:8px 10px 4px;}
+
+    /* stat circles: fill screen width, background 15% smaller */
+    #stat-totals{padding:8px 6px 10px;}
+    .stat-tri-row{gap:0;width:100%;justify-content:space-around;}
+    .stat-circle{width:30vw;height:30vw;max-width:130px;max-height:130px;background-size:85%;}
+    .stat-circle-val{font-size:clamp(20px,7vw,36px);}
+    .stat-circle-lbl{font-size:clamp(10px,2.5vw,14px);}
+
+    /* connect button: tall + wider */
+    #btn-wallet,#btn-disconnect{
+      font-size:12px !important;
+      padding:8px 8px !important;
+      width:180px !important;
+      text-align:center;
     }
 
-    /* ── BEWITCH PANEL: full width fixed at bottom ── */
+    /* inventory label: match other section padding */
+    #sidebar-inventory-label{padding:9px 12px !important;}
+
+    /* slots: 4 in a row */
+    #slots-section{margin-top:10px;}
+    #save-slots{gap:6px;padding:8px 10px 12px;}
+    .save-slot{width:calc(25% - 5px);}
+
+    /* ── BEWITCH PANEL: fixed full-width at bottom ── */
     #staged-panel{
       position:fixed;
       bottom:0;left:0;right:0;
@@ -940,43 +1209,313 @@
       border-left:none;border-right:none;border-bottom:none;
       flex-direction:row;
       align-items:center;
-      padding:12px 16px;
-      gap:14px;
+      padding:10px 14px;
+      gap:12px;
       z-index:200;
     }
     @keyframes panelSlideIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
-    #staged-img-preview{width:50px;height:50px;flex-shrink:0}
-    #staged-name{font-size:17px}
-    #staged-hint{display:none}
-    #border-glow-svg{inset:-3px;width:calc(100% + 6px);height:calc(100% + 6px)}
+    #staged-img-preview{width:46px;height:46px;flex-shrink:0;}
+    #staged-name{font-size:16px;}
+    #staged-hint{display:none;}
+    #border-glow-svg{inset:-3px;width:calc(100% + 6px);height:calc(100% + 6px);}
+
+    /* pack overlay full screen */
+    #pack-preview,#pack-overlay,#drop-reveal{
+      border-radius:0;
+      width:100%;height:100%;
+      max-width:none;
+    }
+    .pack-card-img{width:65px;}
+  }
+
+/* ── PACK SYSTEM ── */
+#pack-section{padding:10px 12px;border-bottom:2px solid #3a2808;background:#120e06;}
+#pack-section-title{font-family:'Bloodcrow',serif;font-size:13px;color:#c8a050;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;opacity:.7}
+#pack-inventory{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;min-height:30px;}
+.pack-card{
+  display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;
+  background:none;border:none;border-radius:8px;padding:6px;
+  transition:transform .15s,filter .2s;position:relative;
+}
+.pack-card:hover{transform:translateY(-3px)}
+.pack-card-img{width:80px;height:auto;display:block;border-radius:6px;}
+.pack-card.rarity-common    .pack-card-img{filter:drop-shadow(0 0 6px #ffffff66)}
+.pack-card.rarity-rare      .pack-card-img{filter:drop-shadow(0 0 8px #e8c05088)}
+.pack-card.rarity-legendary .pack-card-img{filter:drop-shadow(0 0 10px #80d0ff99)}
+.pack-card.rarity-ultimate  .pack-card-img{filter:drop-shadow(0 0 14px #ff80c0bb)}
+.pack-card:hover.rarity-common    .pack-card-img{filter:drop-shadow(0 0 14px #ffffffcc)}
+.pack-card:hover.rarity-rare      .pack-card-img{filter:drop-shadow(0 0 16px #f0d060dd)}
+.pack-card:hover.rarity-legendary .pack-card-img{filter:drop-shadow(0 0 18px #a0e0ffdd)}
+.pack-card:hover.rarity-ultimate  .pack-card-img{filter:drop-shadow(0 0 22px #ff90d0ee)}
+.pack-card-label{font-family:'Bloodcrow',serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.pack-card.rarity-common    .pack-card-label{color:#e0e0e0}
+.pack-card.rarity-rare      .pack-card-label{color:#e8c050}
+.pack-card.rarity-legendary .pack-card-label{color:#80d0ff}
+.pack-card.rarity-ultimate  .pack-card-label{color:#ff80c0}
+.pack-card-img-wrap{position:relative;display:inline-block}
+  .pack-platform-badge{
+    position:absolute;bottom:4px;right:4px;
+    width:28px;height:28px;border-radius:6px;
+    object-fit:cover;
+    background:#000;border:1px solid #ffffff22;
+    opacity:0.85;
+  }
+.pack-card-count{
+  position:absolute;top:2px;right:2px;
+  background:#cc2222;color:#ffffff;font-size:12px;font-weight:bold;font-family:serif;
+  width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  z-index:2;
+}
+.pack-card.rarity-rare      .pack-card-count{background:#cc2222;color:#ffffff}
+.pack-card.rarity-legendary .pack-card-count{background:#cc2222;color:#ffffff}
+.pack-card.rarity-ultimate  .pack-card-count{background:#cc2222;color:#ffffff}
+#pack-empty{font-family:'Bloodcrow',serif;font-size:12px;color:#5a4020;letter-spacing:.05em;padding:4px 0}
+/* dev panel */
+#dev-pack-panel{background:#0e0a06;border:1px dashed #3a2808;border-radius:6px;padding:8px 10px;}
+#dev-pack-panel-title{font-family:'Bloodcrow',serif;font-size:10px;color:#5a4020;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+#dev-pack-btns{display:flex;flex-wrap:wrap;gap:5px;}
+.dev-add-btn{
+  font-family:'Bloodcrow',serif;font-size:11px;letter-spacing:.05em;
+  background:#1a1208;border-radius:4px;cursor:pointer;padding:4px 9px;
+  transition:opacity .15s;
+}
+.dev-add-btn.rarity-common   {border:1px solid #6a5030;color:#c8a050}
+.dev-add-btn.rarity-rare     {border:1px solid #2a5a8a;color:#60a8e8}
+.dev-add-btn.rarity-legendary{border:1px solid #6a4a10;color:#f0b030}
+.dev-add-btn.rarity-ultimate {border:1px solid #6a1060;color:#ee44ee}
+.dev-add-btn:hover{opacity:.75}
+/* pack opening overlay */
+/* pack preview popup */
+#pack-preview{
+  display:none;position:fixed;inset:0;z-index:2000;
+  background:#000000cc;align-items:center;justify-content:center;flex-direction:column;gap:20px;
+}
+#pack-preview.active{display:flex}
+#pack-preview-img{width:260px;max-width:80vw;height:auto;border-radius:12px;
+  filter:drop-shadow(0 0 30px #c8a05066);animation:dropIn .35s ease}
+#pack-preview-count{font-family:'Bloodcrow',serif;font-size:18px;color:#c8a050;letter-spacing:.06em}
+#btn-open-pack{
+  font-family:'Bloodcrow',serif;font-size:22px;letter-spacing:.1em;
+  padding:12px 36px;border-radius:8px;cursor:pointer;
+  background:linear-gradient(135deg,#3a0a5a,#6a1aaa);color:#e8c0ff;
+  border:2px solid #aa44ee;box-shadow:0 0 18px #aa44ee66;
+  transition:box-shadow .2s;
+}
+#btn-open-pack:hover{box-shadow:0 0 30px #cc66ffaa}
+#btn-pack-back{
+  font-family:'Bloodcrow',serif;font-size:15px;color:#6a5030;letter-spacing:.06em;
+  background:none;border:none;cursor:pointer;
+}
+#btn-pack-back:hover{color:#c8a050}
+/* pack animation overlay */
+#pack-overlay{
+  display:none;position:fixed;inset:0;z-index:2100;
+  background:#000000cc;align-items:center;justify-content:center;flex-direction:column;
+}
+#pack-overlay.active{display:flex}
+#pack-video-wrap{position:relative;width:420px;max-width:90vw}
+#pack-video-wrap video{width:100%;border-radius:10px;display:block}
+#pack-skip{
+  margin-top:12px;font-family:'Bloodcrow',serif;font-size:13px;color:#c8a05088;
+  cursor:pointer;letter-spacing:.06em;border:none;background:none;
+}
+#pack-skip:hover{color:#c8a050}
+/* drop reveal */
+#drop-reveal{
+  display:none;position:fixed;inset:0;z-index:2100;
+  background:#00000088;align-items:center;justify-content:center;flex-direction:column;gap:16px;
+}
+#drop-reveal.active{display:flex}
+#drop-items-row{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;max-width:900px}
+.drop-item-card{
+  background:#1e1608;border-radius:10px;padding:14px 12px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  animation:dropIn .4s ease both;
+  min-width:140px;
+}
+.drop-item-card img{width:180px;height:180px;object-fit:contain;border-radius:8px}
+.drop-item-name{font-family:'Bloodcrow',serif;font-size:24px;color:#e8d080;text-align:center;max-width:200px;line-height:1.3}
+.drop-item-cat{font-family:'Bloodcrow',serif;font-size:17px;color:#a08040;text-transform:uppercase;letter-spacing:.08em}
+.drop-item-stats{display:flex;gap:10px;margin-top:6px}
+.drop-stat{
+  position:relative;width:64px;height:64px;
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+  border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  padding-top:6px;
+}
+.drop-stat.curse{background-image:url('cursepanel.png')}
+.drop-stat.doom {background-image:url('darknesspanel.png')}
+.drop-stat.hex  {background-image:url('hexpanel.png')}
+.drop-stat .dsv{
+  font-family:'Bloodcrow',serif;font-size:20px;font-weight:bold;line-height:1;
+  text-shadow:0 0 8px #000,0 1px 3px #000;position:relative;z-index:1;
+}
+.drop-stat .dsl{
+  font-family:'Bloodcrow',serif;font-size:10px;line-height:1;letter-spacing:.05em;
+  text-shadow:0 0 6px #000,0 1px 2px #000;position:relative;z-index:1;opacity:.85;
+}
+.drop-stat.curse .dsv,.drop-stat.curse .dsl{color:#ff6040}
+.drop-stat.doom  .dsv,.drop-stat.doom  .dsl{color:#a0b8ff}
+.drop-stat.hex   .dsv,.drop-stat.hex   .dsl{color:#dd88ff}
+#drop-inventory-msg{font-family:'Bloodcrow',serif;font-size:16px;color:#7ec87e;letter-spacing:.06em;margin-top:4px}
+.drop-item-card.rarity-common   {background:#1a1a1a;border:2px solid #aaaaaa}
+.drop-item-card.rarity-rare     {background:#1e1a08;border:2px solid #e8c040;box-shadow:0 0 14px #e8c04077,0 0 30px #e8c04033}
+.drop-item-card.rarity-legendary{background:#081828;border:2px solid #60b0f0;box-shadow:0 0 18px #60b0f0aa,0 0 40px #60b0f055}
+.drop-item-card.rarity-ultimate {background:#280a20;border:2px solid #ff88cc;box-shadow:0 0 22px #ff88cccc,0 0 50px #ff88cc66,0 0 80px #ff88cc22}
+@keyframes dropIn{from{opacity:0;transform:translateY(24px) scale(.85)}to{opacity:1;transform:none}}
+#drop-confirm{
+  font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.08em;
+  background:linear-gradient(90deg,#3a2808,#2a1c06);border:1px solid #c8a050;
+  color:#e8c060;border-radius:8px;padding:10px 28px;cursor:pointer;
+  margin-top:4px;transition:box-shadow .2s;
+}
+#drop-confirm:hover{box-shadow:0 0 16px #e8c06066}
+#drop-rarity-title{font-family:'Bloodcrow',serif;font-size:18px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+#drop-rarity-title.rarity-common   {color:#c8a050}
+#drop-rarity-title.rarity-rare     {color:#60a8e8;text-shadow:0 0 12px #4090dd88}
+#drop-rarity-title.rarity-legendary{color:#f0b030;text-shadow:0 0 14px #f0a02099}
+#drop-rarity-title.rarity-ultimate {color:#ee44ee;text-shadow:0 0 18px #cc44ccbb}
+  /* mobile header */
+  #mobile-header{display:none;}
+  @media(max-width:768px){
+    #mobile-header{
+      display:flex;
+      align-items:center;
+      position:relative;
+      width:100%;
+      height:80px;
+      overflow:hidden;
+      flex-shrink:0;
+      order:-1;
+    }
+    #mobile-header-bg{
+      position:absolute;inset:0;
+      width:100%;height:100%;
+      object-fit:cover;object-position:center;
+    }
+    #mobile-header-logo{
+      position:relative;z-index:2;
+      width:62px;height:62px;
+      object-fit:contain;
+      margin-left:14px;
+      opacity:0.95;
+    }
+    #mobile-header-title{
+      position:relative;z-index:2;
+      margin-left:auto;
+      margin-right:16px;
+      font-family:'Bloodcrow',serif;
+      font-size:20px;
+      line-height:1.1;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+      color:#c8a050;
+      text-shadow:0 0 14px #c8a05077, 0 1px 5px #000;
+      text-align:right;
+    }
   }
 </style>
 </head>
 <body>
+<div id="mobile-header">
+  <img id="mobile-header-bg" src="panel_crop.png" alt="">
+  <img id="mobile-header-logo" src="hexlogo.png" alt="">
+  <span id="mobile-header-title">Ritual Effigy<br>Workshop</span>
+</div>
 
-<video id="bg-video" autoplay muted loop playsinline>
-  <source src="https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/back.mp4" type="video/mp4">
-</video>
 
 <div id="sidebar">
-  <div id="sidebar-title"><img id="sidebar-logo" src="hexlogo.png" alt="Hex &amp; Stitch"></div>
-  <div id="sidebar-subtitle">
-    <img src="https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/icon.png" alt="">
-    <span>Ritual Effigy Forge</span>
+  <div id="sidebar-header">
+    <img src="titleback.png" alt="">
   </div>
-  <div id="wallet-bar">
-    <button id="btn-wallet" onclick="connectWallet()">Connect Wallet</button>
-    <div id="wallet-status" style="display:none">
-      <span id="wallet-addr"></span>
-      <span id="wallet-badge"></span>
+  <audio id="bg-music" loop src="Beneath_the_Mangrove.mp3"></audio>
+
+  <!-- WALLET SECTION — no body, everything in the label row -->
+  <div class="sidebar-section-label open" id="wallet-section-label" style="gap:10px;">
+    <span id="wallet-ssl-icon" class="ssl-icon">
+      <svg id="wallet-icon-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+      <svg id="wallet-sync-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="display:none;animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+    </span>
+    <span id="wallet-label-text">Wallet</span>
+    <span id="wallet-addr" style="font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.06em;color:#c8a050;display:none;"></span>
+    <button id="btn-wallet" onclick="connectWallet()" style="margin-left:auto;font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.08em;padding:5px 14px;background:linear-gradient(135deg,#0a3a0a,#1a5a1a);color:#70e870;border:1px solid #2a8a2a;border-radius:5px;cursor:pointer;white-space:nowrap;">Connect</button>
+    <button onclick="disconnectWallet()" id="btn-disconnect" style="display:none;margin-left:auto;font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.08em;padding:5px 14px;background:#3a0808;color:#e07060;border:1px solid #7a2020;border-radius:5px;cursor:pointer;white-space:nowrap;">Disconnect</button>
+  </div>
+
+  <!-- PACKS SECTION -->
+  <div class="sidebar-section-label" id="packs-section-label" onclick="toggleSidebarSection('packs')" style="display:none">
+    <span class="ssl-icon">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+    </span>
+    Packs
+    <span id="packs-unopened-label" style="margin-left:6px;font-family:'Bloodcrow',serif;letter-spacing:.06em;color:#e8c060;white-space:nowrap;line-height:1;display:inline-flex;align-items:baseline;gap:5px;"></span>
+    <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  </div>
+  <div class="sidebar-section-body" id="packs-section-body-wrap" style="display:none">
+    <div id="pack-section-body">
+      <div id="pack-inventory"><span id="pack-empty">No unopened packs</span></div>
     </div>
   </div>
-</div>
-<div id="sidebar-content">
 
-<div class="section" id="sec-bg">
-    <div class="section-header" onclick="toggleSection('sec-bg')">Background <span class="arrow">›</span></div>
-    <div class="section-body">
+  <div id="sidebar-content">
+
+  <!-- INVENTORY -->
+  <div class="sidebar-section-label" id="sidebar-inventory-label" onclick="toggleInventorySection()">
+    <span class="ssl-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+    Inventory
+    <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  </div>
+  <div class="sidebar-section-body" id="inventory-section-body">
+    <div class="section" id="sec-body">
+      <div class="section-header" onclick="toggleSection('sec-body')">Body <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+      <div class="section-body">
+        <div class="thumb-grid" id="grid-body"></div>
+        <div style="margin-top:12px">
+          <div class="slider-row"><label>Body Color</label><input type="color" id="body_color" value="#a06030" oninput="scheduleGen()"></div>
+          <input type="hidden" id="body_hue" value="30">
+          <input type="hidden" id="body_sat" value="60">
+        </div>
+      </div>
+    </div>
+    <div class="section" id="sec-knife">
+      <div class="section-header" onclick="toggleSection('sec-knife')">Blade — Right Hand <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+      <div class="section-body"><div class="thumb-grid" id="grid-knife"></div></div>
+    </div>
+    <div class="section" id="sec-offhand">
+      <div class="section-header" onclick="toggleSection('sec-offhand')">Offhand — Left Hand <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+      <div class="section-body"><div class="thumb-grid" id="grid-offhand"></div></div>
+    </div>
+    <div class="section" id="sec-necklace">
+      <div class="section-header" onclick="toggleSection('sec-necklace')">Necklace <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+      <div class="section-body"><div class="thumb-grid" id="grid-necklace"></div></div>
+    </div>
+    <div class="section" id="sec-eyes">
+      <div class="section-header" onclick="toggleSection('sec-eyes')">Eyes <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+      <div class="section-body">
+        <div class="sub-section" id="subsec-eye-left">
+          <div class="sub-section-header" onclick="toggleSubSection('subsec-eye-left')">Left Eye <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="sub-section-body"><div class="thumb-grid" id="grid-eye-left"></div></div>
+        </div>
+        <div class="sub-section" id="subsec-eye-right">
+          <div class="sub-section-header" onclick="toggleSubSection('subsec-eye-right')">Right Eye <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="sub-section-body"><div class="thumb-grid" id="grid-eye-right"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="section open" id="sec-mouth">
+      <div class="section-header" onclick="toggleSection('sec-mouth')">Mouth <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+      <div class="section-body"><div class="thumb-grid" id="grid-mouth"></div></div>
+    </div>
+  </div><!-- /inventory-section-body -->
+
+  <!-- BACKGROUND -->
+  <div class="sidebar-section-label" id="bg-section-label" onclick="toggleSidebarSection('bg')">
+    <span class="ssl-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>
+    Background
+    <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  </div>
+  <div class="sidebar-section-body" id="bg-section-body-wrap">
+    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
       <div class="radio-row">
         <label><input type="radio" name="bg_type" value="back3" checked onchange="scheduleGen()"> Texture</label>
         <label><input type="radio" name="bg_type" value="flat" onchange="scheduleGen()"> Flat Color</label>
@@ -986,156 +1525,134 @@
         <input type="color" id="bg_color" value="#1a1a2e" oninput="scheduleGen()">
       </div>
       <div class="slider-row">
-        <label>Overlay Hue</label>
-        <div class="hue-preview" id="ov-swatch"></div>
-        <input type="range" id="overlay_hue" min="0" max="360" value="180" oninput="updateSwatch();scheduleGen()">
-        <span class="val" id="overlay_hue_v">180</span>
+        <label>Overlay Color</label>
+        <input type="color" id="overlay_color" value="#0066aa" oninput="scheduleGen()">
       </div>
       <div class="slider-row">
         <label>Overlay Strength</label>
         <input type="range" id="overlay_strength" min="0" max="100" value="45" oninput="scheduleGen()">
         <span class="val" id="overlay_strength_v">45</span>
       </div>
+      <input type="hidden" id="overlay_hue" value="180">
     </div>
   </div>
 
-  <div class="section" id="sec-body">
-    <div class="section-header" onclick="toggleSection('sec-body')">Body <span class="arrow">›</span></div>
-    <div class="section-body">
-      <div class="thumb-grid" id="grid-body"></div>
-      <div style="margin-top:12px">
-        <div class="slider-row">
-          <label>Color Hue</label>
-          <div class="hue-preview" id="body-swatch"></div>
-          <input type="range" id="body_hue" min="0" max="360" value="30" oninput="updateBodySwatch();scheduleGen()">
-          <span class="val" id="body_hue_v">30</span>
-        </div>
-        <div class="slider-row">
-          <label>Saturation</label>
-          <input type="range" id="body_sat" min="0" max="100" value="60" oninput="scheduleGen()">
-          <span class="val" id="body_sat_v">60</span>
-        </div>
-      </div>
-    </div>
+  <!-- PINS -->
+  <div class="sidebar-section-label" id="pins-section-label" onclick="toggleSidebarSection('pins')">
+    <span class="ssl-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17z"/></svg></span>
+    Pins
+    <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
   </div>
-
-  <div class="section" id="sec-knife">
-    <div class="section-header" onclick="toggleSection('sec-knife')">Blade — Right Hand <span class="arrow">›</span></div>
-    <div class="section-body"><div class="thumb-grid" id="grid-knife"></div></div>
-  </div>
-
-  <div class="section" id="sec-offhand">
-    <div class="section-header" onclick="toggleSection('sec-offhand')">Offhand — Left Hand <span class="arrow">›</span></div>
-    <div class="section-body"><div class="thumb-grid" id="grid-offhand"></div></div>
-  </div>
-
-  <div class="section" id="sec-necklace">
-    <div class="section-header" onclick="toggleSection('sec-necklace')">Necklace <span class="arrow">›</span></div>
-    <div class="section-body"><div class="thumb-grid" id="grid-necklace"></div></div>
-  </div>
-
-  <div class="section" id="sec-eyes">
-    <div class="section-header" onclick="toggleSection('sec-eyes')">Eyes <span class="arrow">›</span></div>
-    <div class="section-body">
-      <div class="sub-section" id="subsec-eye-left">
-        <div class="sub-section-header" onclick="toggleSubSection('subsec-eye-left')">Left Eye <span class="sarrow">›</span></div>
-        <div class="sub-section-body"><div class="thumb-grid" id="grid-eye-left"></div></div>
-      </div>
-      <div class="sub-section" id="subsec-eye-right">
-        <div class="sub-section-header" onclick="toggleSubSection('subsec-eye-right')">Right Eye <span class="sarrow">›</span></div>
-        <div class="sub-section-body"><div class="thumb-grid" id="grid-eye-right"></div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="section" id="sec-mouth">
-    <div class="section-header" onclick="toggleSection('sec-mouth')">Mouth <span class="arrow">›</span></div>
-    <div class="section-body"><div class="thumb-grid" id="grid-mouth"></div></div>
-  </div>
-
-  <div class="section" id="sec-pins">
-    <div class="section-header" onclick="toggleSection('sec-pins')">Pins <span class="arrow">›</span></div>
-    <div class="section-body">
+  <div class="sidebar-section-body" id="pins-section-body-wrap">
+    <div style="padding:12px 14px">
       <div id="pin-counter">Placed: <span id="pin-placed-count">0</span> / 5</div>
-      <div style="font-family:'Bloodcrow',serif;font-size:13px;color:#7a6848;letter-spacing:.04em;margin-bottom:10px;line-height:1.5">
-        Drag a pin onto the preview to place it on the doll. Up to 5 pins. Click a placed pin to remove it. Press Bewitch to apply.
-      </div>
+      <div style="font-family:'Bloodcrow',serif;font-size:13px;color:#7a6848;letter-spacing:.04em;margin-bottom:10px;line-height:1.5">Drag a pin onto the preview to place it on the doll. Up to 5 pins. Click a placed pin to remove it. Press Bewitch to apply.</div>
       <div class="thumb-grid" id="grid-pins"></div>
       <button id="pin-clear" onclick="clearPins()">✕ Clear All Pins</button>
     </div>
   </div>
 
-
-  <div class="section" id="sec-name">
-    <div class="section-header" onclick="toggleSection('sec-name')">Name <span class="arrow">›</span></div>
-    <div class="section-body">
+  <!-- NAME -->
+  <div class="sidebar-section-label" id="name-section-label" onclick="toggleSidebarSection('name')">
+    <span class="ssl-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
+    Name
+    <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  </div>
+  <div class="sidebar-section-body" id="name-section-body-wrap">
+    <div style="padding:12px 14px">
       <div style="display:flex;gap:8px;align-items:center">
         <input type="text" id="name_input" placeholder="Enter name…"
           onkeydown="if(event.key==='Enter') applyName()"
-          style="
-            flex:1;padding:10px 14px;
-            background:#180e18;
-            border:1px solid #3a2030;
-            border-radius:8px;
-            color:#e8d8a8;
-            font-family:'Bloodcrow',serif;
-            font-size:15px;
-            letter-spacing:.06em;
-            outline:none;
-            transition:border-color .2s;
-          "
+          style="flex:1;padding:10px 14px;background:#180e18;border:1px solid #3a2030;border-radius:8px;color:#e8d8a8;font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.06em;outline:none;transition:border-color .2s;"
           onfocus="this.style.borderColor='#d4a84b'"
-          onblur="this.style.borderColor='#3a2030'"
-        >
-        <button onclick="applyName()" style="
-          padding:10px 14px;
-          background:#2a1820;border:1px solid #6a3848;border-radius:8px;
-          color:#d4a84b;font-family:'Bloodcrow',serif;font-size:14px;
-          cursor:pointer;white-space:nowrap;transition:background .2s;
-        " onmouseover="this.style.background='#3a2030'" onmouseout="this.style.background='#2a1820'">Apply</button>
+          onblur="this.style.borderColor='#3a2030'">
+        <button onclick="applyName()" style="padding:10px 14px;background:#2a1820;border:1px solid #6a3848;border-radius:8px;color:#d4a84b;font-family:'Bloodcrow',serif;font-size:14px;cursor:pointer;white-space:nowrap;transition:background .2s;" onmouseover="this.style.background='#3a2030'" onmouseout="this.style.background='#2a1820'">Apply</button>
       </div>
     </div>
   </div>
 
   </div><!-- /sidebar-content -->
+</div><!-- /sidebar -->
+
+<!-- PACK OPENING OVERLAY -->
+<div id="pack-preview">
+  <img id="pack-preview-img" src="" alt="">
+  <div id="pack-preview-count"></div>
+  <button id="btn-open-pack" onclick="startPackOpen()">Open Pack</button>
+  <button id="btn-pack-back" onclick="closePackPreview()">← Back</button>
+</div>
+<div id="pack-overlay">
+  <div id="pack-video-wrap">
+    <video id="pack-video" preload="auto" playsinline></video>
+  </div>
+  <button id="pack-skip" onclick="skipPackVideo()">Skip ›</button>
+</div>
+<!-- DROP REVEAL OVERLAY -->
+<div id="drop-reveal">
+  <div id="drop-rarity-title"></div>
+  <div id="drop-items-row"></div>
+  <div id="drop-inventory-msg" style="display:none">✦ All items added to inventory</div>
+  <button id="drop-confirm" onclick="confirmDrop()">Close</button>
+</div>
 
 <!-- ── RIGHT PANEL ── -->
 <div id="right-panel">
-  <div id="rp-header">Inventory</div>
+  <div id="rp-header"><img src="rightback.png" alt=""></div>
+  <div id="rp-equipped-toggle" onclick="toggleEquippedPanel()">
+    <svg id="rp-equipped-arrow-svg" viewBox="0 0 20 12" width="18" height="10" fill="none">
+      <path d="M2 10 L10 2 L18 10" stroke="#c8a050" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span id="rp-equipped-toggle-label">Equipped Items</span>
+  </div>
   <div id="rp-scroll">
     <div id="inventory-list"></div>
-    <div id="stat-totals">
-      <div id="stat-totals-label">Total Power</div>
-      <div class="stat-tri-row">
-        <div class="stat-circle curse"><span class="stat-circle-val" id="total-curse">0</span><span class="stat-circle-lbl">Curse</span></div>
-        <div class="stat-circle dark"><span class="stat-circle-val" id="total-dark">0</span><span class="stat-circle-lbl">Darkness</span></div>
-        <div class="stat-circle hex"><span class="stat-circle-val" id="total-hex">0</span><span class="stat-circle-lbl">Hex</span></div>
-      </div>
+  </div>
+  <div id="stat-totals">
+    <div id="stat-totals-label">Total Power</div>
+    <div class="stat-tri-row">
+      <div class="stat-circle curse"><span class="stat-circle-val" id="total-curse">0</span><span class="stat-circle-lbl">Curse</span></div>
+      <div class="stat-circle dark"><span class="stat-circle-val" id="total-dark">0</span><span class="stat-circle-lbl">Doom</span></div>
+      <div class="stat-circle hex"><span class="stat-circle-val" id="total-hex">0</span><span class="stat-circle-lbl">Hex</span></div>
     </div>
   </div>
-  <div id="rp-buttons">
-    <button class="rp-btn" id="rp-rand" onclick="randomizeAll()">Randomize</button>
-    <button class="rp-btn" id="rp-bind" onclick="saveHQ()">☽ Bind</button>
-    <button class="rp-btn" id="rp-clear" onclick="clearAll()">✕ Clear</button>
+  <div id="app-footer-rp">Hex &amp; Stitch &nbsp;·&nbsp; Designed, developed &amp; created by Alper Özdil <span class="copy-sym">©</span> 2026 &nbsp;·&nbsp; <a href="https://alperozdil.com" target="_blank">alperozdil.com</a></div>
+  <div id="slots-section">
+    <div id="slots-section-label">Ritual Seals</div>
+    <div id="save-slots">
+      <div class="save-slot" id="slot-0" onclick="slotClick(0)"><span class="slot-num">I</span><button class="slot-del" onclick="deleteSlot(event,0)">✕</button><button class="slot-save-btn" onclick="saveToSlotIdx(event,0)" title="Save to slot"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
+      <div class="save-slot" id="slot-1" onclick="slotClick(1)"><span class="slot-num">II</span><button class="slot-del" onclick="deleteSlot(event,1)">✕</button><button class="slot-save-btn" onclick="saveToSlotIdx(event,1)" title="Save to slot"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
+      <div class="save-slot" id="slot-2" onclick="slotClick(2)"><span class="slot-num">III</span><button class="slot-del" onclick="deleteSlot(event,2)">✕</button><button class="slot-save-btn" onclick="saveToSlotIdx(event,2)" title="Save to slot"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
+      <div class="save-slot" id="slot-3" onclick="slotClick(3)"><span class="slot-num">IV</span><button class="slot-del" onclick="deleteSlot(event,3)">✕</button><button class="slot-save-btn" onclick="saveToSlotIdx(event,3)" title="Save to slot"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
+    </div>
   </div>
 </div>
 
 <div id="preview-area">
+  <img id="bg-video" src="verticalback.png" alt="">
+  <div id="preview-body">
   <div id="preview-wrap">
     <img id="preview-img" src="" alt="Preview">
     <div id="pin-overlay"></div>
-  </div>
+    <div id="preview-action-btns">
+      <button id="preview-btn-rand" onclick="randomizeAll()" title="Randomize">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a08040" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="3"/><circle cx="8" cy="8" r="1.2" fill="#a08040" stroke="none"/><circle cx="16" cy="8" r="1.2" fill="#a08040" stroke="none"/><circle cx="8" cy="12" r="1.2" fill="#a08040" stroke="none"/><circle cx="16" cy="12" r="1.2" fill="#a08040" stroke="none"/><circle cx="8" cy="16" r="1.2" fill="#a08040" stroke="none"/><circle cx="16" cy="16" r="1.2" fill="#a08040" stroke="none"/></svg>
+      </button>
+      <button id="preview-btn-clear" onclick="clearAll()" title="Clear All">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#a08040" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
+    </div>
+    <!-- ritual reveal veil — inside preview-wrap so it's clipped to the image area -->
+    <div id="ritual-veil">
+      <div class="veil-bg"></div>
+      <div class="glow-ring"></div>
+      <div class="glow-ring"></div>
+      <div class="glow-ring"></div>
+      <img id="bewitch-img" src="https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/bewitch.png" alt="">
+    </div>
+  </div><!-- /preview-wrap -->
   <div id="loading">
     <div class="spinner"></div>
     <p>Conjuring…</p>
-  </div>
-  <!-- ritual reveal veil -->
-  <div id="ritual-veil">
-    <div class="veil-bg"></div>
-    <div class="glow-ring"></div>
-    <div class="glow-ring"></div>
-    <div class="glow-ring"></div>
-    <img id="bewitch-img" src="https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/bewitch.png" alt="">
   </div>
   <!-- Bewitch box: only visible when items pending -->
   <div id="bewitch-box" onclick="castCurse()" style="display:none">
@@ -1166,16 +1683,48 @@
     </div>
   </div>
   <div id="pending-indicator" style="display:none"></div>
-  <div id="status">awaiting ritual…</div>
-  <div id="save-slots" style="display:none">
-    <div class="save-slot" id="slot-0" onclick="slotClick(0)"><span class="slot-num">I</span><button class="slot-del" onclick="deleteSlot(event,0)">✕</button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
-    <div class="save-slot" id="slot-1" onclick="slotClick(1)"><span class="slot-num">II</span><button class="slot-del" onclick="deleteSlot(event,1)">✕</button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
-    <div class="save-slot" id="slot-2" onclick="slotClick(2)"><span class="slot-num">III</span><button class="slot-del" onclick="deleteSlot(event,2)">✕</button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
-    <div class="save-slot" id="slot-3" onclick="slotClick(3)"><span class="slot-num">IV</span><button class="slot-del" onclick="deleteSlot(event,3)">✕</button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
+  <div id="status"></div>
+  <div id="toast-area"></div>
+  </div><!-- /preview-body -->
+  <div id="music-row">
+    <div id="mbar-inner">
+      <button class="mbar-btn" onclick="downloadEffigy()" title="Download">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span class="mbar-label">Download</span>
+      </button>
+      <div class="mbar-sep"></div>
+      <button class="mbar-btn" onclick="randomizeAll()" title="Randomize">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="3"/><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="8" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.2" fill="currentColor" stroke="none"/></svg>
+        <span class="mbar-label">Randomize</span>
+      </button>
+      <div class="mbar-sep"></div>
+      <button class="mbar-btn" onclick="clearAll()" title="Clear All">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        <span class="mbar-label">Clear</span>
+      </button>
+      <div class="mbar-sep"></div>
+      <button class="mbar-btn" id="mbar-music-btn" onclick="toggleMusic()" title="Music">
+        <svg id="music-icon-on" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <svg id="music-icon-off" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+        <span class="mbar-label">Music</span>
+      </button>
+      <div class="mbar-group">
+        <input class="mbar-vol" id="music-vol" type="range" min="0" max="100" value="20" oninput="document.getElementById('bg-music').volume=this.value/100;updateVolSlider(this)">
+      </div>
+      <div class="mbar-sep"></div>
+      <button class="mbar-btn" id="mbar-sfx-btn" onclick="toggleSfx()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path id="sfx-wave" d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        <span class="mbar-label">SFX</span>
+      </button>
+      <div class="mbar-group">
+        <input class="mbar-vol" id="sfx-vol" type="range" min="0" max="100" value="70" oninput="sfxVolume=this.value/100;updateVolSlider(this)">
+      </div>
+    </div>
+    <button id="music-btn" style="display:none"></button>
+    <span id="music-label" style="display:none"></span>
   </div>
+  <div id="app-footer">Hex &amp; Stitch &nbsp;·&nbsp; Designed, developed &amp; created by Alper Özdil <span class="copy-sym">©</span> 2026 &nbsp;·&nbsp; <a href="https://alperozdil.com" target="_blank">alperozdil.com</a></div>
 </div>
-
-<div id="toast-area"></div>
 
 <!-- staged item panel, bottom-right -->
 <div id="staged-panel" onclick="castCurse()">
@@ -1250,15 +1799,9 @@ function hsvToHex(h,s,v){
   return '#'+[r,g,b].map(x=>Math.round(x*255).toString(16).padStart(2,'0')).join('');
 }
 
-function updateSwatch(){
-  const h=parseInt(v('overlay_hue'))/360;
-  document.getElementById('ov-swatch').style.background=hsvToHex(h,0.7,0.9);
-}
-function updateBodySwatch(){
-  const h=parseInt(v('body_hue'))/360;
-  document.getElementById('body-swatch').style.background=hsvToHex(h,0.6,0.85);
-}
-updateSwatch(); updateBodySwatch();
+function updateSwatch(){}
+function updateBodySwatch(){}
+
 
 // Thumbnail grids
 const ITEMS_CSV = 'https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/items.csv';
@@ -1321,16 +1864,27 @@ async function loadItems(){
     }
   });
 
-  console.log('[loadItems] body common count:', data.body.common.length, data.body.common[0]);
-  buildGridRarityFromItems('grid-body',     data.body,     'body_file');
-  buildGridRarityFromItems('grid-knife',    data.knife,    'knife_file');
-  buildGridFlatFromItems(  'grid-offhand',  data.offhand,  'offhand_file');
-  buildGridFlatFromItems(  'grid-mouth',    data.mouths,   'mouth_file');
-  buildGridRarityFromItems('grid-necklace', data.necklace, 'necklace_file');
-  buildGridRarityFromItems('grid-eye-left', data.eyes,     'eye_left_file');
-  buildGridRarityFromItems('grid-eye-right',data.eyes,     'eye_right_file');
+  // grids stay empty — items are added only via pack opening
   buildPinGrid(data.pins||[]);
+  buildMouthGrid();
   applyHolderFilter();
+}
+
+function buildMouthGrid(){
+  const grid = document.getElementById('grid-mouth');
+  if(!grid) return;
+  grid.innerHTML = '';
+  if(!window.itemURLMap) window.itemURLMap = {};
+  if(!window.itemInfoMap) window.itemInfoMap = {};
+  for(let i = 1; i <= 20; i++){
+    const fname = i + '.png';
+    const path = 'mouths/' + fname;
+    window.itemURLMap[path] = path;
+    window.itemInfoMap[path] = {category:'mouth_file', rarity:'common', title:'Mouth ' + i};
+    const wrap = makeWrap(path, 'Mouth ' + i, path, 'rarity-wrap-common');
+    wrap.onclick = ()=>selectThumb(grid, wrap, 'mouth_file', path);
+    grid.appendChild(wrap);
+  }
 }
 
 function buildGridFlatFromItems(gridId, items, key){
@@ -1488,6 +2042,7 @@ function selectThumb(grid, wrap, key, path){
   wrap.classList.add('staged');
   wrap.querySelector('.thumb-badge').textContent='◆';
   sel[key]=path;
+  wrap.classList.remove('new-item');
   updateBewitchState();
   showStagedPanel(key, path, wrap.querySelector('img').src);
 }
@@ -1699,10 +2254,17 @@ function updatePinCounter(){
 }
 
 // ── Pending state ─────────────────────────────────────────────────────────────
+// Merge sel into equipped — only overwrite if sel[k] is not null
+function mergeSelToEquipped(){
+  for(const k of Object.keys(sel)){
+    if(sel[k] != null) equipped[k] = sel[k];
+  }
+}
+
 function checkPending(){
   const keys=Object.keys(sel);
   for(const k of keys){
-    if(sel[k]!==equipped[k]) return true;
+    if(sel[k] != null && sel[k]!==equipped[k]) return true;
   }
   // pins are instant, not pending
   return false;
@@ -1765,7 +2327,7 @@ function showStagedPanel(key, path, iconSrc){
   const bwStats = document.getElementById('bw-stats');
   bwStats.innerHTML =
     `<span class="stat-pip curse">${stats.curse}</span>` +
-    `<span class="stat-pip dark">${stats.darkness}</span>` +
+    `<span class="stat-pip dark">${stats.doom}</span>` +
     `<span class="stat-pip hex">${stats.hex}</span>`;
 }
 
@@ -1818,16 +2380,17 @@ async function randomizeAll(){
   selectRandom('grid-eye-left','eye_left_file');
   selectRandom('grid-eye-right','eye_right_file');
   selectRandom('grid-mouth','mouth_file');
-  document.getElementById('overlay_hue').value=Math.floor(Math.random()*360);
-  document.getElementById('body_hue').value=Math.floor(Math.random()*360);
-  document.getElementById('body_sat').value=40+Math.floor(Math.random()*50);
+  // Randomize color pickers
+  const rndHex=()=>'#'+[0,0,0].map(()=>Math.floor(Math.random()*200+30).toString(16).padStart(2,'0')).join('');
+  const oc=document.getElementById('overlay_color'); if(oc) oc.value=rndHex();
+  const bc=document.getElementById('body_color'); if(bc) bc.value=rndHex();
   ['overlay_hue','body_hue','body_sat'].forEach(id=>{
     const lbl=document.getElementById(id+'_v');
     if(lbl) lbl.textContent=document.getElementById(id).value;
   });
   updateSwatch(); updateBodySwatch();
   clearPins();
-  Object.assign(equipped, sel);
+  mergeSelToEquipped();
   updateEquippedVisuals();
   updateSelectedPanel();
   updateInventory();
@@ -1876,6 +2439,84 @@ function toggleSidebar(){
     document.getElementById('sidebar').classList.toggle('collapsed');
 }
 
+function initMusic(){
+  const audio=document.getElementById('bg-music');
+  const vol=document.getElementById('music-vol');
+  audio.volume=0.2;
+  vol.value=20;
+  vol.addEventListener('input',function(){
+    audio.volume=this.value/100;
+    this.style.background=`linear-gradient(to right,#e8c060 ${this.value}%,#3a2808 ${this.value}%)`;
+  });
+}
+document.addEventListener('DOMContentLoaded',initMusic);
+
+function toggleMusic(){
+  const audio=document.getElementById('bg-music');
+  const btn=document.getElementById('mbar-music-btn');
+  const on=document.getElementById('music-icon-on');
+  const off=document.getElementById('music-icon-off');
+  if(audio.paused){
+    audio.play();
+    if(btn) btn.classList.add('active');
+    if(on) on.style.display=''; if(off) off.style.display='none';
+  } else {
+    audio.pause();
+    if(btn) btn.classList.remove('active');
+    if(on) on.style.display='none'; if(off) off.style.display='';
+  }
+}
+
+function setSyncing(on){
+  document.getElementById('wallet-icon-svg').style.display = on ? 'none' : '';
+  document.getElementById('wallet-sync-svg').style.display = on ? '' : 'none';
+  const dis = document.getElementById('btn-disconnect');
+  if(on){
+    dis.disabled = true;
+    dis.textContent = 'Packs loading…';
+    dis.style.color = '#e8c060'; dis.style.borderColor = '#8a6020'; dis.style.background = '#2a1a04';
+  } else {
+    dis.disabled = false;
+    dis.textContent = 'Disconnect';
+    dis.style.color = '#e07060'; dis.style.borderColor = '#7a2020'; dis.style.background = '#3a0808';
+  }
+}
+
+const SECTION_IDS = {
+  packs:     { lbl:'packs-section-label',     bdy:'packs-section-body-wrap' },
+  inventory: { lbl:'sidebar-inventory-label', bdy:'inventory-section-body' },
+  bg:        { lbl:'bg-section-label',        bdy:'bg-section-body-wrap' },
+  pins:      { lbl:'pins-section-label',      bdy:'pins-section-body-wrap' },
+  name:      { lbl:'name-section-label',      bdy:'name-section-body-wrap' },
+};
+
+function toggleInventorySection(){ toggleSidebarSection('inventory'); }
+
+function toggleEquippedPanel(){
+  const scroll = document.getElementById('rp-scroll');
+  const toggle = document.getElementById('rp-equipped-toggle');
+  const isOpen = scroll.classList.toggle('open');
+  toggle.classList.toggle('open', isOpen);
+  document.getElementById('rp-equipped-toggle-label').textContent = 'Equipped Items';
+}
+
+function toggleSidebarSection(name){
+  if(name === 'wallet') return;
+  const ids = SECTION_IDS[name];
+  if(!ids) return;
+  const isOpen = document.getElementById(ids.lbl)?.classList.contains('open');
+  Object.values(SECTION_IDS).forEach(({lbl, bdy}) => {
+    const lblEl = document.getElementById(lbl);
+    const bdyEl = document.getElementById(bdy);
+    if(lblEl && lblEl.style.display !== 'none') lblEl.classList.remove('open');
+    if(bdyEl && bdyEl.style.display !== 'none') bdyEl.classList.remove('open');
+  });
+  if(!isOpen){
+    document.getElementById(ids.lbl)?.classList.add('open');
+    document.getElementById(ids.bdy)?.classList.add('open');
+  }
+}
+
 async function connectWallet(){
   if(!window.solana || !window.solana.isPhantom){
     alert('Phantom wallet not found. Please install it from phantom.app');
@@ -1886,60 +2527,59 @@ async function connectWallet(){
     const pubkey = resp.publicKey.toString();
     walletConnected = true;
 
-    const btnW = document.getElementById('btn-wallet');
-    btnW.textContent = 'Disconnect';
-    btnW.classList.add('connected');
-    btnW.onclick = disconnectWallet;
-
-    document.getElementById('wallet-addr').textContent =
-      pubkey.slice(0,4)+'...'+pubkey.slice(-4);
-    document.getElementById('wallet-status').style.display='flex';
-
-    const badge = document.getElementById('wallet-badge');
-    badge.textContent = 'Checking…';
-    badge.className = 'wallet-badge';
-
-    isHolder = await checkHolder(pubkey);
-
-    badge.textContent = isHolder ? 'HOLDER' : 'NOT HOLDER';
-    badge.className = isHolder ? 'holder' : 'not-holder';
+    document.getElementById('btn-wallet').style.display='none';
+    document.getElementById('btn-disconnect').style.display='';
+    document.getElementById('wallet-label-text').style.display='none';
+    document.getElementById('wallet-addr').textContent = 'Wallet: '+pubkey.slice(0,4)+'...'+pubkey.slice(-4);
+    document.getElementById('wallet-addr').style.display='';
+    setSyncing(true);
 
     applyHolderFilter();
+    await loadWalletPacks(pubkey);
+
+    setSyncing(false);
+    // show packs section after sync
+    document.getElementById('packs-section-label').style.display='';
+    document.getElementById('packs-section-body-wrap').style.display='';
+    // auto-open packs section
+    document.getElementById('packs-section-label').classList.add('open');
+    document.getElementById('packs-section-body-wrap').classList.add('open');
   } catch(e){
+    setSyncing(false);
     console.error('Wallet connect error', e);
   }
 }
 
 function disconnectWallet(){
   if(window.solana) window.solana.disconnect();
-  walletConnected = false;
-  isHolder = false;
-  const btnW = document.getElementById('btn-wallet');
-  btnW.textContent = 'Connect Wallet';
-  btnW.classList.remove('connected');
-  btnW.onclick = connectWallet;
-  document.getElementById('wallet-status').style.display='none';
+  walletConnected = false; isHolder = false;
+  currentWalletKey = null;
+  packInventory = {common:0,rare:0,legendary:0,ultimate:0};
+  document.getElementById('packs-section-label').style.display='none';
+  document.getElementById('packs-section-body-wrap').style.display='none';
+  document.getElementById('packs-section-label').classList.remove('open');
+  document.getElementById('packs-section-body-wrap').classList.remove('open');
+  renderPacks();
+  ['grid-body','grid-knife','grid-offhand','grid-necklace','grid-eye-left','grid-eye-right'].forEach(id=>{
+    const g=document.getElementById(id); if(g) g.innerHTML='';
+  });
+  buildMouthGrid();
+  document.getElementById('btn-wallet').style.display='';
+  document.getElementById('btn-disconnect').style.display='none';
+  document.getElementById('wallet-label-text').style.display='';
+  document.getElementById('wallet-addr').style.display='none';
+  setSyncing(false);
   applyHolderFilter();
 }
 
 function applyHolderFilter(){
-  const nonCommon = ['rare','legendary','ultimate'];
-  nonCommon.forEach(r=>{
-    document.querySelectorAll(`.rarity-wrap-${r}`).forEach(el=>{
-      el.style.display = isHolder ? '' : 'none';
-    });
-    document.querySelectorAll(`.rf-${r}`).forEach(el=>{
-      el.style.display = isHolder ? '' : 'none';
-    });
-  });
-  // Show save slots when wallet connected; locked visually for non-holders
-  const slots = document.getElementById('save-slots');
-  if(slots) slots.style.display = walletConnected ? 'flex' : 'none';
+  // In pack system, all items are unlocked via pack opening — no holder gate
+  const slotsSection = document.getElementById('slots-section');
+  if(slotsSection) slotsSection.style.display = walletConnected ? 'block' : 'none';
   if(walletConnected) renderSlots();
-  // Lock/unlock slot interaction for non-holders
   document.querySelectorAll('.save-slot').forEach(el=>{
-    el.style.opacity = isHolder ? '' : '0.35';
-    el.style.pointerEvents = isHolder ? '' : 'none';
+    el.style.opacity = '';
+    el.style.pointerEvents = '';
   });
 }
 
@@ -1985,11 +2625,21 @@ async function saveSlotData(idx, data){
   try {
     localStorage.setItem(SLOTS_KEY, JSON.stringify(slots));
   } catch(e) {
-    // localStorage full — clear oldest filled slot and retry
     const fallback = [...slots];
     for(let i=0;i<4;i++){ if(i!==idx && fallback[i]){ fallback[i]=null; break; } }
     fallback[idx] = data;
     try { localStorage.setItem(SLOTS_KEY, JSON.stringify(fallback)); } catch(e2){}
+  }
+  // Wix'e sadece parametreleri kaydet (image hariç)
+  if(currentWalletKey){
+    const wixSlots = slots.map(s => s ? { equipped: s.equipped, sliders: s.sliders, pins: s.pins, name: s.name } : null);
+    try {
+      await fetch(`${WIX_API}/saveSlots`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ wallet: currentWalletKey, slots: wixSlots })
+      });
+    } catch(e){ console.warn('Wix saveSlots failed', e); }
   }
 }
 
@@ -2031,10 +2681,10 @@ function toggleSlot(idx){
   }
 }
 
-async function saveToSlot(imageB64){
+async function saveToSlot(imageB64, forceIdx){
   console.log('[saveToSlot] called, walletConnected='+walletConnected+' activeSlot='+activeSlot+' imageB64 len='+(imageB64||'').length);
   const slots = getSlotsData();
-  let idx = activeSlot !== -1 ? activeSlot : slots.findIndex(s => s === null);
+  let idx = (forceIdx !== undefined) ? forceIdx : (activeSlot !== -1 ? activeSlot : slots.findIndex(s => s === null));
   if(idx === -1) idx = 0;
   activeSlot = idx;
   const snapshot = {
@@ -2055,7 +2705,6 @@ async function saveToSlot(imageB64){
   await saveSlotData(idx, snapshot);
   console.log('[saveToSlot] done, slots now=', getSlotsData().map(s=>s?'filled':'null'));
   renderSlots();
-  showToast(`Saved to slot ${['I','II','III','IV'][idx]}`);
 }
 
 function loadSlot(idx){
@@ -2105,20 +2754,38 @@ async function deleteSlot(e, idx){
   showToast(`Slot ${['I','II','III','IV'][idx]} cleared`);
 }
 
+function hexToHsv(hex){
+  let r=parseInt(hex.slice(1,3),16)/255;
+  let g=parseInt(hex.slice(3,5),16)/255;
+  let b=parseInt(hex.slice(5,7),16)/255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b), d=max-min;
+  let h=0;
+  if(d){
+    if(max===r) h=((g-b)/d)%6;
+    else if(max===g) h=(b-r)/d+2;
+    else h=(r-g)/d+4;
+    h=h/6; if(h<0)h+=1;
+  }
+  const s=max?d/max:0;
+  return {h, s, v:max};
+}
+
 function buildParams(useStaged=false){
   const src = useStaged ? sel : equipped;
   const bg_type=document.querySelector('input[name=bg_type]:checked').value;
+  const ov=hexToHsv(document.getElementById('overlay_color')?.value||'#0066aa');
+  const bc=hexToHsv(document.getElementById('body_color')?.value||'#a06030');
   return {
     bg_type,
     bg_color: v('bg_color'),
-    overlay_hue: parseInt(v('overlay_hue'))/360,
-    overlay_sat: 0.7,
-    overlay_val: 0.9,
+    overlay_hue: ov.h,
+    overlay_sat: ov.s,
+    overlay_val: ov.v,
     overlay_strength: parseInt(v('overlay_strength'))/100,
     body_file: src.body_file,
-    body_hue: parseInt(v('body_hue'))/360,
-    body_sat: parseInt(v('body_sat'))/100,
-    body_val: 0.85,
+    body_hue: bc.h,
+    body_sat: bc.s,
+    body_val: bc.v,
     knife_file: src.knife_file,
     offhand_file: src.offhand_file,
     necklace_file: src.necklace_file,
@@ -2138,18 +2805,21 @@ function hashStr(s){
   for(let i=0;i<s.length;i++) h=((h<<5)+h+s.charCodeAt(i))|0;
   return Math.abs(h);
 }
-const STAT_RANGES={common:[2,18],rare:[15,42],legendary:[35,70],ultimate:[60,100]};
+const RARITY_TOTALS={common:15,rare:40,legendary:90,ultimate:180};
 function itemStats(path){
   const filename=path.split('/').pop();
-  const rarity=(path.split('/')[0]||'common');
+  const rarity=(path.split('/')[1]||'common');
   const h=hashStr(filename);
-  const [lo,hi]=STAT_RANGES[rarity]||STAT_RANGES.common;
-  const range=hi-lo+1;
-  return{
-    curse:    lo+(h%range),
-    darkness: lo+((h>>>5)%range),
-    hex:      lo+((h>>>10)%range),
-  };
+  const total=RARITY_TOTALS[rarity]||RARITY_TOTALS.common;
+  // distribute total into 3 parts randomly but deterministically
+  const a=1+(h%7);
+  const b=1+((h>>>4)%7);
+  const c=1+((h>>>8)%7);
+  const sum=a+b+c;
+  const curse=Math.round(total*a/sum);
+  const doom=Math.round(total*b/sum);
+  const hex=total-curse-doom;
+  return{curse, doom, hex:Math.max(1,hex)};
 }
 
 const TYPE_LABELS={
@@ -2157,7 +2827,7 @@ const TYPE_LABELS={
   necklace_file:'Necklace',eye_left_file:'L.Eye',eye_right_file:'R.Eye',mouth_file:'Mouth'
 };
 
-const TYPE_ICONS={body_file:'⬟',knife_file:'🗡',offhand_file:'✋',necklace_file:'◎',eye_left_file:'◉',eye_right_file:'◉',mouth_file:'⌇'};
+const TYPE_ICONS={body_file:'body/common/burlap.PNG',knife_file:'knife/common/antler_bead_dagger.png',offhand_file:'offhand/common/bone_idol_mask.png',necklace_file:'necklace/common/adventurers_compass.png',eye_left_file:'eyes/common/abyss_button.png',eye_right_file:'eyes/common/abyss_button.png',mouth_file:'mouths/1.png'};
 
 function updateInventory(){
   const list=document.getElementById('inventory-list');
@@ -2171,24 +2841,25 @@ function updateInventory(){
 
     if(!path){
       item.className='inv-item empty';
-      item.innerHTML=`<div class="inv-icon-empty">${TYPE_ICONS[key]||'·'}</div><div class="inv-label-empty">${label}</div>`;
+      item.innerHTML=`<div class="inv-icon-empty"><img src="${TYPE_ICONS[key]||'body/common/burlap.PNG'}" style="width:100%;height:100%;object-fit:cover;border-radius:3px;opacity:0.25;"></div><div class="inv-label-empty">${label}</div>`;
     } else {
       const filename=path.split('/').pop().replace(/\.(png|PNG)$/,'').replace(/_/g,' ');
       const rarity=path.split('/')[0]||'common';
       const url=(window.itemURLMap||{})[path]||'';
       const stats=itemStats(path);
-      totalCurse+=stats.curse; totalDark+=stats.darkness; totalHex+=stats.hex;
+      totalCurse+=stats.curse; totalDark+=stats.doom; totalHex+=stats.hex;
       const rc=rarityColor[rarity]||'inv-rarity-common';
+      const isMouth = key==='mouth_file';
       item.className='inv-item';
       item.innerHTML=`
-        <img class="inv-icon" src="${url}" alt="">
-        <div class="inv-info" style="flex:1;min-width:0">
+        <img class="inv-icon${isMouth?' mouth-icon':''} rarity-${rarity}" src="${url}" alt="">
+        <div class="inv-info">
           <div class="inv-name">${filename}</div>
-          <div class="inv-meta"><span class="${rc}">${rarity[0].toUpperCase()+rarity.slice(1)}</span> · ${label}</div>
+          <div class="inv-meta"><span class="${rc}">${rarity[0].toUpperCase()+rarity.slice(1)}</span></div>
         </div>
         <div class="inv-stats">
           <div class="stat-pip curse">${stats.curse}</div>
-          <div class="stat-pip dark">${stats.darkness}</div>
+          <div class="stat-pip dark">${stats.doom}</div>
           <div class="stat-pip hex">${stats.hex}</div>
         </div>`;
     }
@@ -2326,7 +2997,7 @@ async function compositeCanvas(params) {
 
   if(params.body_file) {
     const imap2 = window.itemURLMap || {};
-    const burl = imap2[params.body_file] || (CDN + '/body/' + params.body_file);
+    const burl = imap2[params.body_file] || (params.body_file.startsWith('http') ? params.body_file : (params.body_file.startsWith('body/') ? params.body_file : CDN+'/body/'+params.body_file));
     const bodyImg = await loadImage(burl);
     if(bodyImg) {
       const IW = bodyImg.width, IH = bodyImg.height;
@@ -2456,7 +3127,15 @@ async function compositeCanvas(params) {
       }
 
       const imap=window.itemURLMap||{};
-      function iurl(cat,path){return imap[path]||(CDN+'/'+cat+'/'+path);}
+      function iurl(cat,path){
+        if(!path) return null;
+        if(imap[path]) return imap[path];
+        if(path.startsWith('http')) return path;
+        // pack paths already include category folder (e.g. "knife/common/xxx.png")
+        // CSV paths don't (e.g. "common/xxx.png") — add category prefix for CDN fallback
+        const hasCat = path.startsWith(cat+'/');
+        return CDN + '/' + (hasCat ? path : cat+'/'+path);
+      }
 
       // Necklace ropes (bezier curves from neck left/right to necklace position)
       if(params.necklace_file){
@@ -2570,21 +3249,123 @@ async function compositeCanvas(params) {
   return canvas.toDataURL('image/png').split(',')[1];
 }
 
+const COLLECTIONS = {
+  'EvoqHMeGs3VxtoLLycVaQ3CjuVTkJsUa6mcUCUcTDcm4': {
+    name: 'Hex & Stitch S1',
+    platform: 'Drip',
+    logo: 'drip.jpeg',
+    itemPool: 'default',
+    rarityTable: 'default'
+  }
+};
+const PACK_COLLECTION = 'EvoqHMeGs3VxtoLLycVaQ3CjuVTkJsUa6mcUCUcTDcm4';
+const HELIUS_URL = 'https://mainnet.helius-rpc.com/?api-key=d9dba9ac-f923-4ed6-9a90-f389a71e9bcc';
+
+async function fetchAllAssets(pubkey){
+  let all=[], page=1;
+  while(true){
+    const r = await fetch(HELIUS_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({jsonrpc:'2.0',id:'1',method:'getAssetsByOwner',
+        params:{ownerAddress:pubkey,page,limit:1000,displayOptions:{showCollectionMetadata:true}}})});
+    const items = (await r.json()).result?.items||[];
+    all = all.concat(items);
+    if(items.length<1000) break;
+    page++;
+  }
+  return all;
+}
+
 async function checkHolder(pubkey) {
   try {
-    const url = `https://mainnet.helius-rpc.com/?api-key=d9dba9ac-f923-4ed6-9a90-f389a71e9bcc`;
-    const payload = {jsonrpc:"2.0",id:"1",method:"getAssetsByOwner",
-      params:{ownerAddress:pubkey,page:1,limit:1000,displayOptions:{showCollectionMetadata:false}}};
-    const r = await fetch(url, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const items = (await r.json()).result?.items || [];
-    for(const asset of items) {
-      for(const g of asset.grouping||[]) {
-        if(g.group_value === 'DFfnpWWfzTj4TEPQTZMSbpyg4JpbYzRjoTm4pM93xEdy') return true;
-      }
-    }
-  } catch(e) { console.error('holder check failed', e); }
+    const items = await fetchAllAssets(pubkey);
+    for(const asset of items)
+      for(const g of asset.grouping||[])
+        if(g.group_value==='DFfnpWWfzTj4TEPQTZMSbpyg4JpbYzRjoTm4pM93xEdy') return true;
+  } catch(e){ console.error('holder check failed',e); }
   return false;
 }
+
+async function loadWalletPacks(pubkey){
+  currentWalletKey = pubkey;
+  // restore this wallet's pack inventory
+  packInventory = JSON.parse(localStorage.getItem(walletKey('packInventory'))||'{"common":0,"rare":0,"legendary":0,"ultimate":0}');
+  // restore previously unlocked items
+  loadCollection();
+  const badge = document.getElementById('packs-unopened-label');
+  badge.textContent = 'Loading packs…';
+  try{
+    const items = await fetchAllAssets(pubkey);
+    // Wix'ten açılmış mint'leri al, fallback localStorage
+    let openedMints = [];
+    try {
+      const omRes = await fetch(`${WIX_API}/getOpenedMints?wallet=${encodeURIComponent(pubkey)}`);
+      if(omRes.ok){ const omData = await omRes.json(); openedMints = omData.mints || []; }
+      // Wix'ten gelenleri localStorage'a da yaz (sync)
+      localStorage.setItem(walletKey('openedMints'), JSON.stringify(openedMints));
+    } catch(e){
+      console.warn('Wix getOpenedMints failed, using localStorage', e);
+      openedMints = JSON.parse(localStorage.getItem(walletKey('openedMints'))||'[]');
+    }
+    // find NFTs in the pack collection that haven't been opened
+    const unopened = items.filter(asset=>{
+      if(openedMints.includes(asset.id)) return false;
+      return (asset.grouping||[]).some(g=>g.group_value===PACK_COLLECTION);
+    });
+    // count by rarity attribute
+    const counts = {common:0,rare:0,legendary:0,ultimate:0};
+    // also track mint per rarity for opening
+    window._packMints = {common:[],rare:[],legendary:[],ultimate:[]};
+    for(const asset of unopened){
+      const attrs = asset.content?.metadata?.attributes||[];
+      let rarity = null;
+      for(const a of attrs){
+        const k=(a.trait_type||'').toLowerCase();
+        const v=(a.value||'').toLowerCase();
+        if(k==='rarity'||k==='tier'||k==='pack'){
+          if(v.includes('ultimate')) rarity='ultimate';
+          else if(v.includes('legendary')) rarity='legendary';
+          else if(v.includes('rare')) rarity='rare';
+          else if(v.includes('common')) rarity='common';
+        }
+      }
+      // fallback: try name
+      if(!rarity){
+        const name=(asset.content?.metadata?.name||'').toLowerCase();
+        if(name.includes('ultimate')) rarity='ultimate';
+        else if(name.includes('legendary')) rarity='legendary';
+        else if(name.includes('rare')) rarity='rare';
+        else rarity='common';
+      }
+      if(rarity){ counts[rarity]++; window._packMints[rarity].push(asset.id); }
+    }
+    // merge into packInventory (replace chain-sourced counts)
+    ['common','rare','legendary','ultimate'].forEach(r=>{
+      packInventory[r] = counts[r];
+    });
+    savePacks(); renderPacks();
+    badge.className = '';
+  }catch(e){
+    console.error('loadWalletPacks failed',e);
+    badge.textContent='Pack load failed';
+  }
+  // Load slots from Wix (params only — thumbnails from localStorage)
+  try {
+    const sRes = await fetch(`${WIX_API}/getSlots?wallet=${encodeURIComponent(pubkey)}`);
+    if(sRes.ok){
+      const sData = await sRes.json();
+      const wixSlots = sData.slots || [null,null,null,null];
+      const localSlots = getSlotsData();
+      // merge: Wix params + local thumbnails
+      const merged = wixSlots.map((ws, i) => {
+        if(!ws) return localSlots[i] || null;
+        return { ...ws, image: localSlots[i]?.image || null };
+      });
+      localStorage.setItem(SLOTS_KEY, JSON.stringify(merged));
+      renderSlots();
+    }
+  } catch(e){ console.warn('Wix getSlots failed', e); }
+}
+
 
 async function generate(){
   if(isGenerating) return;
@@ -2606,6 +3387,7 @@ async function generate(){
 
 async function castCurse({save=true}={}){
   if(isGenerating) return;
+  playSfx('bewitch.mp3');
   const veil=document.getElementById('ritual-veil');
   const img=document.getElementById('preview-img');
 
@@ -2618,7 +3400,7 @@ async function castCurse({save=true}={}){
       newlyEquipped.push({label, name});
     }
   }
-  Object.assign(equipped, sel);
+  mergeSelToEquipped();
 
   function showVeil(){
     // Remove active to reset animations, force reflow, re-add
@@ -2669,7 +3451,7 @@ async function castCurse({save=true}={}){
     updateBewitchState();
     hideStagedPanel();
     document.getElementById('status').textContent=`${Math.round(performance.now()-t0)}ms`;
-    if(walletConnected && save) await saveToSlot(b64);
+    // saveToSlot only when user explicitly saves (saveHQ or slot click)
   }catch(e){
     hideVeil();
     document.getElementById('status').textContent='error: '+e.message;
@@ -2677,39 +3459,325 @@ async function castCurse({save=true}={}){
   isGenerating=false;
 }
 
-async function saveHQ(){
+async function saveToSlotIdx(e, idx){
+  e.stopPropagation();
   if(isGenerating) return;
-  document.getElementById('status').textContent='binding…';
+  try{
+    const b64 = await compositeCanvas({...buildParams(), preview_size:1200});
+    await saveToSlot(b64, idx);
+    showToast('☽ Sealed to Slot ' + ['I','II','III','IV'][idx]);
+  }catch(err){
+    showToast('Error: ' + err.message);
+  }
+}
+
+let sfxVolume = 0.7;
+let sfxEnabled = true;
+
+function toggleSfx(){
+  sfxEnabled = !sfxEnabled;
+  const btn = document.getElementById('mbar-sfx-btn');
+  if(btn) btn.classList.toggle('active', sfxEnabled);
+  const wave = document.getElementById('sfx-wave');
+  if(wave) wave.style.display = sfxEnabled ? '' : 'none';
+}
+
+function playSfx(src){
+  if(!sfxEnabled) return;
+  try{ const a=new Audio(src); a.volume=sfxVolume; a.play().catch(()=>{}); }catch(e){}
+}
+
+function updateVolSlider(el){
+  const pct = el.value + '%';
+  el.style.background = `linear-gradient(to right,#e8c060 ${pct},#3a2808 ${pct})`;
+}
+
+async function downloadEffigy(){
+  if(isGenerating) return;
   try{
     const b64 = await compositeCanvas({...buildParams(), preview_size:1200});
     const link = document.createElement('a');
     link.download = 'voodoo_' + Date.now() + '.png';
     link.href = 'data:image/png;base64,' + b64;
     link.click();
-    document.getElementById('status').textContent='bound';
-    showToast('☽ Sealed & Downloaded');
-    if(walletConnected){
-      await saveToSlot(b64);
-    }
+    showToast('☽ Downloaded');
   }catch(e){
-    document.getElementById('status').textContent='error: '+e.message;
+    showToast('Error: '+e.message);
   }
 }
 
-// Init — first common body only
+async function saveHQ(){}
+
 loadItems().then(()=>{
-  const firstBody=document.querySelector('#grid-body .thumb-wrap');
-  if(firstBody){ sel.body_file=firstBody.dataset.path; }
-  Object.assign(equipped, sel);
+  // auto-select first common body as default
+  const defaultBody = PACK_ITEMS.common.body[0];
+  if(!window.itemURLMap) window.itemURLMap = {};
+  window.itemURLMap[defaultBody] = defaultBody;
+  if(!window.itemInfoMap) window.itemInfoMap = {};
+  const bname = defaultBody.split('/').pop().replace(/\.(png|PNG)$/i,'').replace(/_/g,' ');
+  window.itemInfoMap[defaultBody] = {category:'body_file', rarity:'common', title: bname};
+  equipped.body_file = defaultBody;
+
   updateEquippedVisuals();
   updateSelectedPanel();
   updateInventory();
   updateBewitchState();
-  document.getElementById('sec-body').classList.add('open');
   initPinOverlay();
   window.addEventListener('resize', syncBewitchWidth);
   generate();
 });
+
+/* ── PACK SYSTEM ── */
+const PACK_ITEMS = {"common":{"body":["body/common/burlap.PNG","body/common/corduroy.PNG","body/common/cracked_leather.PNG","body/common/jean.PNG","body/common/tartan.PNG","body/common/wool.PNG"],"knife":["knife/common/antler_bead_dagger.png","knife/common/antler_dagger.png","knife/common/beast_claw_blade.png","knife/common/bone_fetish_dagger.png","knife/common/bone_skull_dagger.png","knife/common/bone_triskele_dagger.png","knife/common/chakra_rope_knife.png","knife/common/constellation_dagger.png","knife/common/crystal_bone_dagger.png","knife/common/damascus_knife.png","knife/common/flint_twine_blade.png","knife/common/ivory_tusk_blade.png","knife/common/jagged_iron_blade.png","knife/common/obsidian_tribal_knife.png","knife/common/serpent_curved_blade.png","knife/common/snakeskin_knife.png","knife/common/talon_grip_blade.png","knife/common/verdant_curved_blade.png","knife/common/wrapped_serrated_blade.png"],"offhand":["offhand/common/bone_idol_mask.png","offhand/common/butterfly_trapped_in_jar.png","offhand/common/cursed_voodoo_doll.png","offhand/common/dark art.png","offhand/common/drink my brain.png","offhand/common/fractured_stone_tablet.png","offhand/common/good plant.png","offhand/common/grave_dirt_bottle.png","offhand/common/king.png","offhand/common/mushroom.png","offhand/common/ordinary_map.png","offhand/common/roots & stuff.png","offhand/common/skeletal_pocket_watch.png","offhand/common/the box of dark art.png","offhand/common/the hand.png","offhand/common/tile.png","offhand/common/totem of animal.png","offhand/common/toy marble from 80's.png","offhand/common/tribal_feather_mask.png","offhand/common/velvet_coin_purse.png"],"necklace":["necklace/common/adventurers_compass.png","necklace/common/amethyst_wire_pendant.png","necklace/common/aquamarine_wire_pendant.png","necklace/common/bone_and_bead_necklace.png","necklace/common/bone_and_crystal_talisman.png","necklace/common/bone_parts.png","necklace/common/bones.png","necklace/common/broken_clock.png","necklace/common/brown_mushroom.png","necklace/common/carnelian_wire_pendant.png","necklace/common/chain.png","necklace/common/colored_rocks.png","necklace/common/common_mirror.png","necklace/common/dark_rope.png","necklace/common/empty_cork_vial.png","necklace/common/iron_thimble.png","necklace/common/jade_orb_pendant.png","necklace/common/jade_spiral_medallion.png","necklace/common/jade_wire_pendant.png","necklace/common/leopard_pearl_brooch.png","necklace/common/marbles.png","necklace/common/midnight_charm_bracelet.png","necklace/common/moonstone_pendant.png","necklace/common/obsidian_skull_pendant.png","necklace/common/rick_with_hole.png","necklace/common/rock.png","necklace/common/rope.png","necklace/common/rune_rock.png","necklace/common/rune_stones.png","necklace/common/runic_bead_wreath.png","necklace/common/seashell.png","necklace/common/shadow_bat.png","necklace/common/shamanic_feather_and_fang_bracelet.png","necklace/common/skull_and_spider_rosary.png","necklace/common/snail_shell.png","necklace/common/sponge.png","necklace/common/talavera_tile_pendant.png","necklace/common/tangled_button_cluster.png","necklace/common/teeth.png","necklace/common/three_keys.png","necklace/common/vegvisir_stone_tablet.png","necklace/common/whelk_shell.png"],"eyes":["eyes/common/abyss_button.png","eyes/common/amethyst_cross.png","eyes/common/aqua_cross.png","eyes/common/blush_cross.png","eyes/common/bone_cross.png","eyes/common/cobalt_cross.png","eyes/common/coin.png","eyes/common/ember_cross.png","eyes/common/ghost_button.png","eyes/common/grave_moss.png","eyes/common/hex_cross.png","eyes/common/iron_laurel_seal_v2.png","eyes/common/jade_hex_nut.png","eyes/common/marsh_button.png","eyes/common/pale_specter.png","eyes/common/swamp_button.png","eyes/common/venom_cross.png"]},"rare":{"body":["body/rare/copper.PNG","body/rare/cracked_stone.PNG","body/rare/glassy.PNG","body/rare/wooden.PNG"],"knife":["knife/rare/abyssal_dagger.png","knife/rare/astral_dagger.png","knife/rare/ice_crystal_blade.png","knife/rare/jade_carved_blade.png","knife/rare/jade_crystal_dagger.png","knife/rare/lunar_copper_dagger.png","knife/rare/nautilus_blade.png","knife/rare/ruby_bone_dagger.png","knife/rare/rune_gold_dagger.png","knife/rare/shadow_crystal_dagger.png","knife/rare/sigil_black_dagger.png","knife/rare/skeleton_claw_grip.png","knife/rare/skull_animal_dagger.png","knife/rare/tribal_totem_blade.png","knife/rare/void_star_dagger.png"],"offhand":["offhand/rare/ancient_rune_scroll.png","offhand/rare/black mirror.png","offhand/rare/blue_king.png","offhand/rare/bone_chalice.png","offhand/rare/dragons handbook.png","offhand/rare/golden_entwined_palm_tree_idol.png","offhand/rare/ice_shard.png","offhand/rare/mummy_hand_with_rings.png","offhand/rare/prismatic_crystal_shard.png","offhand/rare/something potion.png","offhand/rare/sphere of war.png","offhand/rare/the sun card.png","offhand/rare/tiky tonky.png","offhand/rare/totem of people.png","offhand/rare/tsss.png"],"necklace":["necklace/rare/all_seeing_eye_brooch.png","necklace/rare/aquamarine_gemstone_brooch.png","necklace/rare/blue_evil_eye_brooch.png","necklace/rare/blue_pearl_rosette_brooch.png","necklace/rare/brown_cameo_brooch.png","necklace/rare/carved_blossom_medallion.png","necklace/rare/carved_rose_medallion.png","necklace/rare/crystal_crown_reliquary.png","necklace/rare/diamond_eye_of_providence.png","necklace/rare/emerald_ornate_brooch.png","necklace/rare/eye_of_horus_pin.png","necklace/rare/golden_filigree_rosette.png","necklace/rare/golden_heart_locket.png","necklace/rare/golden_heart_tome.png","necklace/rare/golden_keyhole_locket.png","necklace/rare/golden_laurel_medallion.png","necklace/rare/golden_sun.png","necklace/rare/green_agate_bone_rune.png","necklace/rare/grey_cameo_brooch.png","necklace/rare/jeweled_keyplate.png","necklace/rare/portrait_locket.png","necklace/rare/purple_gem_locket.png","necklace/rare/red_sun.png","necklace/rare/rose_gemstone_brooch.png","necklace/rare/ruby_ornate_brooch.png","necklace/rare/runed_frame.png","necklace/rare/sepia_portrait_cameo.png","necklace/rare/silver_celtic_knot.png","necklace/rare/silver_filigree_rosette.png","necklace/rare/silver_pearl_rosette_brooch.png","necklace/rare/smoky_quartz_claw_pendant.png","necklace/rare/teal_lotus_hairpin.png","necklace/rare/teal_star_hairpin.png","necklace/rare/tribal_face_coin.png","necklace/rare/wild_rose_medallion.png"],"eyes":["eyes/rare/blush_star_button.png","eyes/rare/bone_rune_button.png","eyes/rare/celtic_jade_button.png","eyes/rare/celtic_teal_button.png","eyes/rare/cobalt_mandala.png","eyes/rare/cobalt_sun_button.png","eyes/rare/crimson_mandala.png","eyes/rare/crimson_sun_button.png","eyes/rare/gold_sigil_coin.png","eyes/rare/ivory_floral_button.png","eyes/rare/rose_petal_button.png","eyes/rare/serpent_amber_slit.png","eyes/rare/terracotta_mandala.png"]},"legendary":{"body":["body/legendary/cosmic.PNG","body/legendary/fractured.PNG","body/legendary/marble.PNG","body/legendary/mummy.PNG"],"knife":["knife/legendary/amger gem dagger.png","knife/legendary/ancient eye dagger.png","knife/legendary/crimson vein blade.png","knife/legendary/crystal hand blade.png","knife/legendary/dark justice blade.png","knife/legendary/drawgon.png","knife/legendary/jungle serpent blade.png","knife/legendary/ocean serpent knife.png","knife/legendary/silver scorpion dagger.png","knife/legendary/skull tower dagger.png","knife/legendary/sun & moon dagger.png","knife/legendary/totem ritual dagger.png"],"offhand":["offhand/legendary/124.png","offhand/legendary/book of enchant.png","offhand/legendary/cerberus skull.png","offhand/legendary/enchanted cat.png","offhand/legendary/obsidian_scrying_stone.png","offhand/legendary/prismatic_crystal_cluster.png","offhand/legendary/the death card.png","offhand/legendary/totem of the shaman.png"],"necklace":["necklace/legendary/black_cat.png","necklace/legendary/celestial_stone_talisman.png","necklace/legendary/crimson_phoenix_crest.png","necklace/legendary/dark_sun_sigil.png","necklace/legendary/frost_crystal_root.png","necklace/legendary/golden_winged_emblem.png","necklace/legendary/mask_of_dark_magic.png","necklace/legendary/purple_rune_sphere.png","necklace/legendary/runic_vortex_stone.png","necklace/legendary/sapphire_eye_brooch.png","necklace/legendary/sapphire_star_medallion.png","necklace/legendary/void_spiral_pendant.png","necklace/legendary/winged_blood_heart.png"],"eyes":["eyes/legendary/amber_spiral.png","eyes/legendary/emerald_marble.png","eyes/legendary/frost_cracked_orb.png","eyes/legendary/sapphire_marble.png","eyes/legendary/serpent_eye_orb.png"]},"ultimate":{"body":["body/ultimate/infernal_bone_wraith.PNG","body/ultimate/prismatic dragon scale.PNG","body/ultimate/rune_iron_golem.PNG","body/ultimate/void_portal_golem.PNG"],"knife":["knife/ultimate/cosmic eye blade.png","knife/ultimate/cosmic void blade.png","knife/ultimate/cracked lava blade.png","knife/ultimate/death shroud blade.png","knife/ultimate/drawon scale knife.png","knife/ultimate/eternal dagger.png","knife/ultimate/frost skeleton blade.png","knife/ultimate/hellfire blade.png","knife/ultimate/nebula cutter.png","knife/ultimate/starlight knife.png"],"offhand":["offhand/ultimate/ancient_rune_stone_tablet.png","offhand/ultimate/cosmos navigator.png","offhand/ultimate/cosmos stone.png","offhand/ultimate/lava stone.png"],"necklace":["necklace/ultimate/cosmic_void_orb.png","necklace/ultimate/eyes.png","necklace/ultimate/gilded_demon_bell.png","necklace/ultimate/jeweled_scarab_amulet.png","necklace/ultimate/runic_sigil_ring.png","necklace/ultimate/silver_skull_mask.png"],"eyes":["eyes/ultimate/amber_dragon_eye_medallion.png","eyes/ultimate/amber_slit_eye.png","eyes/ultimate/cosmic_nebula_orb.png","eyes/ultimate/illuminati_eye_charm.png","eyes/ultimate/jade_serpent_eye.png","eyes/ultimate/skull_orb_black.png","eyes/ultimate/venom_vortex.png","eyes/ultimate/void_cosmos_orb.png"]}};
+
+const PACK_IMGS = {common:'common_pack.png',rare:'rare_pack.png',legendary:'legendary_pack.png',ultimate:'ultimate_pack.png'};
+const WIX_API = 'https://www.alperozdil.com/_functions';
+
+let packInventory = JSON.parse(localStorage.getItem('packInventory')||'{"common":0,"rare":0,"legendary":0,"ultimate":0}');
+let pendingDropRarity = null;
+let pendingDropItems  = null;
+let currentWalletKey  = null; // active wallet pubkey
+
+function walletKey(k){ return currentWalletKey ? `wallet_${currentWalletKey}_${k}` : k; }
+function savePacks(){ localStorage.setItem(walletKey('packInventory'), JSON.stringify(packInventory)); }
+
+async function saveCollection(items){
+  // Wix'e kaydet (pack açma sırasında openPack endpoint'i zaten kaydediyor)
+  // localStorage fallback olarak da tut
+  const saved = JSON.parse(localStorage.getItem(walletKey('collection'))||'[]');
+  items.forEach(item=>{
+    if(!saved.find(s=>s.path===item.path)) saved.push(item);
+  });
+  localStorage.setItem(walletKey('collection'), JSON.stringify(saved));
+}
+
+async function loadCollection(){
+  // clear all grids first (mouth stays — always free)
+  ['grid-body','grid-knife','grid-offhand','grid-necklace','grid-eye-left','grid-eye-right'].forEach(id=>{
+    const g = document.getElementById(id); if(g) g.innerHTML='';
+  });
+  // Wix'ten yükle
+  try {
+    const res = await fetch(`${WIX_API}/getItems?wallet=${encodeURIComponent(currentWalletKey)}`);
+    if(res.ok){
+      const data = await res.json();
+      const wixItems = data.items || [];
+      wixItems.forEach(path=>{
+        const parts = path.split('/');
+        const cat = parts[0];
+        const rarity = parts[1];
+        addItemToGrid(path, cat, rarity);
+      });
+      // Wix başarılı yanıt verdi — localStorage'ı senkronize et (boş olsa bile)
+      const asObjects = wixItems.map(path=>({path, cat:path.split('/')[0], rarity:path.split('/')[1]}));
+      localStorage.setItem(walletKey('collection'), JSON.stringify(asObjects));
+      return;
+    }
+  } catch(e){ console.warn('Wix getItems failed, falling back to localStorage', e); }
+  // Fallback: localStorage
+  const saved = JSON.parse(localStorage.getItem(walletKey('collection'))||'[]');
+  saved.forEach(item=>{ addItemToGrid(item.path, item.cat, item.rarity); });
+}
+
+function renderPacks(){
+  const inv = document.getElementById('pack-inventory');
+  const empty = document.getElementById('pack-empty');
+  inv.innerHTML = '';
+  let any = false;
+  let total = 0;
+  ['common','rare','legendary','ultimate'].forEach(r=>{
+    if(packInventory[r]>0){
+      any = true;
+      total += packInventory[r];
+      const card = document.createElement('div');
+      card.className = `pack-card rarity-${r}`;
+      const col = COLLECTIONS[PACK_COLLECTION];
+      const badgeHtml = col ? `<img class="pack-platform-badge" src="${col.logo}" alt="${col.platform}" title="${col.platform} — ${col.name}">` : '';
+      card.innerHTML = `<div class="pack-card-img-wrap"><img class="pack-card-img" src="${PACK_IMGS[r]}" alt="${r}"><div class="pack-card-count">${packInventory[r]}</div>${badgeHtml}</div><div class="pack-card-label">${r}</div>`;
+      card.onclick = ()=>openPack(r);
+      inv.appendChild(card);
+    }
+  });
+  if(!any){
+    const e = document.createElement('span');
+    e.id='pack-empty'; e.style.cssText='font-family:Bloodcrow,serif;font-size:12px;color:#5a4020;letter-spacing:.05em;padding:4px 0';
+    e.textContent='No packs — add some below';
+    inv.appendChild(e);
+  }
+  const lbl = document.getElementById('packs-unopened-label');
+  if(lbl) lbl.innerHTML = total > 0 ? `<span style="font-size:36px;font-weight:bold;">${total}</span><span style="font-size:17px;">unopened</span>` : '';
+}
+
+function devAddPack(rarity, count){
+  packInventory[rarity] = (packInventory[rarity]||0) + count;
+  savePacks(); renderPacks();
+}
+
+function devClearPacks(){
+  packInventory = {common:0,rare:0,legendary:0,ultimate:0};
+  savePacks(); renderPacks();
+}
+
+let _previewRarity = null;
+
+function openPack(rarity){
+  if(!packInventory[rarity]||packInventory[rarity]<=0) return;
+  _previewRarity = rarity;
+  document.getElementById('pack-preview-img').src = PACK_IMGS[rarity];
+  document.getElementById('pack-preview-count').textContent = packInventory[rarity] + ' remaining';
+  document.getElementById('pack-preview').classList.add('active');
+}
+
+function closePackPreview(){
+  document.getElementById('pack-preview').classList.remove('active');
+  _previewRarity = null;
+}
+
+function startPackOpen(){
+  if(!_previewRarity) return;
+  document.getElementById('pack-preview').classList.remove('active');
+  pendingDropRarity = _previewRarity;
+  pendingDropItems  = [];
+  const overlay = document.getElementById('pack-overlay');
+  const vid = document.getElementById('pack-video');
+  vid.src = 'openpack.mp4';
+  vid.currentTime = 0;
+  overlay.classList.add('active');
+  vid.play();
+  vid.onended = ()=>{ finishPackVideo(); };
+}
+
+function skipPackVideo(){
+  const vid = document.getElementById('pack-video');
+  vid.pause();
+  finishPackVideo();
+}
+
+async function finishPackVideo(){
+  document.getElementById('pack-overlay').classList.remove('active');
+  const vid = document.getElementById('pack-video');
+  vid.pause(); vid.src='';
+  await processDrop(pendingDropRarity);
+  showDropReveal();
+}
+
+function rollPackItems(rarity){
+  const cats = ['body','knife','offhand','necklace','eyes'];
+  const pool = PACK_ITEMS[rarity];
+  // pick 2-3 random items from different categories when possible
+  const count = Math.random()<0.5 ? 2 : 3;
+  const shuffled = [...cats].sort(()=>Math.random()-.5);
+  const chosen = [];
+  for(let i=0;i<shuffled.length && chosen.length<count;i++){
+    const cat = shuffled[i];
+    const items = pool[cat];
+    if(items&&items.length){
+      const path = items[Math.floor(Math.random()*items.length)];
+      chosen.push({path, cat, rarity});
+    }
+  }
+  return chosen;
+}
+
+function showDropReveal(){
+  const title = document.getElementById('drop-rarity-title');
+  title.textContent = pendingDropRarity.toUpperCase() + ' PACK';
+  title.className = `rarity-${pendingDropRarity}`;
+  const row = document.getElementById('drop-items-row');
+  row.innerHTML = '';
+  pendingDropItems.forEach((item,i)=>{
+    const name = item.path.split('/').pop().replace(/\.(png|PNG|jpg|JPG)$/,'').replace(/_/g,' ');
+    const card = document.createElement('div');
+    card.className = `drop-item-card rarity-${item.rarity}`;
+    card.style.animationDelay = `${i*0.12}s`;
+    const stats = itemStats(item.path);
+    card.innerHTML = `<img src="${item.path}" alt="${name}">
+      <div class="drop-item-name">${name}</div>
+      <div class="drop-item-cat">${item.cat}</div>
+      <div class="drop-item-stats">
+        <div class="drop-stat curse"><span class="dsv">${stats.curse}</span><span class="dsl">Curse</span></div>
+        <div class="drop-stat doom"><span class="dsv">${stats.doom}</span><span class="dsl">Doom</span></div>
+        <div class="drop-stat hex"><span class="dsv">${stats.hex}</span><span class="dsl">Hex</span></div>
+      </div>`;
+    row.appendChild(card);
+  });
+  document.getElementById('drop-inventory-msg').style.display = 'none';
+  document.getElementById('drop-reveal').classList.add('active');
+}
+
+async function confirmDrop(){
+  document.getElementById('drop-reveal').classList.remove('active');
+  pendingDropRarity = null; pendingDropItems = null;
+}
+
+async function processDrop(rarity){
+  let mint = null;
+  if(window._packMints && window._packMints[rarity]?.length){
+    mint = window._packMints[rarity].shift();
+  }
+
+  // deduct pack
+  packInventory[rarity] = Math.max(0,(packInventory[rarity]||1)-1);
+  savePacks(); renderPacks();
+
+  // Wix'e gönder, server item seçer
+  let items = [];
+  try {
+    const res = await fetch(`${WIX_API}/openPack`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ wallet: currentWalletKey, rarity, mintAddress: mint || '' })
+    });
+    const data = await res.json();
+    if(data.items) items = data.items;
+    // mint'i açıldı olarak işaretle
+    if(mint){
+      const key = walletKey('openedMints');
+      const opened = JSON.parse(localStorage.getItem(key)||'[]');
+      if(!opened.includes(mint)) opened.push(mint);
+      localStorage.setItem(key, JSON.stringify(opened));
+    }
+  } catch(e){
+    console.warn('Wix openPack failed, rolling locally', e);
+    items = rollPackItems(rarity);
+  }
+
+  pendingDropItems = items;
+
+  // add items to sidebar grids
+  items.forEach(item=>{ addItemToGrid(item.path, item.cat, item.rarity); });
+  saveCollection(items);
+  document.getElementById('drop-inventory-msg').style.display = 'block';
+  showToast(`${rarity} pack opened — ${items.length} items added!`);
+}
+
+function addItemToGrid(path, cat, rarity){
+  const keyMap  = {body:'body_file',knife:'knife_file',offhand:'offhand_file',necklace:'necklace_file',eyes:'eye_left_file'};
+  const gridMap = {body:'grid-body',knife:'grid-knife',offhand:'grid-offhand',necklace:'grid-necklace',eyes:'grid-eye-left'};
+  const secMap  = {body:'sec-body',knife:'sec-knife',offhand:'sec-offhand',necklace:'sec-necklace',eyes:'sec-eyes'};
+
+  if(!window.itemURLMap) window.itemURLMap={};
+  window.itemURLMap[path] = path;
+  if(!window.itemInfoMap) window.itemInfoMap={};
+  const name = path.split('/').pop().replace(/\.(png|PNG|jpg)$/i,'').replace(/_/g,' ');
+  window.itemInfoMap[path] = {category: keyMap[cat]||'body_file', rarity, title: name};
+
+  const targets = cat === 'eyes'
+    ? [{gridId:'grid-eye-left', key:'eye_left_file'}, {gridId:'grid-eye-right', key:'eye_right_file'}]
+    : [{gridId: gridMap[cat], key: keyMap[cat]||'body_file'}];
+
+  targets.forEach(({gridId, key})=>{
+    const grid = document.getElementById(gridId);
+    if(!grid) return;
+    if(grid.querySelector(`[data-path="${CSS.escape(path)}"]`)) return;
+    const wrap = makeWrap(path, name, path, `rarity-wrap-${rarity}`);
+    wrap.onclick = ()=>selectThumb(grid, wrap, key, path);
+    grid.insertBefore(wrap, grid.firstChild);
+  });
+}
+
+// init on load
+document.addEventListener('DOMContentLoaded', ()=>{ renderPacks(); buildMouthGrid(); });
 </script>
 </body>
 </html>
