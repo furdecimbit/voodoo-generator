@@ -13,6 +13,7 @@
 </style>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
+  html,body{margin:0;padding:0;background:#080608;}
   body{
     background:#080608;
     color:#d0c8b8;
@@ -28,7 +29,8 @@
   }
   #preview-area::before{
     content:'';position:absolute;inset:0;
-    background:#000;opacity:0.55;z-index:1;pointer-events:none;
+    background:linear-gradient(90deg,#000 0,transparent 9%,transparent 91%,#000 100%),rgba(0,0,0,0.55);
+    z-index:1;pointer-events:none;
   }
 
   /* ── SIDEBAR ── */
@@ -69,10 +71,25 @@
   #sidebar-header{
     width:100%;border-bottom:2px solid #7a5520;
     flex-shrink:0;overflow:hidden;
+    position:relative;display:flex;align-items:center;
+    height:103px;
   }
-  #sidebar-header img{
-    width:100%;height:110%;display:block;object-fit:cover;object-position:center;
-    margin-top:-5%;
+  #sidebar-header>img:first-child{
+    position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover;object-position:center;
+  }
+  #sh-logo{
+    position:relative;z-index:2;
+    width:56px;height:56px;object-fit:contain;
+    margin-left:14px;flex-shrink:0;opacity:0.95;
+  }
+  #sh-title{
+    position:relative;z-index:2;
+    margin-left:auto;margin-right:14px;
+    font-family:'Bloodcrow',serif;font-size:18px;line-height:1.15;
+    letter-spacing:.1em;text-transform:uppercase;
+    color:#c8a050;text-align:right;
+    text-shadow:0 0 14px #c8a05077,0 1px 5px #000;
   }
   .sh-title{display:none;
     animation:titlePulse 3.5s ease-in-out infinite;
@@ -80,25 +97,31 @@
   }
   #music-row{
     display:flex;align-items:center;justify-content:center;
-    border-top:1px solid #3a2808;
+    border-bottom:1px solid #3a2808;
+    border-top:none;
     padding:8px 16px;flex-shrink:0;
     background:transparent;
+    border-bottom:1px solid #3a280855;
+    order:-1;
+    position:relative;z-index:10 !important;
   }
   #mbar-inner{
     display:flex;align-items:center;gap:0;
-    background:linear-gradient(90deg,#1a1208,#141008,#1a1208);
+    background:transparent;
     border:1px solid #4a3010;border-radius:20px;
     overflow:hidden;height:36px;
   }
   .mbar-sep{width:1px;background:#3a2808;align-self:stretch;flex-shrink:0;}
   .mbar-btn{
     display:flex;align-items:center;gap:6px;flex-shrink:0;
-    background:none;border:none;
+    background:#0a0804;border:none;
     padding:0 14px;height:100%;
     color:#8a7040;cursor:pointer;font-family:'Bloodcrow',serif;font-size:13px;letter-spacing:.06em;
     transition:color .2s,background .2s;white-space:nowrap;
   }
-  .mbar-btn:hover{color:#c8a050;background:#221a0a;}
+  .mbar-btn:hover{color:#c8a050;background:#161008;}
+  .mbar-btn svg{width:20px;height:20px;}
+  a.mbar-btn{text-decoration:none;}
   .mbar-btn.active{color:#e8c060;}
   .mbar-group{display:flex;align-items:center;padding:0 12px 0 4px;}
   .mbar-vol{
@@ -129,29 +152,121 @@
     display:flex;flex-direction:column;gap:10px;
     border-bottom:1px solid #3a2810;
   }
-  #btn-wallet{
-    width:100%;padding:12px 16px;
-    font-family:'Bloodcrow',serif;font-size:17px;letter-spacing:.08em;
-    background:linear-gradient(180deg,#2a1e10,#1a1208);
-    border:1px solid #7a5520;border-radius:6px;
-    color:#c8a050;cursor:pointer;
-    transition:background .2s,box-shadow .2s;
+  #wallet-platforms{display:flex;flex-direction:column;gap:4px;padding:8px 14px;}
+  .wallet-platform-row{
+    display:flex;align-items:center;gap:10px;
+    padding:6px 10px;border-radius:6px;
+    background:transparent;
+    border:none;
   }
-  #btn-wallet:hover{background:linear-gradient(180deg,#3a2810,#2a1a08);box-shadow:0 0 16px #c8a05044}
-  #btn-wallet.connected{
-    width:auto;align-self:flex-end;
-    padding:5px 12px;font-size:12px;letter-spacing:.05em;
-    border-color:#307030;color:#70cc70;background:linear-gradient(180deg,#1a2e1a,#101e10);
+  /* ── platform icon wrap ── */
+  .platform-icon-wrap{
+    position:relative;width:36px;height:36px;border-radius:50%;
+    overflow:visible;flex-shrink:0;
+    background:#1a1208;cursor:pointer;
+    /* spinning border via pseudo — needs a wrapper trick; use outline+box-shadow instead */
+    border:2px solid #5a3a18;
+    transition:border-color .3s,box-shadow .3s;
+  }
+  .platform-icon-wrap .pi-inner{
+    width:100%;height:100%;border-radius:50%;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .platform-icon-wrap img,.platform-icon{
+    width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;
+  }
+  /* ── states ── */
+  @keyframes piPulse{
+    0%,100%{box-shadow:0 0 6px 2px #cc202088,0 0 0 0 #cc202033;}
+    50%  {box-shadow:0 0 18px 5px #ee2020dd,0 0 0 10px #cc202000;}
+  }
+  @keyframes piSpin{to{transform:rotate(360deg);}}
+  @keyframes mobSyncPulse{0%,100%{opacity:.4;}50%{opacity:1;}}
+  #wallet-status-bar{
+    display:flex; align-items:center; gap:8px;
+    padding:6px 16px;
+    background:linear-gradient(90deg,#120c04,#0e0a04,#120c04);
+    border-bottom:1px solid #2a1a08;
+    font-family:'Bloodcrow',serif; font-size:13px; letter-spacing:.06em;
+  }
+  #wallet-status-dot{
+    width:8px; height:8px; border-radius:50%; flex-shrink:0;
+    background:#f0d060; box-shadow:0 0 6px 2px #f0d06055;
+    transition:background .4s, box-shadow .4s;
+  }
+  #wallet-status-bar.live #wallet-status-dot{
+    background:#20cc50; box-shadow:0 0 8px 2px #20cc5088;
+  }
+  #wallet-status-text{
+    color:#f0d060; transition:color .4s;
+  }
+  #wallet-status-bar.live #wallet-status-text{ color:#70c880; }
+  @keyframes mobConnectIn{from{opacity:0;transform:translateX(8px);}to{opacity:1;transform:translateX(0);}}
+  #mob-connect-btn{
+    font-family:'Bloodcrow',serif;font-size:13px;letter-spacing:.07em;text-transform:uppercase;
+    padding:5px 12px;border-radius:16px;cursor:pointer;
+    background:linear-gradient(135deg,#2a1040,#1a0830);
+    border:1px solid #8050c0;color:#c090f0;
+    animation:mobConnectIn .15s ease;
+    transition:border-color .2s,color .2s;
+  }
+  #mob-connect-btn:active{border-color:#e0b0ff;color:#e0b0ff;}
+  #mob-disconnect-btn{
+    font-family:'Bloodcrow',serif;font-size:13px;letter-spacing:.07em;text-transform:uppercase;
+    padding:5px 12px;border-radius:16px;cursor:pointer;
+    background:linear-gradient(135deg,#2a0808,#1a0404);
+    border:1px solid #803030;color:#e07070;
+    animation:mobConnectIn .15s ease;
+    transition:border-color .2s,color .2s;
+  }
+  #mob-disconnect-btn:active{border-color:#ff8080;color:#ff8080;}
+  .platform-icon-wrap.disconnected{
+    border-color:#cc2020;
+    box-shadow:0 0 10px 2px #cc202099;
+    animation:piPulse 1.6s ease-in-out infinite;
+  }
+  .platform-icon-wrap.connecting{
+    border-color:#e8c050;
+    box-shadow:0 0 10px 2px #e8c05077;
+    animation:none;
+  }
+  .platform-icon-wrap.connecting::before{
+    content:'';position:absolute;inset:-4px;border-radius:50%;
+    border:3px solid transparent;
+    border-top-color:#e8c050;border-right-color:#e8c05055;
+    animation:piSpin .7s linear infinite;
+    pointer-events:none;
+  }
+  .platform-icon-wrap.connected{
+    border-color:#20cc50;
+    box-shadow:0 0 14px 4px #20cc5099;
+    animation:none;
+  }
+  .platform-addr{
+    font-family:'Bloodcrow',serif;font-size:14px;letter-spacing:.04em;
+    color:#c8a050;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  #btn-wallet,#btn-tez-connect,.platform-btn-dummy,#btn-disconnect,#btn-tez-disconnect{
+    flex-shrink:0;
+    font-family:'Bloodcrow',serif;font-size:14px;letter-spacing:.06em;
+    padding:4px 12px;border-radius:20px;cursor:pointer;
+    transition:box-shadow .2s,border-color .2s;white-space:nowrap;
+    text-align:center;background:transparent;
+  }
+  #btn-wallet,#btn-tez-connect{
+    color:#70e870;border:1px solid #2a8a2a;
+  }
+  #btn-wallet:hover,#btn-tez-connect:hover{border-color:#70e870;box-shadow:0 0 8px #70e87033;}
+  #btn-disconnect,#btn-tez-disconnect{
+    border:1px solid #7a2020;color:#cc4040;
+  }
+  #btn-disconnect:hover,#btn-tez-disconnect:hover{border-color:#ee4040;box-shadow:0 0 8px #cc404033;}
+  .platform-btn-dummy{
+    color:#5a4a2a;border:1px solid #3a2810;
+    cursor:not-allowed;opacity:0.5;
   }
   #wallet-status{display:flex;flex-direction:column;gap:8px;}
   #wallet-status-row{display:flex;align-items:center;gap:8px;}
-  #btn-disconnect{
-    margin-left:auto;flex-shrink:0;
-    font-family:'Bloodcrow',serif;font-size:14px;letter-spacing:.06em;
-    background:linear-gradient(180deg,#2a0808,#1a0404);border:1px solid #7a2020;border-radius:5px;
-    color:#cc4040;padding:6px 16px;cursor:pointer;transition:box-shadow .2s,border-color .2s;
-  }
-  #btn-disconnect:hover{box-shadow:0 0 12px #cc404077;border-color:#ee4040;}
   #wallet-addr{
     font-family:'Bloodcrow',serif;font-size:19px;letter-spacing:.06em;
     color:#c8a050;white-space:nowrap;
@@ -174,6 +289,17 @@
     color:#e8d09a;background:linear-gradient(90deg,#2a1e0a,#1a1206);
     border-top:1px solid #4a3010;border-bottom:2px solid #4a3010;
     cursor:pointer;user-select:none;
+  }
+  .inner-section-label{
+    padding-left:28px;
+    font-size:16px !important;letter-spacing:.09em;
+    background:linear-gradient(90deg,#221608,#160e04) !important;
+    border-top-color:#3a2408 !important;border-bottom-color:#3a2408 !important;
+    color:#c8a870 !important;
+  }
+  .inner-section-label .ssl-icon{
+    width:26px !important;height:26px !important;
+    background:#160e04 !important;border-color:#4a3010 !important;
   }
   .sidebar-section-label .ssl-icon{
     display:flex;align-items:center;justify-content:center;
@@ -269,6 +395,52 @@
     text-shadow:0 0 12px #f0d07066;
     border-bottom:1px solid #6a4a18;
   }
+  .section-hint{
+    font-family:'Bloodcrow',serif;font-size:17.5px;
+    color:#7a6040;letter-spacing:.05em;line-height:1.6;
+    padding:0 0 10px;
+  }
+  .sidebar-section-hint{
+    font-family:'Bloodcrow',serif;font-size:17.5px;
+    color:#7a6040;letter-spacing:.05em;line-height:1.6;
+    padding:8px 16px 4px;
+  }
+  /* hint wrap */
+  .hint-btn{
+    background:none;border:1px solid #7a5828;border-radius:50%;
+    color:#b08840;width:22px;height:22px;
+    display:inline-flex;align-items:center;justify-content:center;
+    cursor:pointer;flex-shrink:0;padding:2px;margin-right:6px;
+    transition:border-color .2s,color .2s;vertical-align:middle;
+  }
+  .hint-btn:hover,.hint-btn.active{border-color:#e8c050;color:#e8c050;}
+  /* top popup */
+  #hint-popup{
+    display:none;
+    position:fixed;top:12px;left:50%;transform:translateX(-50%);
+    z-index:9000;
+    max-width:340px;width:calc(100% - 32px);
+    background:linear-gradient(135deg,#1e1608,#2a1c0a);
+    border:1px solid #7a5520;border-radius:10px;
+    padding:10px 14px 10px 12px;
+    font-family:'Bloodcrow',serif;font-size:15px;
+    color:#c8a050;letter-spacing:.04em;line-height:1.5;
+    box-shadow:0 4px 24px #000000cc;
+  }
+  #hint-popup.visible{display:flex;align-items:flex-start;gap:8px;}
+  #hint-popup-text{flex:1;}
+  #hint-popup-close{
+    background:none;border:none;color:#7a6040;font-size:16px;cursor:pointer;
+    flex-shrink:0;padding:0 0 0 4px;line-height:1;
+  }
+  #hint-popup-close:hover{color:#c8a050;}
+
+
+  /* mob tab bar — hidden on desktop */
+  #mob-tab-bar{display:none;}
+  #mob-panel-btn{display:none;}
+  #ritual-pill-switch{display:none;}
+  #mob-settings-panel{display:none;}
   .section-body{
     padding:0 14px;
     background:linear-gradient(180deg,#2a1e0c 0%,#1e1508 20%,#181208 60%,#141008 100%);
@@ -368,9 +540,10 @@
   /* sliders */
   .slider-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
   .slider-row label{
-    width:140px;font-family:'Bloodcrow',serif;font-size:15px;
+    width:auto;font-family:'Bloodcrow',serif;font-size:17px;
     color:#9a8868;flex-shrink:0;letter-spacing:.04em;
   }
+  .slider-row input[type=color]{width:36px;height:28px;padding:0;border:none;background:none;cursor:pointer;flex-shrink:0;}
   .slider-row input[type=range]{flex:1;accent-color:#d4a84b;height:4px;cursor:pointer}
   .slider-row .val{width:42px;font-size:15px;color:#c0a060;text-align:right}
 
@@ -500,7 +673,7 @@
     border-radius:8px;
     box-shadow:0 8px 60px #000e,0 0 80px #c8803a14;
     display:block;
-    border:1px solid #4a3010;
+    border:2px solid #7a5520;
   }
   /* pin drop overlay — hidden, moved to menu bar */
   #preview-action-btns{display:none;}
@@ -572,7 +745,7 @@
   .pin-drag-thumb:active{cursor:grabbing}
   .pin-drag-thumb.dragging{opacity:.5}
   #pin-counter{
-    font-family:'Bloodcrow',serif;font-size:13px;color:#a09060;letter-spacing:.05em;
+    font-family:'Bloodcrow',serif;font-size:22px;color:#c8a050;letter-spacing:.06em;
     margin-bottom:8px;
   }
   #pin-clear{
@@ -758,7 +931,7 @@
     margin-top:auto;
     text-shadow:0 1px 4px #000;
     text-align:center;padding:6px 12px 12px;
-    font-family:'Bloodcrow',serif;font-size:11px;
+    font-family:'Bloodcrow',serif;font-size:18px;
     color:#5a4025;letter-spacing:.04em;
     border-top:1px solid #2a1808;
     width:100%;position:relative;z-index:1;
@@ -766,6 +939,32 @@
   #app-footer a{color:#7a5830;text-decoration:none;}
   #app-footer .copy-sym{font-family:serif;font-style:normal;}
   #app-footer-rp{display:none;}
+  #social-section{
+    width:100%;flex-shrink:0;
+    border-top:1px solid #3a2808;
+  }
+  #social-section-label{
+    font-family:'Bloodcrow',serif;font-size:18px;letter-spacing:.12em;text-transform:uppercase;
+    color:#c8a050;text-align:center;
+    padding:10px 0 8px;
+    background:linear-gradient(90deg,#1a1005,#2a1a08,#1a1005);
+    border-bottom:1px solid #4a3010;
+  }
+  #social-btns{
+    display:flex;flex-direction:column;gap:8px;padding:10px 12px;
+  }
+  .social-btn{
+    display:flex;align-items:center;gap:12px;
+    width:100%;padding:12px 16px;box-sizing:border-box;
+    font-family:'Bloodcrow',serif;font-size:20px;letter-spacing:.06em;
+    text-decoration:none;border-radius:8px;
+    transition:background .2s,box-shadow .2s;
+  }
+  .social-btn svg, .social-btn img{width:28px;height:28px;flex-shrink:0;}
+  #social-discord{color:#c9b3ff;background:none;border:none;}
+  #social-discord:hover{color:#e0c8ff;}
+  #social-gitbook{color:#a8c8ff;background:none;border:none;}
+  #social-gitbook:hover{color:#c8e0ff;}
   #app-footer .copy-sym{font-family:serif;font-style:normal;}
   #app-footer a{color:#9a7840;text-decoration:none;pointer-events:auto;}
   #app-footer a:hover{color:#c8a050;}
@@ -773,82 +972,54 @@
   /* save slots */
   #slots-section{
     width:100%;display:none;
-    margin-top:18px;
     border-top:1px solid #3a2808;
-    padding:0;
+    padding:0;flex-shrink:0;
   }
   #slots-section-label{
-    font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.1em;text-transform:uppercase;
+    font-family:'Bloodcrow',serif;font-size:18px;letter-spacing:.12em;text-transform:uppercase;
     color:#c8a050;text-align:center;
-    padding:9px 0 7px;
+    padding:10px 0 8px;
     background:linear-gradient(90deg,#1a1005,#2a1a08,#1a1005);
     border-bottom:1px solid #4a3010;
-    margin-bottom:10px;
   }
-  #save-slots{
-    display:flex;gap:0;
-    padding:0 10px 10px;
-    width:100%;justify-content:space-between;
-    flex-wrap:nowrap;
-    box-sizing:border-box;
-  }
+  #save-slots{padding:8px 10px;width:100%;box-sizing:border-box;}
+  .save-slot-wrap{display:flex;align-items:center;gap:8px;}
   .save-slot{
     position:relative;
-    width:calc(25% - 8px);
-    aspect-ratio:1/1;
-    border:2px solid #4a3010;
-    border-radius:6px;
-    background:#0e0b07;
-    cursor:pointer;
-    overflow:hidden;
+    width:110px;height:110px;flex-shrink:0;
+    border:2px solid #4a3010;border-radius:6px;
+    background:#0e0b07;overflow:hidden;
     transition:border-color .2s,box-shadow .2s;
-    flex-shrink:0;
   }
-  .save-slot:hover{border-color:#c8a050;box-shadow:0 0 14px #c8a05044}
-  .save-slot.filled{border-color:#6a4a18}
-  .save-slot.filled:hover{border-color:#e8c060;box-shadow:0 0 18px #e8c06055}
-  .slot-num{
-    position:absolute;top:3px;left:5px;
-    font-family:'Bloodcrow',serif;font-size:11px;
-    color:#7a6040;z-index:2;pointer-events:none;
-  }
-  .slot-img{
-    width:100%;height:100%;object-fit:cover;
-    display:none;border-radius:4px;
-  }
-  .save-slot.filled .slot-img{display:block}
+  .save-slot.filled{border-color:#6a4a18;}
+  .save-slot.filled:hover{border-color:#e8c060;box-shadow:0 0 12px #e8c06044;}
+  .slot-num{display:none;}
+  .slot-img{width:100%;height:100%;object-fit:contain;display:none;}
+  .save-slot.filled .slot-img{display:block;}
   .slot-empty-label{
     position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    font-family:'Bloodcrow',serif;font-size:11px;color:#3a2810;
-    pointer-events:none;
+    font-family:'Bloodcrow',serif;font-size:10px;color:#3a2810;letter-spacing:.04em;text-align:center;
+    pointer-events:none;padding:4px;
   }
-  .save-slot.filled .slot-empty-label{display:none}
-  .slot-del{
-    position:absolute;top:2px;right:2px;
-    width:18px;height:18px;
-    background:#2a0808;border:1px solid #5a1818;
-    border-radius:3px;color:#cc4040;font-size:10px;
-    cursor:pointer;display:none;z-index:3;
-    line-height:1;padding:0;
+  .save-slot.filled .slot-empty-label{display:none;}
+  .slot-buttons{display:flex;flex-direction:column;gap:6px;}
+  .slot-btn{
+    width:36px;height:36px;
+    border-radius:5px;cursor:pointer;border:1px solid;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .15s,color .15s;padding:0;
   }
-  .save-slot.filled .slot-del{display:flex;align-items:center;justify-content:center}
-  .slot-del:hover{background:#4a0808;color:#ff6060}
-  .slot-save-btn{
-    position:absolute;top:2px;right:2px;
-    width:18px;height:18px;
-    background:#0a1a0a;border:1px solid #2a4a2a;
-    border-radius:3px;color:#508050;font-size:10px;
-    cursor:pointer;display:flex;z-index:3;
-    align-items:center;justify-content:center;
-    padding:0;transition:background .15s,color .15s,border-color .15s;
-  }
-  .slot-save-btn:hover{background:#142814;color:#80d080;border-color:#508050;}
-  .save-slot.filled .slot-save-btn{display:none;}
-  .save-slot.active-slot{
-    border-color:#e8c050;
-    box-shadow:0 0 18px #e8c05066, inset 0 0 8px #e8c05022;
-  }
-  .save-slot.active-slot .slot-num{color:#e8c050}
+  .slot-btn svg{display:block;flex-shrink:0;}
+  .slot-btn-save{background:#0a1a0a;border-color:#2a4a2a;color:#60b060;}
+  .slot-btn-save:hover{background:#142814;color:#90e090;border-color:#508050;}
+  .slot-btn-load{background:#0a0e1a;border-color:#2a3a6a;color:#6090e0;display:none;}
+  .slot-btn-load:hover{background:#0e1830;color:#90c0ff;border-color:#5080c0;}
+  .slot-btn-del{background:#1a0808;border-color:#5a2020;color:#c05050;display:none;}
+  .slot-btn-del:hover{background:#2a0808;color:#ff7070;border-color:#aa3030;}
+  .save-slot-wrap.filled .slot-btn-save{display:none;}
+  .save-slot-wrap.filled .slot-btn-load{display:flex;}
+  .save-slot-wrap.filled .slot-btn-del{display:flex;}
+  .save-slot.active-slot{border-color:#e8c050;box-shadow:0 0 14px #e8c05066;}
 
   input[type=color]{width:44px;height:32px;border:none;background:none;cursor:pointer;padding:0;border-radius:4px}
 
@@ -859,17 +1030,19 @@
     grid-area:right;
     background-image:linear-gradient(180deg,#1a1208cc 0%,#141008cc 100%),url('verticalback.png');
     background-size:cover;background-position:center;
+    border:none;
     border-left:3px solid #7a5520;
+    outline:none;
     box-shadow:inset 6px 0 24px #00000099;
     display:flex;flex-direction:column;overflow:hidden;
   }
   #rp-header{
-    flex-shrink:0;overflow:hidden;
+    flex-shrink:0;overflow:hidden;height:103px;
     border-bottom:2px solid #7a5520;
   }
-  #rp-header img{width:100%;height:110%;display:block;object-fit:cover;object-position:center;margin-top:-5%;}
+  #rp-header img{width:100%;height:100%;display:block;object-fit:cover;object-position:center 50%;}
   #rp-equipped-toggle{display:none;}
-  #rp-scroll{overflow-y:auto;display:flex;flex-direction:column;}
+  #rp-scroll{overflow-y:auto;display:flex;flex-direction:column;flex:1;min-height:0;}
   #rp-scroll::-webkit-scrollbar{width:4px}
   #rp-scroll::-webkit-scrollbar-track{background:#0e0a06}
   #rp-scroll::-webkit-scrollbar-thumb{background:#5a3a10;border-radius:2px}
@@ -877,7 +1050,7 @@
   .inv-item{
     display:flex;align-items:center;gap:8px;
     background:linear-gradient(90deg,#221808,#1a1208);
-    border:1px solid #3a2810;border-radius:5px;
+    border:1px solid #3a2810;border-radius:20px;
     padding:5px 8px;min-height:0;
   }
   .inv-item.empty{
@@ -886,7 +1059,7 @@
     background:linear-gradient(90deg,#1e1408,#181006);
   }
   .inv-item.empty .inv-icon-empty{
-    width:38px;height:38px;border-radius:4px;flex-shrink:0;
+    width:38px;height:38px;border-radius:50%;flex-shrink:0;
     background:#1a1006;border:1px dashed #5a3a18;
     display:flex;align-items:center;justify-content:center;
   }
@@ -894,7 +1067,7 @@
     font-family:'Bloodcrow',serif;font-size:14px;color:#9a7840;
     letter-spacing:.05em;text-transform:uppercase;
   }
-  .inv-icon{width:38px;height:38px;object-fit:contain;border-radius:4px;
+  .inv-icon{width:38px;height:38px;object-fit:contain;border-radius:50%;
     background:#0e0a06;border:1px solid #4a3010;flex-shrink:0;}
   .inv-icon.mouth-icon{background:#fff;}
   .inv-icon.rarity-common   {box-shadow:0 0 6px #aaaaaa55;}
@@ -922,12 +1095,19 @@
 
   /* ── STAT TOTALS TRIANGLE ── */
   #stat-totals{
-    padding:6px 10px 6px;border-top:1px solid #3a2810;
+    padding:0 0 6px;
     display:flex;flex-direction:column;align-items:center;gap:6px;
-    margin-top:4px;
+    border-top:1px solid #3a2808;
+    margin-top:10px;
   }
-  #stat-totals-label{font-family:'Bloodcrow',serif;font-size:12px;color:#6a5030;
-    letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+  #stat-totals-label{
+    font-family:'Bloodcrow',serif;font-size:18px;letter-spacing:.12em;text-transform:uppercase;
+    color:#c8a050;text-align:center;
+    width:100%;padding:10px 0 8px;
+    background:linear-gradient(90deg,#1a1005,#2a1a08,#1a1005);
+    border-bottom:1px solid #4a3010;
+    margin-bottom:6px;
+  }
   .stat-tri-row{display:flex;justify-content:center;gap:12px}
   .stat-circle{
     width:100px;height:100px;
@@ -1050,11 +1230,158 @@
       overflow-x:hidden;
     }
 
-    /* ── 1. PREVIEW FIRST ── */
+    /* ── sidebar becomes transparent so children order independently ── */
+    #sidebar{ display:contents; }
+
+    /* ── ORDER: wallet(0) → preview(1) → tab bar(2) → content(3) → equipped(4) ── */
+    #sidebar-header        { order:0; display:none !important; }
+    #wallet-section-label  { order:0; position:sticky; top:80px; z-index:500;
+                             width:100%; box-sizing:border-box; }
+    #wallet-status-bar     { order:0; position:sticky; top:calc(80px + 48px); z-index:499;
+                             width:100%; box-sizing:border-box; }
+    #wallet-platforms      { order:0; display:none !important; }
+    #wallet-inline-icons   { display:flex !important; }
+
+    #preview-area          { order:1; display:block !important; }
+
+    #mob-tab-bar           { order:2; position:sticky; top:126px; z-index:490; margin-top:16px; margin-bottom:8px;
+                             display:flex; width:100%;
+                             background:linear-gradient(90deg,#1a1005,#120c04);
+                             border-bottom:2px solid #4a3010; flex-shrink:0; }
+
+    /* tab content */
+    #packs-section-label   { order:3; display:none !important; }
+    #packs-section-body-wrap{ order:3; display:none !important; }
+    #sidebar-content       { order:3; }
+    #sidebar-inventory-label{ display:none !important; }
+    #inventory-section-body { display:none !important; }
+
+    #right-panel           { order:4; display:none !important; }
+
+    #mob-settings-panel    { order:5; display:none !important; }
+    body[data-mob-tab="settings"] #mob-settings-panel { display:block !important; }
+
+    /* ritual pill switch */
+    #ritual-pill-switch{
+      display:flex; gap:0;
+      background:linear-gradient(90deg,#1a1005,#120c04);
+      border:1px solid #4a3010; border-radius:10px; margin:8px 14px 4px; overflow:hidden;
+    }
+    .ritual-pill{
+      flex:1; padding:10px 4px 9px; border-radius:0;
+      font-family:'Bloodcrow',serif; font-size:16px; letter-spacing:.06em; text-transform:uppercase;
+      background:none; border:none; border-bottom:2px solid transparent; margin-bottom:-2px;
+      color:#7a6040; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      transition:color .2s, border-color .2s;
+    }
+    .ritual-pill svg{ stroke:#7a6040; transition:stroke .2s; flex-shrink:0; width:22px; height:22px; }
+    .ritual-pill.active{ color:#e8c060; border-bottom-color:#e8c060; background:rgba(232,192,96,0.08); }
+    .ritual-pill.active svg{ stroke:#e8c060; }
+
+    /* ritual sub-tab visibility (default show effigy) */
+    body[data-mob-tab="build"] #inner-inventory-label { display:none !important; }
+    body[data-mob-tab="build"] #inner-inventory-body-wrap { display:block !important; max-height:none !important; overflow:visible !important; }
+    body[data-mob-tab="build"] #bg-section-label,
+    body[data-mob-tab="build"] #bg-section-body-wrap,
+    body[data-mob-tab="build"] #pins-section-label,
+    body[data-mob-tab="build"] #pins-section-body-wrap,
+    body[data-mob-tab="build"] #name-section-label,
+    body[data-mob-tab="build"] #name-section-body-wrap { display:none !important; }
+
+    body[data-mob-tab="build"][data-mob-ritual="ambiance"] #pins-section-label,
+    body[data-mob-tab="build"][data-mob-ritual="ambiance"] #bg-section-label,
+    body[data-mob-tab="build"][data-mob-ritual="ambiance"] #name-section-label { display:none !important; }
+    body[data-mob-tab="build"][data-mob-ritual="ambiance"] #pins-section-body-wrap,
+    body[data-mob-tab="build"][data-mob-ritual="ambiance"] #bg-section-body-wrap,
+    body[data-mob-tab="build"][data-mob-ritual="ambiance"] #name-section-body-wrap {
+      display:block !important; max-height:none !important; overflow:visible !important; padding:0 !important;
+    }
+    body[data-mob-tab="build"][data-mob-ritual="ambiance"] #inner-inventory-label,
+    body[data-mob-tab="build"][data-mob-ritual="ambiance"] #inner-inventory-body-wrap { display:none !important; }
+
+    /* ambiance sub-section titles (shown instead of labels) */
+    body[data-mob-tab="build"][data-mob-ritual="ambiance"] .ambiance-mob-title { display:block !important; }
+    .ambiance-mob-title{
+      font-family:'Bloodcrow',serif; font-size:20px; letter-spacing:.12em; text-transform:uppercase;
+      color:#e8d09a; padding:12px 16px;
+      background:linear-gradient(90deg,#2a1e0a,#1a1206);
+      border-top:1px solid #4a3010; border-bottom:2px solid #4a3010;
+    }
+
+    /* hide music/sfx/discord/docs from menu bar on mobile */
+    #mbar-music-btn, #mbar-sfx-btn { display:none !important; }
+
+    /* settings panel styles */
+    #mob-settings-panel{
+      width:100%; box-sizing:border-box; padding:12px 14px; display:flex; flex-direction:column; gap:16px;
+    }
+    .settings-block{
+      background:#140e06; border:1px solid #3a2808; border-radius:10px; overflow:hidden;
+    }
+    .settings-block-title{
+      font-family:'Bloodcrow',serif; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+      color:#6a5030; padding:8px 14px 6px; border-bottom:1px solid #2a1c08;
+    }
+    .settings-row{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 14px; border-bottom:1px solid #1e1408;
+    }
+    .settings-row:last-child{ border-bottom:none; }
+    .settings-row-label{
+      display:flex; align-items:center; gap:8px;
+      font-family:'Bloodcrow',serif; font-size:15px; letter-spacing:.05em; color:#c8a060;
+    }
+    .settings-toggle{
+      width:44px; height:24px; border-radius:12px; border:none; cursor:pointer;
+      background:#2a1040; position:relative; flex-shrink:0; transition:background .2s, box-shadow .2s;
+    }
+    .settings-toggle.on{ background:linear-gradient(90deg,#5a20a0,#3a1080); box-shadow:0 0 10px 2px #8040c055; }
+    .settings-toggle .st-track{
+      position:absolute; top:3px; left:3px; width:18px; height:18px;
+      border-radius:50%; background:#5a4020; transition:transform .2s, background .2s, box-shadow .2s;
+    }
+    .settings-toggle.on .st-track{ transform:translateX(20px); background:#e8c060; box-shadow:0 0 6px 2px #e8c06088; }
+    .settings-link-row{
+      display:flex; align-items:center; gap:10px; padding:11px 14px;
+      font-family:'Bloodcrow',serif; font-size:15px; letter-spacing:.05em;
+      color:#c8a060; text-decoration:none; border-bottom:1px solid #1e1408;
+      transition:background .15s;
+    }
+    .settings-link-row:last-child{ border-bottom:none; }
+    .settings-link-row:active{ background:#1e1408; }
+
+    /* tab bar styles */
+    .mob-tab{ flex:1;display:flex;flex-direction:column;align-items:center;
+      gap:3px;padding:8px 4px 7px; background:none;border:none;
+      font-family:'Bloodcrow',serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+      color:#7a6040;cursor:pointer;
+      border-bottom:2px solid transparent; margin-bottom:-2px;
+      transition:color .2s,border-color .2s; }
+    .mob-tab svg{ stroke:#7a6040; transition:stroke .2s; width:28px; height:28px; }
+    .mob-tab.active{ color:#e8c060; border-bottom-color:#e8c060; background:rgba(232,192,96,0.08); }
+    .mob-tab.active svg{ stroke:#e8c060; }
+
+    /* ── TAB VISIBILITY ── */
+    body[data-mob-tab="packs"] #packs-section-body-wrap{
+      display:block !important; max-height:none !important;
+    }
+    body[data-mob-tab="build"] #inventory-section-body{
+      display:block !important; max-height:none !important; overflow:visible !important;
+    }
+    body[data-mob-tab="equipped"] #right-panel{
+      display:flex !important; flex-direction:column;
+    }
+    body[data-mob-tab="equipped"] #rp-scroll{
+      display:flex !important; max-height:none !important; overflow:visible !important;
+    }
+
+    /* ── canvas ── */
     #preview-area{
-      order:0;
+      order:1;
       grid-area:unset;
       width:100%;
+      box-sizing:border-box;
       flex:none;
       height:auto;
       position:relative;
@@ -1062,6 +1389,10 @@
       display:block;
       background:#0c0a0c;
       overflow:hidden;
+    }
+    #preview-body{
+      padding:0 12px;
+      box-sizing:border-box;
     }
     #preview-area::before{
       content:'';position:absolute;inset:0;
@@ -1071,12 +1402,26 @@
       position:absolute;top:0;left:0;width:100%;height:100%;
       object-fit:cover;opacity:0.4;z-index:0;
     }
-    #preview-body{flex:none;}
-    #preview-wrap{width:100%;margin:8px 0 0;}
+    #preview-area{display:flex !important;flex-direction:column;}
+    #music-row{order:-1;}
+    #preview-body{flex:none;display:flex;flex-direction:column;align-items:center;padding:0;width:100%;box-sizing:border-box;order:0;}
+    #preview-wrap{padding:0 12px;box-sizing:border-box;width:100%;max-width:100%;margin:8px 0 0;}
     .mbar-label{display:none;}
-    .mbar-btn{padding:0 12px;}
     .mbar-group{display:none;}
-    #preview-area{padding-bottom:0;}
+    #preview-area{padding-bottom:8px;}
+    /* full-width menu bar */
+    #music-row{
+      width:100%;padding:6px 12px 8px;box-sizing:border-box;
+    }
+    #mbar-inner{
+      width:100%;border-radius:10px;
+      height:52px;justify-content:space-evenly;
+    }
+    .mbar-btn{
+      flex:1;min-width:0;justify-content:center;padding:0 4px;height:100%;
+    }
+    .mbar-btn svg{width:24px;height:24px;flex-shrink:0;}
+    .mbar-sep{display:none;}
     /* copyright: hide in preview-area, show in right panel */
     #app-footer{display:none;}
     #app-footer-rp{
@@ -1092,7 +1437,13 @@
     #preview-img{width:100%;height:auto;max-height:none;}
     #preview-action-btns{bottom:6px;left:6px;}
     #preview-btn-rand,#preview-btn-clear{width:40px;height:40px;}
-    #bewitch-box{margin:4px 8px 0;}
+    #bewitch-box{
+      margin:4px 0 0;
+      width:calc(100% - 24px);
+      margin-left:12px;
+      margin-right:12px;
+      box-sizing:border-box;
+    }
     #bw-action{font-size:20px;padding:0 4px;}
     #loading{position:absolute;inset:0;z-index:20;}
     #status,#pending-indicator{display:none;}
@@ -1126,17 +1477,53 @@
 
     /* copyright under stat-totals */
     /* section headers: compact + consistent */
-    .sidebar-section-label,.sidebar-section-label *{font-size:13px !important;}
-    .sidebar-section-label{padding:9px 12px;}
-    .section-header{padding:8px 12px;font-size:13px !important;}
+    .sidebar-section-label,.sidebar-section-label *{font-size:15px !important;}
+    .inner-section-label{padding-left:14px !important;font-size:13px !important;background:linear-gradient(90deg,#221608,#160e04) !important;border-top-color:#3a2408 !important;border-bottom-color:#3a2408 !important;color:#c8a870 !important;flex-wrap:nowrap !important;}
+    .inner-section-label *{font-size:13px !important;}
+    .sidebar-section-label{flex-wrap:nowrap !important; gap:6px !important; overflow:hidden;}
+    .sidebar-section-label .toggle-arrow{margin-left:auto;flex-shrink:0;}
+    .sidebar-section-label{padding:11px 14px;}
+    .section-header{padding:10px 14px;font-size:15px !important;}
     .section.open .section-body{padding:8px 10px;}
-    .section-body label,.slider-row label{font-size:12px;}
-    #wallet-label-text{font-size:13px;}
-    #wallet-addr{font-size:12px !important;}
+    .section-body label,.slider-row label{font-size:13px;}
+    #wallet-label-text{font-size:15px;}
+    #wallet-addr{font-size:13px !important;}
+    #btn-wallet,#btn-tez-connect,#btn-disconnect,#btn-tez-disconnect,.platform-btn-dummy{font-size:12px !important;}
+    .platform-addr{font-size:12px !important;}
 
     /* thumb grids: 4 per row on small screens */
     .thumb-grid{grid-template-columns:repeat(4,1fr);gap:5px;}
 
+    /* ── drop reveal mobile ── */
+    #drop-reveal{
+      padding:40px 10px 90px;
+      justify-content:flex-start;
+      align-items:center;
+    }
+    #drop-rarity-title{font-size:18px;margin-bottom:6px;}
+    #drop-items-row{
+      display:flex !important;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:8px;width:100%;box-sizing:border-box;padding:0 8px;
+    }
+    .drop-item-card{width:calc(50% - 8px);box-sizing:border-box;}
+    .drop-item-card{width:auto;min-width:0;flex-shrink:unset;padding:8px 6px;gap:4px;box-sizing:border-box;}
+    .drop-item-card img{width:100%;height:80px;object-fit:contain;border-radius:6px;}
+    .drop-item-name{font-size:11px;max-width:100%;}
+    .drop-item-cat{font-size:9px;}
+    .drop-item-stats{gap:5px;margin-top:3px;}
+    .drop-stat .dsv{font-size:11px;}
+    .drop-stat .dsl{font-size:8px;}
+    #drop-inventory-msg{font-size:13px;}
+    #drop-confirm{
+      position:fixed !important;bottom:16px !important;
+      left:50% !important;transform:translateX(-50%) !important;
+      z-index:2200;
+      width:calc(100% - 40px);max-width:340px;
+      padding:13px 28px;font-size:16px;
+      text-align:center;
+    }
     /* ── 3. RIGHT PANEL ── */
     #right-panel{
       order:2;
@@ -1151,32 +1538,9 @@
       background-size:cover;background-position:center;
     }
     #rp-header{display:none;}
-    /* equipped items toggle — mobile only */
-    #rp-equipped-toggle{
-      display:flex;align-items:center;justify-content:center;gap:8px;
-      margin:12px auto 0;
-      padding:9px 24px;
-      cursor:pointer;
-      font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.08em;text-transform:uppercase;
-      color:#c8a050;
-      background:linear-gradient(135deg,#1e1208,#2a1a08);
-      border:1px solid #5a3a18;border-radius:20px;
-      width:fit-content;
-      user-select:none;
-      transition:border-color .2s,box-shadow .2s;
-    }
-    #rp-equipped-toggle:hover{border-color:#c8a050;box-shadow:0 0 10px #c8a05033;}
-    #rp-equipped-toggle.open #rp-equipped-arrow-svg{transform:rotate(180deg);}
-    #rp-equipped-arrow-svg{transition:transform .3s ease;flex-shrink:0;}
-    /* slide animation */
-    #rp-scroll{
-      display:block;
-      overflow:hidden;
-      max-height:0;
-      transition:max-height .35s ease;
-    }
-    #rp-scroll.open{max-height:600px;}
-    #inventory-list{padding:8px 10px 4px;}
+    #rp-equipped-toggle{display:none !important;}
+    #inventory-list{padding:8px 10px 4px;width:100%;box-sizing:border-box;}
+    #rp-scroll{width:100%;box-sizing:border-box;}
 
     /* stat circles: fill screen width, background 15% smaller */
     #stat-totals{padding:8px 6px 10px;}
@@ -1185,40 +1549,37 @@
     .stat-circle-val{font-size:clamp(20px,7vw,36px);}
     .stat-circle-lbl{font-size:clamp(10px,2.5vw,14px);}
 
-    /* connect button: tall + wider */
-    #btn-wallet,#btn-disconnect{
+    #btn-wallet,#btn-tez-connect,#btn-disconnect,#btn-tez-disconnect,.platform-btn-dummy{
       font-size:12px !important;
-      padding:8px 8px !important;
-      width:180px !important;
-      text-align:center;
     }
 
     /* inventory label: match other section padding */
     #sidebar-inventory-label{padding:9px 12px !important;}
 
     /* slots: 4 in a row */
-    #slots-section{margin-top:10px;}
-    #save-slots{gap:6px;padding:8px 10px 12px;}
-    .save-slot{width:calc(25% - 5px);}
+    #slots-section{margin-top:0;}
+    #save-slots{padding:8px 10px 12px;}
 
     /* ── BEWITCH PANEL: fixed full-width at bottom ── */
     #staged-panel{
       position:fixed;
-      bottom:0;left:0;right:0;
-      width:100%;
-      border-radius:0;
-      border-left:none;border-right:none;border-bottom:none;
+      bottom:8px;
+      left:50%;
+      transform:translateX(-50%);
+      width:calc(100% - 24px);
+      border-radius:12px;
+      overflow:visible;
       flex-direction:row;
       align-items:center;
       padding:10px 14px;
       gap:12px;
       z-index:200;
     }
-    @keyframes panelSlideIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+    @keyframes panelSlideIn{from{opacity:0;transform:translateX(-50%) translateY(40px)}to{opacity:1;transform:translateX(-50%) translateY(0);}}
     #staged-img-preview{width:46px;height:46px;flex-shrink:0;}
     #staged-name{font-size:16px;}
     #staged-hint{display:none;}
-    #border-glow-svg{inset:-3px;width:calc(100% + 6px);height:calc(100% + 6px);}
+    #border-glow-svg{position:absolute;inset:-4px;width:calc(100% + 8px);height:calc(100% + 8px);}
 
     /* pack overlay full screen */
     #pack-preview,#pack-overlay,#drop-reveal{
@@ -1227,6 +1588,14 @@
       max-width:none;
     }
     .pack-card-img{width:65px;}
+
+    /* ── MOBILE WALLET: icon-only, inline in label bar ── */
+    #wallet-section-label{cursor:default;pointer-events:none;}
+    #wallet-section-label .hint-btn,
+    #wallet-inline-icons,
+    #wallet-inline-icons *{pointer-events:auto;}
+    #wallet-platforms{display:none !important;}
+    #wallet-inline-icons{display:flex !important;}
   }
 
 /* ── PACK SYSTEM ── */
@@ -1248,7 +1617,7 @@
 .pack-card:hover.rarity-rare      .pack-card-img{filter:drop-shadow(0 0 16px #f0d060dd)}
 .pack-card:hover.rarity-legendary .pack-card-img{filter:drop-shadow(0 0 18px #a0e0ffdd)}
 .pack-card:hover.rarity-ultimate  .pack-card-img{filter:drop-shadow(0 0 22px #ff90d0ee)}
-.pack-card-label{font-family:'Bloodcrow',serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.pack-card-label{font-family:'Bloodcrow',serif;font-size:15.5px;letter-spacing:.06em;text-transform:uppercase}
 .pack-card.rarity-common    .pack-card-label{color:#e0e0e0}
 .pack-card.rarity-rare      .pack-card-label{color:#e8c050}
 .pack-card.rarity-legendary .pack-card-label{color:#80d0ff}
@@ -1270,7 +1639,25 @@
 .pack-card.rarity-rare      .pack-card-count{background:#cc2222;color:#ffffff}
 .pack-card.rarity-legendary .pack-card-count{background:#cc2222;color:#ffffff}
 .pack-card.rarity-ultimate  .pack-card-count{background:#cc2222;color:#ffffff}
-#pack-empty{font-family:'Bloodcrow',serif;font-size:12px;color:#5a4020;letter-spacing:.05em;padding:4px 0}
+#pack-empty{font-family:'Bloodcrow',serif;font-size:16.5px;color:#5a4020;letter-spacing:.05em;padding:4px 0}
+#buy-packs-section{margin-top:8px;padding-top:8px;border-top:1px solid #2a1a08;}
+#buy-packs-label{display:none;}
+#buy-packs-btns{display:flex;flex-direction:column;gap:8px;}
+.buy-pack-btn{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;text-decoration:none;
+  background:linear-gradient(135deg,#2a1040,#1a0830);border:1px solid #5a3080;border-radius:20px;
+  transition:opacity .2s;
+}
+.buy-pack-btn:hover{opacity:.7;}
+.buy-pack-btn-pill{
+  font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.05em;
+  color:#c8a050;flex:1;
+}
+.buy-pack-icon{width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid #5a3a18;}
+.pack-inactive{opacity:0.35;cursor:default;pointer-events:none;}
+.pack-inactive:hover{transform:none!important;}
+.pack-inactive .pack-card-img{filter:grayscale(1)!important;}
 /* dev panel */
 #dev-pack-panel{background:#0e0a06;border:1px dashed #3a2808;border-radius:6px;padding:8px 10px;}
 #dev-pack-panel-title{font-family:'Bloodcrow',serif;font-size:10px;color:#5a4020;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
@@ -1292,7 +1679,7 @@
   background:#000000cc;align-items:center;justify-content:center;flex-direction:column;gap:20px;
 }
 #pack-preview.active{display:flex}
-#pack-preview-img{width:260px;max-width:80vw;height:auto;border-radius:12px;
+#pack-preview-img{width:360px;max-width:85vw;height:auto;border-radius:12px;
   filter:drop-shadow(0 0 30px #c8a05066);animation:dropIn .35s ease}
 #pack-preview-count{font-family:'Bloodcrow',serif;font-size:18px;color:#c8a050;letter-spacing:.06em}
 #btn-open-pack{
@@ -1321,45 +1708,114 @@
   cursor:pointer;letter-spacing:.06em;border:none;background:none;
 }
 #pack-skip:hover{color:#c8a050}
+/* leaderboard */
+#lb-overlay{
+  position:fixed;inset:0;z-index:2200;
+  background:#000000cc;
+  display:flex;align-items:center;justify-content:center;
+}
+#lb-modal{
+  background:linear-gradient(160deg,#1e1508,#140e04,#1a1208);
+  border:1px solid #7a5520;border-radius:12px;
+  width:520px;max-width:94vw;max-height:80vh;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 0 60px #000e,0 0 30px #c8a04022;
+}
+#lb-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;border-bottom:1px solid #4a3010;flex-shrink:0;
+}
+#lb-title{font-family:'Bloodcrow',serif;font-size:20px;letter-spacing:.1em;color:#e8d090;text-transform:uppercase;}
+#lb-close{background:none;border:none;color:#7a6035;font-size:18px;cursor:pointer;padding:0 4px;line-height:1;}
+#lb-close:hover{color:#e8c060;}
+#lb-tabs{
+  display:flex;border-bottom:1px solid #3a2808;flex-shrink:0;
+}
+.lb-tab{
+  flex:1;padding:9px 0;background:none;border:none;border-bottom:2px solid transparent;
+  font-family:'Bloodcrow',serif;font-size:14px;letter-spacing:.07em;color:#7a6035;
+  cursor:pointer;text-transform:uppercase;transition:color .2s,border-color .2s;
+}
+.lb-tab:hover{color:#c8a050;}
+.lb-tab.active{color:#e8c060;border-bottom-color:#c8a040;}
+#lb-list{overflow-y:auto;flex:1;padding:8px 0;}
+#lb-list::-webkit-scrollbar{width:4px;}
+#lb-list::-webkit-scrollbar-track{background:#0e0a06;}
+#lb-list::-webkit-scrollbar-thumb{background:#5a3a10;border-radius:2px;}
+.lb-row{
+  display:grid;grid-template-columns:36px 1fr 60px 60px 60px 70px;
+  align-items:center;gap:0;
+  padding:9px 20px;border-bottom:1px solid #2a1a0833;
+  font-family:'Bloodcrow',serif;font-size:14px;letter-spacing:.05em;
+  transition:background .15s;
+}
+.lb-row:hover{background:#221a0844;}
+.lb-row.lb-you{background:#3a2808aa;border-bottom-color:#6a4a18;}
+.lb-rank{color:#7a6035;font-size:15px;text-align:center;}
+.lb-rank.gold{color:#f0c030;}
+.lb-rank.silver{color:#b0b8c8;}
+.lb-rank.bronze{color:#c07830;}
+.lb-addr{color:#c8a870;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;}
+.lb-stat{text-align:right;font-size:13px;}
+.lb-stat.curse{color:#cc4444;}
+.lb-stat.doom{color:#6060ee;}
+.lb-stat.hex{color:#40c040;}
+.lb-stat.power{color:#e8c060;font-size:15px;font-weight:bold;}
+.lb-col-hdr{
+  display:grid;grid-template-columns:36px 1fr 60px 60px 60px 70px;
+  padding:5px 20px;font-family:'Bloodcrow',serif;font-size:11px;letter-spacing:.08em;
+  color:#6a5028;text-transform:uppercase;border-bottom:1px solid #3a2808;flex-shrink:0;
+}
+.lb-col-hdr span{text-align:right;}
+.lb-col-hdr span:nth-child(2){text-align:left;}
+#lb-loading{padding:40px;text-align:center;font-family:'Bloodcrow',serif;font-size:16px;color:#7a6035;letter-spacing:.07em;}
+#lb-your-rank{
+  padding:10px 20px;border-top:1px solid #4a3010;flex-shrink:0;
+  font-family:'Bloodcrow',serif;font-size:13px;color:#c8a050;letter-spacing:.05em;
+  background:#1e1508;
+}
 /* drop reveal */
 #drop-reveal{
-  display:none;position:fixed;inset:0;z-index:2100;
-  background:#00000088;align-items:center;justify-content:center;flex-direction:column;gap:16px;
+  display:none;position:fixed;inset:0;z-index:2100;overflow:hidden;
+  background:linear-gradient(#00000099,#00000099),url('verticalback.png') center/cover no-repeat;
+  align-items:center;justify-content:center;flex-direction:column;gap:16px;
+  overflow-y:auto;padding:20px 12px;
 }
 #drop-reveal.active{display:flex}
-#drop-items-row{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;max-width:900px}
+#drop-reveal-glow{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:80%;height:60%;pointer-events:none;
+  opacity:0;transition:opacity .6s;
+  filter:blur(80px);border-radius:50%;z-index:0;
+}
+#drop-reveal.active #drop-reveal-glow{opacity:1;}
+#drop-reveal.rarity-common    #drop-reveal-glow{background:radial-gradient(ellipse,#ffffff55 0%,transparent 70%);}
+#drop-reveal.rarity-rare      #drop-reveal-glow{background:radial-gradient(ellipse,#e8c04088 0%,transparent 70%);}
+#drop-reveal.rarity-legendary #drop-reveal-glow{background:radial-gradient(ellipse,#60b0f099 0%,transparent 70%);}
+#drop-reveal.rarity-ultimate  #drop-reveal-glow{background:radial-gradient(ellipse,#ff88ccaa 0%,transparent 70%);}
+#drop-items-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:900px;position:relative;z-index:1;}
 .drop-item-card{
-  background:#1e1608;border-radius:10px;padding:14px 12px;
+  background:#1e1608;border-radius:10px;padding:12px 10px;
   display:flex;flex-direction:column;align-items:center;gap:8px;
   animation:dropIn .4s ease both;
-  min-width:140px;
+  width:180px;flex-shrink:0;
 }
-.drop-item-card img{width:180px;height:180px;object-fit:contain;border-radius:8px}
-.drop-item-name{font-family:'Bloodcrow',serif;font-size:24px;color:#e8d080;text-align:center;max-width:200px;line-height:1.3}
-.drop-item-cat{font-family:'Bloodcrow',serif;font-size:17px;color:#a08040;text-transform:uppercase;letter-spacing:.08em}
-.drop-item-stats{display:flex;gap:10px;margin-top:6px}
-.drop-stat{
-  position:relative;width:64px;height:64px;
-  background-size:cover;background-position:center;background-repeat:no-repeat;
-  border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
-  padding-top:6px;
+.drop-item-card img{width:160px;height:160px;object-fit:contain;border-radius:8px}
+.drop-item-name{
+  font-family:'Bloodcrow',serif;font-size:16px;color:#e8d080;
+  text-align:center;width:100%;line-height:1.2;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.drop-stat.curse{background-image:url('cursepanel.png')}
-.drop-stat.doom {background-image:url('darknesspanel.png')}
-.drop-stat.hex  {background-image:url('hexpanel.png')}
-.drop-stat .dsv{
-  font-family:'Bloodcrow',serif;font-size:20px;font-weight:bold;line-height:1;
-  text-shadow:0 0 8px #000,0 1px 3px #000;position:relative;z-index:1;
-}
-.drop-stat .dsl{
-  font-family:'Bloodcrow',serif;font-size:10px;line-height:1;letter-spacing:.05em;
-  text-shadow:0 0 6px #000,0 1px 2px #000;position:relative;z-index:1;opacity:.85;
-}
+.drop-item-cat{font-family:'Bloodcrow',serif;font-size:12px;color:#a08040;text-transform:uppercase;letter-spacing:.08em}
+.drop-item-stats{display:flex;gap:10px;margin-top:6px;justify-content:center}
+.drop-stat{display:flex;align-items:baseline;gap:3px;}
+.drop-stat .dsv{font-family:'Bloodcrow',serif;font-size:15px;line-height:1;}
+.drop-stat .dsl{font-family:'Bloodcrow',serif;font-size:10px;line-height:1;opacity:.7;letter-spacing:.04em;}
 .drop-stat.curse .dsv,.drop-stat.curse .dsl{color:#ff6040}
-.drop-stat.doom  .dsv,.drop-stat.doom  .dsl{color:#a0b8ff}
-.drop-stat.hex   .dsv,.drop-stat.hex   .dsl{color:#dd88ff}
+.drop-stat.doom  .dsv,.drop-stat.doom  .dsl{color:#8090ff}
+.drop-stat.hex   .dsv,.drop-stat.hex   .dsl{color:#cc70ff}
 #drop-inventory-msg{font-family:'Bloodcrow',serif;font-size:16px;color:#7ec87e;letter-spacing:.06em;margin-top:4px}
-.drop-item-card.rarity-common   {background:#1a1a1a;border:2px solid #aaaaaa}
+.drop-item-card.rarity-common   {background:#1a1208;border:2px solid #7a5520;box-shadow:0 0 10px #7a552044}
 .drop-item-card.rarity-rare     {background:#1e1a08;border:2px solid #e8c040;box-shadow:0 0 14px #e8c04077,0 0 30px #e8c04033}
 .drop-item-card.rarity-legendary{background:#081828;border:2px solid #60b0f0;box-shadow:0 0 18px #60b0f0aa,0 0 40px #60b0f055}
 .drop-item-card.rarity-ultimate {background:#280a20;border:2px solid #ff88cc;box-shadow:0 0 22px #ff88cccc,0 0 50px #ff88cc66,0 0 80px #ff88cc22}
@@ -1382,7 +1838,9 @@
     #mobile-header{
       display:flex;
       align-items:center;
-      position:relative;
+      position:sticky;
+      top:0;
+      z-index:510;
       width:100%;
       height:80px;
       overflow:hidden;
@@ -1416,45 +1874,117 @@
     }
   }
 </style>
+<script src="https://unpkg.com/@airgap/beacon-dapp@4.8.1/dist/walletbeacon.dapp.min.js"></script>
 </head>
 <body>
 <div id="mobile-header">
-  <img id="mobile-header-bg" src="panel_crop.png" alt="">
-  <img id="mobile-header-logo" src="hexlogo.png" alt="">
+  <img id="mobile-header-bg" src="panelback.png" alt="">
+  <img id="mobile-header-logo" src="logo2.png" alt="">
   <span id="mobile-header-title">Ritual Effigy<br>Workshop</span>
 </div>
 
 
 <div id="sidebar">
   <div id="sidebar-header">
-    <img src="titleback.png" alt="">
+    <img src="panelback.png" alt="">
+    <img id="sh-logo" src="logo2.png" alt="">
+    <span id="sh-title">Ritual Effigy<br>Workshop</span>
   </div>
-  <audio id="bg-music" loop src="Beneath_the_Mangrove.mp3"></audio>
+  <audio id="bg-music" loop src="music/3.mp3"></audio>
 
   <!-- WALLET SECTION — no body, everything in the label row -->
   <div class="sidebar-section-label open" id="wallet-section-label" style="gap:10px;">
     <span id="wallet-ssl-icon" class="ssl-icon">
-      <svg id="wallet-icon-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+      <svg id="wallet-icon-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
       <svg id="wallet-sync-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="display:none;animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
     </span>
     <span id="wallet-label-text">Wallet</span>
-    <span id="wallet-addr" style="font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.06em;color:#c8a050;display:none;"></span>
-    <button id="btn-wallet" onclick="connectWallet()" style="margin-left:auto;font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.08em;padding:5px 14px;background:linear-gradient(135deg,#0a3a0a,#1a5a1a);color:#70e870;border:1px solid #2a8a2a;border-radius:5px;cursor:pointer;white-space:nowrap;">Connect</button>
-    <button onclick="disconnectWallet()" id="btn-disconnect" style="display:none;margin-left:auto;font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.08em;padding:5px 14px;background:#3a0808;color:#e07060;border:1px solid #7a2020;border-radius:5px;cursor:pointer;white-space:nowrap;">Disconnect</button>
+    <button class="hint-btn" id="wallet-section-hint" data-hint="Connect your wallet to unlock your pack inventory, sync your collection, and appear in the Ritual Rankings." onclick="toggleHint(this,event)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button>
+    <!-- inline platform icons — visible on mobile inside the label bar -->
+    <div id="wallet-inline-icons" style="display:none;align-items:center;gap:8px;margin-left:auto;">
+      <span id="mob-sync-label" style="display:none;font-family:'Bloodcrow',serif;font-size:12px;color:#e8c050;letter-spacing:.06em;animation:mobSyncPulse 1s ease-in-out infinite;">sync</span>
+      <button id="mob-connect-btn" style="display:none" onclick="mobConfirmConnect()"></button>
+      <span id="mob-wallet-addr-label" style="display:none;font-family:'Bloodcrow',serif;font-size:11px;color:#a08040;letter-spacing:.05em;"></span>
+      <button id="mob-disconnect-btn" style="display:none" onclick="mobConfirmDisconnect()"></button>
+      <div class="platform-icon-wrap disconnected" id="sol-icon-wrap-mob" onclick="mobIconTap('sol')" title="Solana">
+        <div class="pi-inner"><img src="drip.jpeg" class="platform-icon" alt="Solana"></div>
+      </div>
+      <div class="platform-icon-wrap disconnected" id="tez-icon-wrap-mob" onclick="mobIconTap('tez')" title="Tezos">
+        <div class="pi-inner"><img src="objkt.jpeg" class="platform-icon" alt="Tezos"></div>
+      </div>
+    </div>
+  </div>
+  <div id="wallet-status-bar">
+    <span id="wallet-status-dot"></span>
+    <span id="wallet-status-text">Demo Mode — Sample items loaded. Connect your wallet to unlock your collection.</span>
+  </div>
+  <div id="wallet-platforms">
+    <div class="wallet-platform-row" id="sol-platform-row">
+      <div class="platform-icon-wrap disconnected" id="sol-icon-wrap" onclick="handleIconClick('sol')"><div class="pi-inner"><img src="drip.jpeg" class="platform-icon" alt="Drip"></div></div>
+      <button id="btn-wallet" onclick="connectWallet()">Connect</button>
+      <button id="btn-disconnect" onclick="disconnectWallet()" style="display:none;">Disconnect</button>
+      <span id="wallet-addr" class="platform-addr"></span>
+    </div>
+    <div class="wallet-platform-row" id="tez-platform-row">
+      <div class="platform-icon-wrap disconnected" id="tez-icon-wrap" onclick="handleIconClick('tez')"><div class="pi-inner"><img src="objkt.jpeg" class="platform-icon" alt="Objkt"></div></div>
+      <button id="btn-tez-connect" onclick="connectTezos()">Connect</button>
+      <button id="btn-tez-disconnect" onclick="disconnectTezos()" style="display:none;">Disconnect</button>
+      <span class="platform-addr" id="tez-addr"></span>
+    </div>
   </div>
 
+  <!-- MOBILE TAB BAR -->
+  <nav id="mob-tab-bar">
+    <button class="mob-tab active" data-tab="packs" onclick="switchMobTab('packs')">
+      <!-- layers -->
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      <span>Packs</span>
+    </button>
+    <button class="mob-tab" data-tab="build" onclick="switchMobTab('build')">
+      <!-- person-standing -->
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><path d="m9 20 3-6 3 6"/><path d="m6 8 6 2 6-2"/><path d="M12 10v4"/></svg>
+      <span>Ritual</span>
+    </button>
+    <button class="mob-tab" data-tab="equipped" onclick="switchMobTab('equipped')">
+      <!-- backpack -->
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M8 21v-5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5"/><path d="M8 10h8"/><path d="M8 18h8"/></svg>
+      <span>Equipped</span>
+    </button>
+    <button class="mob-tab" data-tab="settings" onclick="switchMobTab('settings')">
+      <!-- settings / gear -->
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Options</span>
+    </button>
+  </nav>
+
   <!-- PACKS SECTION -->
-  <div class="sidebar-section-label" id="packs-section-label" onclick="toggleSidebarSection('packs')" style="display:none">
+  <div class="sidebar-section-label open" id="packs-section-label" onclick="toggleSidebarSection('packs')">
     <span class="ssl-icon">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
     </span>
     Packs
     <span id="packs-unopened-label" style="margin-left:6px;font-family:'Bloodcrow',serif;letter-spacing:.06em;color:#e8c060;white-space:nowrap;line-height:1;display:inline-flex;align-items:baseline;gap:5px;"></span>
+    <button class="hint-btn" data-hint="Open packs to earn items for your effigy. Each pack contains a random set of artefacts based on rarity." onclick="toggleHint(this,event)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button>
     <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
   </div>
-  <div class="sidebar-section-body" id="packs-section-body-wrap" style="display:none">
+  <div class="sidebar-section-body open" id="packs-section-body-wrap">
     <div id="pack-section-body">
       <div id="pack-inventory"><span id="pack-empty">No unopened packs</span></div>
+      <div id="no-wallet-msg" style="font-family:'Bloodcrow',serif;font-size:17.5px;color:#7a6040;letter-spacing:.05em;line-height:1.6;padding:4px 0 10px;">No packs bound to your soul yet.<br>Acquire one below to begin.</div>
+      <div id="demo-mode-msg" style="font-family:'Bloodcrow',serif;font-size:13px;color:#6a5030;letter-spacing:.06em;line-height:1.5;padding:0 0 10px;border-top:1px solid #2a1a08;margin-top:4px;padding-top:8px;">Demo mode — connect wallet to unlock your collection.</div>
+      <div id="buy-packs-section">
+        <div id="buy-packs-label">Get your packs</div>
+        <div id="buy-packs-btns">
+          <a href="#" target="_blank" class="buy-pack-btn" id="buy-drip-btn">
+            <img src="drip.jpeg" class="buy-pack-icon" alt="Drip">
+            <span class="buy-pack-btn-pill">Buy Mystery Packs on Drip</span>
+          </a>
+          <a href="#" target="_blank" class="buy-pack-btn" id="buy-objkt-btn">
+            <img src="objkt.jpeg" class="buy-pack-icon" alt="Objkt">
+            <span class="buy-pack-btn-pill">Buy Mystery Packs on Objkt</span>
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1463,116 +1993,180 @@
   <!-- INVENTORY -->
   <div class="sidebar-section-label" id="sidebar-inventory-label" onclick="toggleInventorySection()">
     <span class="ssl-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
-    Inventory
+    Customize
     <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
   </div>
   <div class="sidebar-section-body" id="inventory-section-body">
-    <div class="section" id="sec-body">
-      <div class="section-header" onclick="toggleSection('sec-body')">Body <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-      <div class="section-body">
-        <div class="thumb-grid" id="grid-body"></div>
-        <div style="margin-top:12px">
-          <div class="slider-row"><label>Body Color</label><input type="color" id="body_color" value="#a06030" oninput="scheduleGen()"></div>
-          <input type="hidden" id="body_hue" value="30">
-          <input type="hidden" id="body_sat" value="60">
+    <!-- RITUAL PILL SWITCH (mobile only) -->
+    <div id="ritual-pill-switch">
+      <button class="ritual-pill active" data-ritual="effigy" onclick="switchRitualTab('effigy')">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 1 8 8c0 3.5-2 6.5-5 7.5V19a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-1.5C6 16.5 4 13.5 4 10a8 8 0 0 1 8-8z"/><path d="M9 12h.01"/><path d="M15 12h.01"/></svg>
+        Effigy
+      </button>
+      <button class="ritual-pill" data-ritual="ambiance" onclick="switchRitualTab('ambiance')">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+        Ambiance
+      </button>
+    </div>
+
+    <!-- INVENTORY inner section -->
+    <div class="sidebar-section-label inner-section-label" id="inner-inventory-label" onclick="toggleInnerSection('inner-inventory')">
+      <span class="ssl-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+      Inventory
+      <button class="hint-btn" data-hint="Select one item from each category to dress your effigy. Hit Bewitch to cast the ritual." onclick="toggleHint(this,event)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button>
+      <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </div>
+    <div class="sidebar-section-body" id="inner-inventory-body-wrap">
+      <div id="inventory-no-wallet-msg" style="font-family:'Bloodcrow',serif;font-size:14px;color:#7a6040;letter-spacing:.05em;line-height:1.6;padding:10px 16px;display:none;">Connect your wallet to sync your inventory items.</div>
+      <div class="section" id="sec-body">
+        <div class="section-header" onclick="toggleSection('sec-body')">Body <button class="hint-btn" data-hint="The foundation of your effigy. Choose a texture, then fine-tune the colour below." onclick="toggleHint(this,event)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button><span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <div class="section-body">
+          <div class="thumb-grid" id="grid-body"></div>
+          <div style="margin-top:12px">
+            <div class="slider-row"><label>Body Color</label><input type="color" id="body_color" value="#a06030" oninput="scheduleGen()"></div>
+            <input type="hidden" id="body_hue" value="30">
+            <input type="hidden" id="body_sat" value="60">
+          </div>
+        </div>
+      </div>
+      <div class="section" id="sec-knife">
+        <div class="section-header" onclick="toggleSection('sec-knife')">Blade — Right Hand <button class="hint-btn" data-hint="The weapon in your doll's right hand. Each blade carries a different power split." onclick="toggleHint(this,event)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button><span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <div class="section-body"><div class="thumb-grid" id="grid-knife"></div></div>
+      </div>
+      <div class="section" id="sec-offhand">
+        <div class="section-header" onclick="toggleSection('sec-offhand')">Offhand — Left Hand <button class="hint-btn" data-hint="A relic, idol, or cursed object held in the left hand. Often the strangest things carry the deepest Doom." onclick="toggleHint(this,event)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button><span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <div class="section-body"><div class="thumb-grid" id="grid-offhand"></div></div>
+      </div>
+      <div class="section" id="sec-necklace">
+        <div class="section-header" onclick="toggleSection('sec-necklace')">Necklace <button class="hint-btn" data-hint="A talisman at the throat. Necklaces are the most varied category — pendants, brooches, relics, and bones." onclick="toggleHint(this,event)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button><span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <div class="section-body"><div class="thumb-grid" id="grid-necklace"></div></div>
+      </div>
+      <div class="section" id="sec-eyes">
+        <div class="section-header" onclick="toggleSection('sec-eyes')">Eyes <button class="hint-btn" data-hint="Left and right eyes can be different — mix rarities for a more unsettling look." onclick="toggleHint(this,event)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button><span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <div class="section-body">
+          <div class="sub-section" id="subsec-eye-left">
+            <div class="sub-section-header" onclick="toggleSubSection('subsec-eye-left')">Left Eye <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="sub-section-body"><div class="thumb-grid" id="grid-eye-left"></div></div>
+          </div>
+          <div class="sub-section" id="subsec-eye-right">
+            <div class="sub-section-header" onclick="toggleSubSection('subsec-eye-right')">Right Eye <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+            <div class="sub-section-body"><div class="thumb-grid" id="grid-eye-right"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="section" id="sec-mouth">
+        <div class="section-header" onclick="toggleSection('sec-mouth')">Mouth <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+        <div class="section-body"><div class="section-hint">Cosmetic only — no stats. The expression is the last thing a ritual seals.</div><div class="thumb-grid" id="grid-mouth"></div></div>
+      </div>
+    </div><!-- /inner-inventory-body-wrap -->
+    <!-- PINS (inside Customize) -->
+    <div class="sidebar-section-label inner-section-label" id="pins-section-label" onclick="toggleInnerSection('pins')">
+      <span class="ssl-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17z"/></svg></span>
+      Pins
+      <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </div>
+    <div class="sidebar-section-body" id="pins-section-body-wrap">
+      <div class="ambiance-mob-title" style="display:none">Pins</div>
+      <div style="padding:12px 14px">
+        <div id="pin-counter">Placed: <span id="pin-placed-count">0</span> / 5</div>
+        <div style="font-family:'Bloodcrow',serif;font-size:16px;color:#7a6848;letter-spacing:.04em;margin-bottom:10px;line-height:1.5">Drag a pin onto the preview to place it on the doll. Up to 5 pins. Click a placed pin to remove it. Pin near the edges of the doll for best results.</div>
+        <div class="thumb-grid" id="grid-pins"></div>
+        <button id="pin-clear" onclick="clearPins()">✕ Clear All Pins</button>
+      </div>
+    </div>
+
+    <!-- BACKGROUND (inside Customize) -->
+    <div class="sidebar-section-label inner-section-label" id="bg-section-label" onclick="toggleInnerSection('bg')">
+      <span class="ssl-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>
+      Background
+      <button class="hint-btn" data-hint="Set the scene behind your effigy — textured or flat — and adjust the colour overlay cast across the doll." onclick="toggleHint(this,event)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button>
+      <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </div>
+    <div class="sidebar-section-body" id="bg-section-body-wrap">
+      <div class="ambiance-mob-title" style="display:none">Background</div>
+      <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+        <div class="radio-row">
+          <label><input type="radio" name="bg_type" value="back3" checked onchange="scheduleGen()"> Texture</label>
+          <label><input type="radio" name="bg_type" value="flat" onchange="scheduleGen()"> Flat Color</label>
+        </div>
+        <div id="flat-color-row" class="slider-row" style="display:none">
+          <label>Color</label>
+          <input type="color" id="bg_color" value="#1a1a2e" oninput="scheduleGen()">
+        </div>
+        <div class="slider-row">
+          <label>Overlay Color</label>
+          <input type="color" id="overlay_color" value="#0066aa" oninput="scheduleGen()">
+        </div>
+        <div class="slider-row">
+          <label>Overlay Strength</label>
+          <input type="range" id="overlay_strength" min="0" max="100" value="45" oninput="scheduleGen()">
+          <span class="val" id="overlay_strength_v">45</span>
+        </div>
+        <input type="hidden" id="overlay_hue" value="180">
+      </div>
+    </div>
+
+    <!-- NAME (inside Customize) -->
+    <div class="sidebar-section-label inner-section-label" id="name-section-label" onclick="toggleInnerSection('name')">
+      <span class="ssl-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
+      Name
+      <button class="hint-btn" data-hint="Give your effigy a name. It will appear on your rendered image when you download." onclick="toggleHint(this,event)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button>
+      <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </div>
+    <div class="sidebar-section-body" id="name-section-body-wrap">
+      <div class="ambiance-mob-title" style="display:none">Name</div>
+      <div style="padding:12px 14px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" id="name_input" placeholder="Enter name…"
+            onkeydown="if(event.key==='Enter') applyName()"
+            style="flex:1;padding:10px 14px;background:#180e18;border:1px solid #3a2030;border-radius:8px;color:#e8d8a8;font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.06em;outline:none;transition:border-color .2s;"
+            onfocus="this.style.borderColor='#d4a84b'"
+            onblur="this.style.borderColor='#3a2030'">
+          <button onclick="applyName()" style="padding:10px 14px;background:#2a1820;border:1px solid #6a3848;border-radius:8px;color:#d4a84b;font-family:'Bloodcrow',serif;font-size:14px;cursor:pointer;white-space:nowrap;transition:background .2s;" onmouseover="this.style.background='#3a2030'" onmouseout="this.style.background='#2a1820'">Apply</button>
         </div>
       </div>
     </div>
-    <div class="section" id="sec-knife">
-      <div class="section-header" onclick="toggleSection('sec-knife')">Blade — Right Hand <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-      <div class="section-body"><div class="thumb-grid" id="grid-knife"></div></div>
-    </div>
-    <div class="section" id="sec-offhand">
-      <div class="section-header" onclick="toggleSection('sec-offhand')">Offhand — Left Hand <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-      <div class="section-body"><div class="thumb-grid" id="grid-offhand"></div></div>
-    </div>
-    <div class="section" id="sec-necklace">
-      <div class="section-header" onclick="toggleSection('sec-necklace')">Necklace <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-      <div class="section-body"><div class="thumb-grid" id="grid-necklace"></div></div>
-    </div>
-    <div class="section" id="sec-eyes">
-      <div class="section-header" onclick="toggleSection('sec-eyes')">Eyes <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-      <div class="section-body">
-        <div class="sub-section" id="subsec-eye-left">
-          <div class="sub-section-header" onclick="toggleSubSection('subsec-eye-left')">Left Eye <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-          <div class="sub-section-body"><div class="thumb-grid" id="grid-eye-left"></div></div>
-        </div>
-        <div class="sub-section" id="subsec-eye-right">
-          <div class="sub-section-header" onclick="toggleSubSection('subsec-eye-right')">Right Eye <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-          <div class="sub-section-body"><div class="thumb-grid" id="grid-eye-right"></div></div>
-        </div>
-      </div>
-    </div>
-    <div class="section open" id="sec-mouth">
-      <div class="section-header" onclick="toggleSection('sec-mouth')">Mouth <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-      <div class="section-body"><div class="thumb-grid" id="grid-mouth"></div></div>
-    </div>
+
   </div><!-- /inventory-section-body -->
 
-  <!-- BACKGROUND -->
-  <div class="sidebar-section-label" id="bg-section-label" onclick="toggleSidebarSection('bg')">
-    <span class="ssl-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>
-    Background
-    <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-  </div>
-  <div class="sidebar-section-body" id="bg-section-body-wrap">
-    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
-      <div class="radio-row">
-        <label><input type="radio" name="bg_type" value="back3" checked onchange="scheduleGen()"> Texture</label>
-        <label><input type="radio" name="bg_type" value="flat" onchange="scheduleGen()"> Flat Color</label>
-      </div>
-      <div id="flat-color-row" class="slider-row" style="display:none">
-        <label>Color</label>
-        <input type="color" id="bg_color" value="#1a1a2e" oninput="scheduleGen()">
-      </div>
-      <div class="slider-row">
-        <label>Overlay Color</label>
-        <input type="color" id="overlay_color" value="#0066aa" oninput="scheduleGen()">
-      </div>
-      <div class="slider-row">
-        <label>Overlay Strength</label>
-        <input type="range" id="overlay_strength" min="0" max="100" value="45" oninput="scheduleGen()">
-        <span class="val" id="overlay_strength_v">45</span>
-      </div>
-      <input type="hidden" id="overlay_hue" value="180">
-    </div>
-  </div>
-
-  <!-- PINS -->
-  <div class="sidebar-section-label" id="pins-section-label" onclick="toggleSidebarSection('pins')">
-    <span class="ssl-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17z"/></svg></span>
-    Pins
-    <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-  </div>
-  <div class="sidebar-section-body" id="pins-section-body-wrap">
-    <div style="padding:12px 14px">
-      <div id="pin-counter">Placed: <span id="pin-placed-count">0</span> / 5</div>
-      <div style="font-family:'Bloodcrow',serif;font-size:13px;color:#7a6848;letter-spacing:.04em;margin-bottom:10px;line-height:1.5">Drag a pin onto the preview to place it on the doll. Up to 5 pins. Click a placed pin to remove it. Press Bewitch to apply.</div>
-      <div class="thumb-grid" id="grid-pins"></div>
-      <button id="pin-clear" onclick="clearPins()">✕ Clear All Pins</button>
-    </div>
-  </div>
-
-  <!-- NAME -->
-  <div class="sidebar-section-label" id="name-section-label" onclick="toggleSidebarSection('name')">
-    <span class="ssl-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
-    Name
-    <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-  </div>
-  <div class="sidebar-section-body" id="name-section-body-wrap">
-    <div style="padding:12px 14px">
-      <div style="display:flex;gap:8px;align-items:center">
-        <input type="text" id="name_input" placeholder="Enter name…"
-          onkeydown="if(event.key==='Enter') applyName()"
-          style="flex:1;padding:10px 14px;background:#180e18;border:1px solid #3a2030;border-radius:8px;color:#e8d8a8;font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.06em;outline:none;transition:border-color .2s;"
-          onfocus="this.style.borderColor='#d4a84b'"
-          onblur="this.style.borderColor='#3a2030'">
-        <button onclick="applyName()" style="padding:10px 14px;background:#2a1820;border:1px solid #6a3848;border-radius:8px;color:#d4a84b;font-family:'Bloodcrow',serif;font-size:14px;cursor:pointer;white-space:nowrap;transition:background .2s;" onmouseover="this.style.background='#3a2030'" onmouseout="this.style.background='#2a1820'">Apply</button>
-      </div>
-    </div>
-  </div>
-
   </div><!-- /sidebar-content -->
+
+  <!-- SETTINGS PANEL (mobile only) -->
+  <div id="mob-settings-panel">
+    <div class="settings-block">
+      <div class="settings-block-title">Sound</div>
+      <div class="settings-row">
+        <span class="settings-row-label">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          Music
+        </span>
+        <button class="settings-toggle" id="set-music-btn" onclick="toggleMusic(); updateSettingsToggles()">
+          <span class="st-track"></span>
+        </button>
+      </div>
+      <div class="settings-row">
+        <span class="settings-row-label">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          SFX
+        </span>
+        <button class="settings-toggle" id="set-sfx-btn" onclick="toggleSfx(); updateSettingsToggles()">
+          <span class="st-track"></span>
+        </button>
+      </div>
+    </div>
+    <div class="settings-block">
+      <div class="settings-block-title">Links</div>
+      <a class="settings-link-row" href="https://discord.com/invite/V57fUq93xB" target="_blank">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.032.054a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        Discord
+      </a>
+      <a class="settings-link-row" href="https://alper-ozdil-projetcs.gitbook.io/hex-and-stitch" target="_blank">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Docs
+      </a>
+    </div>
+  </div><!-- /mob-settings-panel -->
+
 </div><!-- /sidebar -->
 
 <!-- PACK OPENING OVERLAY -->
@@ -1590,15 +2184,23 @@
 </div>
 <!-- DROP REVEAL OVERLAY -->
 <div id="drop-reveal">
-  <div id="drop-rarity-title"></div>
+  <div id="drop-reveal-glow"></div>
+  <div id="drop-rarity-title" style="position:relative;z-index:1;"></div>
   <div id="drop-items-row"></div>
-  <div id="drop-inventory-msg" style="display:none">✦ All items added to inventory</div>
+  <div id="drop-inventory-msg" style="display:none;position:relative;z-index:1;">✦ All items added to inventory</div>
   <button id="drop-confirm" onclick="confirmDrop()">Close</button>
 </div>
 
+<!-- ── HINT POPUP ── -->
+<div id="hint-popup">
+  <span id="hint-popup-text"></span>
+  <button id="hint-popup-close" onclick="closeHintPopup()">✕</button>
+</div>
+
+<!-- ── MOBILE FLOATING NAV ── -->
 <!-- ── RIGHT PANEL ── -->
 <div id="right-panel">
-  <div id="rp-header"><img src="rightback.png" alt=""></div>
+  <div id="rp-header"><img src="equipback.png" alt=""></div>
   <div id="rp-equipped-toggle" onclick="toggleEquippedPanel()">
     <svg id="rp-equipped-arrow-svg" viewBox="0 0 20 12" width="18" height="10" fill="none">
       <path d="M2 10 L10 2 L18 10" stroke="#c8a050" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1607,25 +2209,38 @@
   </div>
   <div id="rp-scroll">
     <div id="inventory-list"></div>
-  </div>
-  <div id="stat-totals">
+    <div id="stat-totals">
     <div id="stat-totals-label">Total Power</div>
     <div class="stat-tri-row">
       <div class="stat-circle curse"><span class="stat-circle-val" id="total-curse">0</span><span class="stat-circle-lbl">Curse</span></div>
       <div class="stat-circle dark"><span class="stat-circle-val" id="total-dark">0</span><span class="stat-circle-lbl">Doom</span></div>
       <div class="stat-circle hex"><span class="stat-circle-val" id="total-hex">0</span><span class="stat-circle-lbl">Hex</span></div>
     </div>
-  </div>
-  <div id="app-footer-rp">Hex &amp; Stitch &nbsp;·&nbsp; Designed, developed &amp; created by Alper Özdil <span class="copy-sym">©</span> 2026 &nbsp;·&nbsp; <a href="https://alperozdil.com" target="_blank">alperozdil.com</a></div>
   <div id="slots-section">
-    <div id="slots-section-label">Ritual Seals</div>
+    <div id="slots-section-label">Bound Soul</div>
     <div id="save-slots">
-      <div class="save-slot" id="slot-0" onclick="slotClick(0)"><span class="slot-num">I</span><button class="slot-del" onclick="deleteSlot(event,0)">✕</button><button class="slot-save-btn" onclick="saveToSlotIdx(event,0)" title="Save to slot"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
-      <div class="save-slot" id="slot-1" onclick="slotClick(1)"><span class="slot-num">II</span><button class="slot-del" onclick="deleteSlot(event,1)">✕</button><button class="slot-save-btn" onclick="saveToSlotIdx(event,1)" title="Save to slot"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
-      <div class="save-slot" id="slot-2" onclick="slotClick(2)"><span class="slot-num">III</span><button class="slot-del" onclick="deleteSlot(event,2)">✕</button><button class="slot-save-btn" onclick="saveToSlotIdx(event,2)" title="Save to slot"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
-      <div class="save-slot" id="slot-3" onclick="slotClick(3)"><span class="slot-num">IV</span><button class="slot-del" onclick="deleteSlot(event,3)">✕</button><button class="slot-save-btn" onclick="saveToSlotIdx(event,3)" title="Save to slot"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button><img class="slot-img" src="" alt=""><div class="slot-empty-label">Empty</div></div>
+      <div class="save-slot-wrap" id="slot-wrap-0">
+        <div class="save-slot" id="slot-0">
+          <img class="slot-img" src="" alt="">
+          <div class="slot-empty-label">No build saved</div>
+        </div>
+        <div class="slot-buttons">
+          <button class="slot-btn slot-btn-save" onclick="saveToSlotIdx(event,0)" title="Save">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          </button>
+          <button class="slot-btn slot-btn-load" onclick="slotClick(0)" title="Load">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+          </button>
+          <button class="slot-btn slot-btn-del" onclick="deleteSlot(event,0)" title="Delete">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
+  </div>
+  </div>
+  <div id="app-footer-rp">Hex &amp; Stitch &nbsp;·&nbsp; Designed, developed &amp; created by Alper Özdil <span class="copy-sym">©</span> 2026 &nbsp;·&nbsp; <a href="https://alperozdil.com" target="_blank">alperozdil.com</a></div>
 </div>
 
 <div id="preview-area">
@@ -1695,7 +2310,7 @@
       </button>
       <div class="mbar-sep"></div>
       <button class="mbar-btn" onclick="randomizeAll()" title="Randomize">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="3"/><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="8" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.2" fill="currentColor" stroke="none"/></svg>
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg>
         <span class="mbar-label">Randomize</span>
       </button>
       <div class="mbar-sep"></div>
@@ -1709,22 +2324,49 @@
         <svg id="music-icon-off" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
         <span class="mbar-label">Music</span>
       </button>
-      <div class="mbar-group">
-        <input class="mbar-vol" id="music-vol" type="range" min="0" max="100" value="20" oninput="document.getElementById('bg-music').volume=this.value/100;updateVolSlider(this)">
-      </div>
       <div class="mbar-sep"></div>
       <button class="mbar-btn" id="mbar-sfx-btn" onclick="toggleSfx()">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path id="sfx-wave" d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
         <span class="mbar-label">SFX</span>
       </button>
-      <div class="mbar-group">
-        <input class="mbar-vol" id="sfx-vol" type="range" min="0" max="100" value="70" oninput="sfxVolume=this.value/100;updateVolSlider(this)">
-      </div>
+      <div class="mbar-sep"></div>
+      <button class="mbar-btn" id="mbar-lb-btn" onclick="openLeaderboard()" title="Leaderboard">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="4" height="7"/><rect x="10" y="9" width="4" height="12"/><rect x="18" y="4" width="4" height="17"/></svg>
+        <span class="mbar-label">Ranks</span>
+      </button>
+      <div class="mbar-sep"></div>
+      <a class="mbar-btn" id="mbar-discord-btn" href="https://discord.com/invite/V57fUq93xB" target="_blank" title="Discord">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.032.054a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        <span class="mbar-label">Discord</span>
+      </a>
+      <div class="mbar-sep"></div>
+      <a class="mbar-btn" id="mbar-docs-btn" href="https://alper-ozdil-projetcs.gitbook.io/hex-and-stitch" target="_blank" title="Docs">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/><path d="M6 8h2"/><path d="M6 12h2"/><path d="M16 8h2"/><path d="M16 12h2"/></svg>
+        <span class="mbar-label">Docs</span>
+      </a>
     </div>
     <button id="music-btn" style="display:none"></button>
     <span id="music-label" style="display:none"></span>
   </div>
   <div id="app-footer">Hex &amp; Stitch &nbsp;·&nbsp; Designed, developed &amp; created by Alper Özdil <span class="copy-sym">©</span> 2026 &nbsp;·&nbsp; <a href="https://alperozdil.com" target="_blank">alperozdil.com</a></div>
+</div>
+
+<!-- leaderboard modal -->
+<div id="lb-overlay" onclick="if(event.target===this)closeLeaderboard()" style="display:none">
+  <div id="lb-modal">
+    <div id="lb-header">
+      <span id="lb-title">⛧ Ritual Rankings</span>
+      <button id="lb-close" onclick="closeLeaderboard()">✕</button>
+    </div>
+    <div id="lb-tabs">
+      <button class="lb-tab active" onclick="setLbTab('power',this)">Total Power</button>
+      <button class="lb-tab" onclick="setLbTab('curse',this)">Curse</button>
+      <button class="lb-tab" onclick="setLbTab('doom',this)">Doom</button>
+      <button class="lb-tab" onclick="setLbTab('hex',this)">Hex</button>
+    </div>
+    <div id="lb-list"></div>
+    <div id="lb-your-rank" style="display:none"></div>
+  </div>
 </div>
 
 <!-- staged item panel, bottom-right -->
@@ -2321,7 +2963,9 @@ function showStagedPanel(key, path, iconSrc){
   const name = path.split('/').pop().replace(/\.png$/i,'').replace(/_/g,' ');
   const stats = itemStats(path);
   const info = (window.itemInfoMap||{})[path]||{};
-  const typeLabel = [info.category, info.rarity].filter(Boolean).join(' · ').toUpperCase();
+  const catLabels = {body_file:'Body',knife_file:'Blade',offhand_file:'Offhand',necklace_file:'Necklace',eye_left_file:'Eye',eye_right_file:'Eye',mouth_file:'Mouth'};
+  const catClean = catLabels[info.category] || (info.category||'').replace(/_file$/i,'');
+  const typeLabel = [catClean, info.rarity].filter(Boolean).join(' · ').toUpperCase();
   document.getElementById('bw-icon').src = iconSrc;
   document.getElementById('bw-name').textContent = name;
   document.getElementById('bw-type').textContent = typeLabel;
@@ -2442,13 +3086,7 @@ function toggleSidebar(){
 
 function initMusic(){
   const audio=document.getElementById('bg-music');
-  const vol=document.getElementById('music-vol');
   audio.volume=0.2;
-  vol.value=20;
-  vol.addEventListener('input',function(){
-    audio.volume=this.value/100;
-    this.style.background=`linear-gradient(to right,#e8c060 ${this.value}%,#3a2808 ${this.value}%)`;
-  });
 }
 document.addEventListener('DOMContentLoaded',initMusic);
 
@@ -2474,7 +3112,7 @@ function setSyncing(on){
   const dis = document.getElementById('btn-disconnect');
   if(on){
     dis.disabled = true;
-    dis.textContent = 'Packs loading…';
+    dis.textContent = 'Syncing…';
     dis.style.color = '#e8c060'; dis.style.borderColor = '#8a6020'; dis.style.background = '#2a1a04';
   } else {
     dis.disabled = false;
@@ -2486,10 +3124,25 @@ function setSyncing(on){
 const SECTION_IDS = {
   packs:     { lbl:'packs-section-label',     bdy:'packs-section-body-wrap' },
   inventory: { lbl:'sidebar-inventory-label', bdy:'inventory-section-body' },
-  bg:        { lbl:'bg-section-label',        bdy:'bg-section-body-wrap' },
-  pins:      { lbl:'pins-section-label',      bdy:'pins-section-body-wrap' },
-  name:      { lbl:'name-section-label',      bdy:'name-section-body-wrap' },
 };
+
+const INNER_SECTION_IDS = {
+  'inner-inventory': { lbl:'inner-inventory-label', bdy:'inner-inventory-body-wrap' },
+  bg:   { lbl:'bg-section-label',   bdy:'bg-section-body-wrap' },
+  pins: { lbl:'pins-section-label', bdy:'pins-section-body-wrap' },
+  name: { lbl:'name-section-label', bdy:'name-section-body-wrap' },
+};
+
+function toggleInnerSection(name){
+  const ids = INNER_SECTION_IDS[name];
+  if(!ids) return;
+  const lblEl = document.getElementById(ids.lbl);
+  const bdyEl = document.getElementById(ids.bdy);
+  if(!lblEl || !bdyEl) return;
+  const isOpen = lblEl.classList.contains('open');
+  lblEl.classList.toggle('open', !isOpen);
+  bdyEl.classList.toggle('open', !isOpen);
+}
 
 function toggleInventorySection(){ toggleSidebarSection('inventory'); }
 
@@ -2518,33 +3171,61 @@ function toggleSidebarSection(name){
   }
 }
 
+function detectSolanaWallets(){
+  const wallets = [];
+  const seen = new Set();
+  const add = (name, p) => {
+    if(p && typeof p.connect==='function' && !seen.has(p)){ seen.add(p); wallets.push({name, provider:p}); }
+  };
+  add('Phantom',  window.phantom?.solana);
+  add('Phantom',  window.solana?.isPhantom ? window.solana : null);
+  add('Solflare', window.solflare);
+  add('Backpack', window.backpack?.solana ?? window.backpack);
+  add('Brave',    window.solana?.isBraveWallet ? window.solana : null);
+  add('Glow',     window.glowSolana);
+  add('Jupiter',  window.jupiter?.solana ?? window.jupiter);
+  add('Coinbase', window.coinbaseSolana);
+  add('Exodus',   window.exodus?.solana);
+  // fallback: any remaining window.solana not caught above
+  add('Wallet',   window.solana);
+  return wallets;
+}
+
 async function connectWallet(){
-  if(!window.solana || !window.solana.isPhantom){
-    alert('Phantom wallet not found. Please install it from phantom.app');
+  const wallets = detectSolanaWallets();
+  if(!wallets.length){
+    alert('No Solana wallet found. Please install Phantom, Solflare, or Backpack.');
     return;
   }
+  let provider;
+  if(wallets.length === 1){
+    provider = wallets[0].provider;
+  } else {
+    const choice = await showWalletPicker(wallets);
+    if(!choice) return;
+    provider = choice;
+  }
   try{
-    const resp = await window.solana.connect();
+    const resp = await provider.connect();
     const pubkey = resp.publicKey.toString();
+    window._solanaProvider = provider;
     walletConnected = true;
 
     document.getElementById('btn-wallet').style.display='none';
     document.getElementById('btn-disconnect').style.display='';
-    document.getElementById('wallet-label-text').style.display='none';
+    // wallet-label-text stays visible
     document.getElementById('wallet-addr').textContent = 'Wallet: '+pubkey.slice(0,4)+'...'+pubkey.slice(-4);
+    setWalletStatus(true, pubkey);
     document.getElementById('wallet-addr').style.display='';
     setSyncing(true);
 
     applyHolderFilter();
+    ['sol-icon-wrap','sol-icon-wrap-mob'].forEach(id=>{
+      const w=document.getElementById(id); if(w){w.classList.add('connected');w.classList.remove('disconnected','connecting');}
+    });
     await loadWalletPacks(pubkey);
 
     setSyncing(false);
-    // show packs section after sync
-    document.getElementById('packs-section-label').style.display='';
-    document.getElementById('packs-section-body-wrap').style.display='';
-    // auto-open packs section
-    document.getElementById('packs-section-label').classList.add('open');
-    document.getElementById('packs-section-body-wrap').classList.add('open');
   } catch(e){
     setSyncing(false);
     console.error('Wallet connect error', e);
@@ -2552,29 +3233,271 @@ async function connectWallet(){
 }
 
 function disconnectWallet(){
-  if(window.solana) window.solana.disconnect();
+  if(window._solanaProvider) window._solanaProvider.disconnect();
   walletConnected = false; isHolder = false;
   currentWalletKey = null;
   packInventory = {common:0,rare:0,legendary:0,ultimate:0};
-  document.getElementById('packs-section-label').style.display='none';
-  document.getElementById('packs-section-body-wrap').style.display='none';
-  document.getElementById('packs-section-label').classList.remove('open');
-  document.getElementById('packs-section-body-wrap').classList.remove('open');
+  document.getElementById('packs-section-label').classList.add('open');
+  document.getElementById('packs-section-body-wrap').classList.add('open');
   renderPacks();
   ['grid-body','grid-knife','grid-offhand','grid-necklace','grid-eye-left','grid-eye-right'].forEach(id=>{
     const g=document.getElementById(id); if(g) g.innerHTML='';
   });
   buildMouthGrid();
+  buildDemoGrids();
   document.getElementById('btn-wallet').style.display='';
   document.getElementById('btn-disconnect').style.display='none';
-  document.getElementById('wallet-label-text').style.display='';
+  // wallet-label-text always visible
   document.getElementById('wallet-addr').style.display='none';
   setSyncing(false);
+  setWalletStatus(false);
   applyHolderFilter();
+  ['sol-icon-wrap','sol-icon-wrap-mob'].forEach(id=>{
+    const w=document.getElementById(id); if(w){w.classList.remove('connected','connecting');w.classList.add('disconnected');}
+  });
+}
+
+function showWalletPicker(wallets){
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;background:#00000099;z-index:9999;display:flex;align-items:center;justify-content:center;';
+    const box = document.createElement('div');
+    box.style.cssText='background:#1a1208;border:1px solid #7a5520;border-radius:10px;padding:24px;display:flex;flex-direction:column;gap:12px;min-width:220px;';
+    const title = document.createElement('div');
+    title.textContent='Select Wallet';
+    title.style.cssText="font-family:'Bloodcrow',serif;font-size:18px;color:#e8c060;letter-spacing:.1em;text-align:center;margin-bottom:4px;";
+    box.appendChild(title);
+    wallets.forEach(w=>{
+      const btn = document.createElement('button');
+      btn.textContent = w.name;
+      btn.style.cssText="font-family:'Bloodcrow',serif;font-size:15px;padding:10px 20px;background:linear-gradient(135deg,#0e3a0e,#1a5a1a);color:#70e870;border:1px solid #2a8a2a;border-radius:6px;cursor:pointer;letter-spacing:.08em;";
+      btn.onclick=()=>{ document.body.removeChild(overlay); resolve(w.provider); };
+      box.appendChild(btn);
+    });
+    const cancel = document.createElement('button');
+    cancel.textContent='Cancel';
+    cancel.style.cssText="font-family:'Bloodcrow',serif;font-size:13px;padding:8px;background:transparent;color:#7a6040;border:1px solid #3a2810;border-radius:6px;cursor:pointer;";
+    cancel.onclick=()=>{ document.body.removeChild(overlay); resolve(null); };
+    box.appendChild(cancel);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  });
+}
+
+// ── Tezos / Beacon ──────────────────────────────────────────
+let _beaconClient = null;
+
+async function getBeaconClient(){
+  if(_beaconClient) return _beaconClient;
+  _beaconClient = new beacon.DAppClient({ name: 'Hex & Stitch' });
+  return _beaconClient;
+}
+
+async function connectTezos(){
+  try{
+    const client = await getBeaconClient();
+    const acc = await client.requestPermissions();
+    const addr = acc.address;
+    window.tezosAddress = addr;
+    document.getElementById('tez-addr').textContent = addr.slice(0,5)+'...'+addr.slice(-4);
+    document.getElementById('btn-tez-connect').style.display='none';
+    document.getElementById('btn-tez-disconnect').style.display='';
+    ['tez-icon-wrap','tez-icon-wrap-mob'].forEach(id=>{
+      const w=document.getElementById(id); if(w){w.classList.add('connected');w.classList.remove('disconnected','connecting');}
+    });
+    updateWalletHints();
+  } catch(e){
+    console.error('Tezos connect error', e);
+  }
+}
+
+async function disconnectTezos(){
+  try{
+    const client = await getBeaconClient();
+    await client.clearActiveAccount();
+  } catch(e){}
+  document.getElementById('tez-addr').textContent='';
+  document.getElementById('btn-tez-connect').style.display='';
+  document.getElementById('btn-tez-disconnect').style.display='none';
+  window.tezosAddress = null;
+  ['tez-icon-wrap','tez-icon-wrap-mob'].forEach(id=>{
+    const w=document.getElementById(id); if(w){w.classList.remove('connected','connecting');w.classList.add('disconnected');}
+  });
+  updateWalletHints();
+}
+
+function switchMobTab(tab){
+  document.body.dataset.mobTab = tab;
+  document.querySelectorAll('.mob-tab').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+  if(tab === 'settings') updateSettingsToggles();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function switchRitualTab(ritual){
+  document.body.dataset.mobRitual = ritual;
+  document.querySelectorAll('.ritual-pill').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.ritual === ritual);
+  });
+}
+
+function updateSettingsToggles(){
+  const music = document.getElementById('bg-music');
+  const musicBtn = document.getElementById('set-music-btn');
+  if(musicBtn) musicBtn.classList.toggle('on', music && !music.paused);
+  const sfxBtn = document.getElementById('set-sfx-btn');
+  if(sfxBtn) sfxBtn.classList.toggle('on', typeof sfxEnabled === 'undefined' || sfxEnabled);
+}
+
+// init first tab on mobile
+if(window.innerWidth <= 768){
+  document.body.dataset.mobTab = 'packs';
+  document.body.dataset.mobRitual = 'effigy';
+}
+
+function setMobSyncLabel(show){
+  const el = document.getElementById('mob-sync-label');
+  if(el) el.style.display = show ? '' : 'none';
+}
+let _mobPendingPlatform = null;
+
+function setWalletStatus(connected, pubkey){
+  const bar = document.getElementById('wallet-status-bar');
+  const txt = document.getElementById('wallet-status-text');
+  if(!bar || !txt) return;
+  if(connected && pubkey){
+    const short = pubkey.slice(0,4)+'...'+pubkey.slice(-4);
+    txt.textContent = 'Ritual Active — ' + short;
+    bar.classList.add('live');
+  } else {
+    txt.textContent = 'Demo Mode — Sample items loaded. Connect your wallet to unlock your collection.';
+    bar.classList.remove('live');
+  }
+}
+
+function mobHideWalletPopup(){
+  document.getElementById('mob-connect-btn').style.display = 'none';
+  document.getElementById('mob-disconnect-btn').style.display = 'none';
+  document.getElementById('mob-wallet-addr-label').style.display = 'none';
+  _mobPendingPlatform = null;
+  clearTimeout(window._mobWalletTimer);
+}
+
+function mobIconTap(platform){
+  const solWrap = document.getElementById('sol-icon-wrap-mob');
+  const tezWrap = document.getElementById('tez-icon-wrap-mob');
+  const wrap = platform === 'sol' ? solWrap : tezWrap;
+
+  // if already connected — show address + disconnect
+  if(wrap && wrap.classList.contains('connected')){
+    if(_mobPendingPlatform === platform){
+      mobHideWalletPopup(); return;
+    }
+    mobHideWalletPopup();
+    _mobPendingPlatform = platform;
+    const addr = platform === 'sol'
+      ? (window._solanaProvider?.publicKey?.toString() || '')
+      : (window._tezosAddress || '');
+    const short = addr ? addr.slice(0,4)+'...'+addr.slice(-4) : '';
+    const addrLabel = document.getElementById('mob-wallet-addr-label');
+    addrLabel.textContent = short;
+    addrLabel.style.display = short ? '' : 'none';
+    document.getElementById('mob-disconnect-btn').textContent = 'Disconnect';
+    document.getElementById('mob-disconnect-btn').style.display = '';
+    window._mobWalletTimer = setTimeout(mobHideWalletPopup, 5000);
+    return;
+  }
+
+  // disconnected — toggle connect button
+  if(_mobPendingPlatform === platform){
+    mobHideWalletPopup(); return;
+  }
+  mobHideWalletPopup();
+  _mobPendingPlatform = platform;
+  const btn = document.getElementById('mob-connect-btn');
+  btn.textContent = 'Connect';
+  btn.style.display = '';
+  window._mobWalletTimer = setTimeout(mobHideWalletPopup, 4000);
+}
+
+function mobConfirmConnect(){
+  const platform = _mobPendingPlatform;
+  if(!platform) return;
+  mobHideWalletPopup();
+  handleIconClick(platform);
+}
+
+function mobConfirmDisconnect(){
+  const platform = _mobPendingPlatform;
+  mobHideWalletPopup();
+  if(platform === 'sol') disconnectWallet();
+  else disconnectTezos();
+}
+
+function handleIconClick(platform){
+  if(platform === 'sol'){
+    const wraps = [document.getElementById('sol-icon-wrap'), document.getElementById('sol-icon-wrap-mob')];
+    if(wraps[0] && wraps[0].classList.contains('connected')){ disconnectWallet(); return; }
+    wraps.forEach(w=>{ if(w){ w.classList.add('connecting'); w.classList.remove('disconnected'); }});
+    setMobSyncLabel(true);
+    connectWallet().finally(()=>{
+      wraps.forEach(w=>{ if(w) w.classList.remove('connecting'); });
+      setMobSyncLabel(false);
+    });
+  } else {
+    const wraps = [document.getElementById('tez-icon-wrap'), document.getElementById('tez-icon-wrap-mob')];
+    if(wraps[0] && wraps[0].classList.contains('connected')){ disconnectTezos(); return; }
+    wraps.forEach(w=>{ if(w){ w.classList.add('connecting'); w.classList.remove('disconnected'); }});
+    setMobSyncLabel(true);
+    connectTezos().finally(()=>{
+      wraps.forEach(w=>{ if(w) w.classList.remove('connecting'); });
+      setMobSyncLabel(false);
+    });
+  }
+}
+
+function toggleHint(btn, event){
+  if(event){ event.stopPropagation(); }
+  const popup = document.getElementById('hint-popup');
+  const popupText = document.getElementById('hint-popup-text');
+  const hintText = btn.dataset.hint;
+  if(popup.classList.contains('visible') && popupText.textContent === hintText){
+    closeHintPopup();
+    return;
+  }
+  popupText.textContent = hintText;
+  popup.classList.add('visible');
+  // auto-close after 4s
+  clearTimeout(window._hintTimer);
+  window._hintTimer = setTimeout(closeHintPopup, 4000);
+}
+function closeHintPopup(){
+  document.getElementById('hint-popup').classList.remove('visible');
+  clearTimeout(window._hintTimer);
+}
+
+function toggleMobPanel(){
+  const scroll = document.getElementById('rp-scroll');
+  const btn = document.getElementById('mob-panel-btn');
+  const isOpen = scroll.classList.toggle('open');
+  btn.classList.toggle('active', isOpen);
+}
+
+function updateWalletHints(){
+  const connected = !!(currentWalletKey || window.tezosAddress);
+  const wh = document.getElementById('wallet-section-hint');
+  if(wh) wh.style.display = connected ? 'none' : '';
 }
 
 function applyHolderFilter(){
-  // In pack system, all items are unlocked via pack opening — no holder gate
+  const invMsg = document.getElementById('inventory-no-wallet-msg');
+  const innerWrap = document.getElementById('inner-inventory-body-wrap');
+  if(invMsg) invMsg.style.display = 'none';
+  updateWalletHints();
+  if(innerWrap){
+    innerWrap.querySelectorAll('.section').forEach(s => s.style.display = '');
+  }
   const slotsSection = document.getElementById('slots-section');
   if(slotsSection) slotsSection.style.display = walletConnected ? 'block' : 'none';
   if(walletConnected) renderSlots();
@@ -2588,11 +3511,11 @@ function applyHolderFilter(){
 const SLOTS_KEY = 'voodoo_slots';
 
 function getSlotsData(){
-  try{ return JSON.parse(localStorage.getItem(SLOTS_KEY)||'[null,null,null,null]'); }
-  catch{ return [null,null,null,null]; }
+  try{ return JSON.parse(localStorage.getItem(SLOTS_KEY)||'[null]'); }
+  catch{ return [null]; }
 }
 
-function compressImage(b64, maxW=120) {
+function compressImage(b64, maxW=600) {
   return new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
@@ -2602,17 +3525,12 @@ function compressImage(b64, maxW=120) {
         canvas.width = Math.round(img.width * scale);
         canvas.height = Math.round(img.height * scale);
         canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
+        resolve(canvas.toDataURL('image/jpeg', 0.88).split(',')[1]);
       } catch(e) {
-        console.error('[compressImage] error:', e);
-        resolve(b64.slice(0, 50000)); // fallback: truncate
+        resolve(b64.slice(0, 200000));
       }
     };
-    img.onerror = (e) => {
-      console.error('[compressImage] image load failed:', e);
-      resolve(b64.slice(0, 50000));
-    };
-    // accept full data URL or raw b64
+    img.onerror = () => resolve(b64.slice(0, 200000));
     img.src = b64.startsWith('data:') ? b64 : 'data:image/png;base64,' + b64;
   });
 }
@@ -2627,7 +3545,7 @@ async function saveSlotData(idx, data){
     localStorage.setItem(SLOTS_KEY, JSON.stringify(slots));
   } catch(e) {
     const fallback = [...slots];
-    for(let i=0;i<4;i++){ if(i!==idx && fallback[i]){ fallback[i]=null; break; } }
+    for(let i=0;i<1;i++){ if(i!==idx && fallback[i]){ fallback[i]=null; break; } }
     fallback[idx] = data;
     try { localStorage.setItem(SLOTS_KEY, JSON.stringify(fallback)); } catch(e2){}
   }
@@ -2646,16 +3564,19 @@ async function saveSlotData(idx, data){
 
 function renderSlots(){
   const slots = getSlotsData();
-  for(let i=0;i<4;i++){
+  for(let i=0;i<1;i++){
     const el = document.getElementById(`slot-${i}`);
+    const wrap = document.getElementById(`slot-wrap-${i}`);
     if(!el) continue;
     const d = slots[i];
     if(d){
       el.classList.add('filled');
+      wrap?.classList.add('filled');
       const img = el.querySelector('.slot-img');
       if(img && d.image) img.src = 'data:image/jpeg;base64,'+d.image;
     } else {
       el.classList.remove('filled');
+      wrap?.classList.remove('filled');
       const img = el.querySelector('.slot-img');
       if(img) img.src='';
     }
@@ -2664,18 +3585,15 @@ function renderSlots(){
 
 function slotClick(idx){
   const slots = getSlotsData();
-  toggleSlot(idx);
-  // If slot has data and we just activated it, load it
-  if(activeSlot === idx && slots[idx]) loadSlot(idx);
+  if(slots[idx]) loadSlot(idx);
 }
 
 function toggleSlot(idx){
-  // Deactivate previously active slot
   if(activeSlot !== -1){
     document.getElementById(`slot-${activeSlot}`)?.classList.remove('active-slot');
   }
   if(activeSlot === idx){
-    activeSlot = -1; // toggle off
+    activeSlot = -1;
   } else {
     activeSlot = idx;
     document.getElementById(`slot-${idx}`)?.classList.add('active-slot');
@@ -2693,9 +3611,11 @@ async function saveToSlot(imageB64, forceIdx){
     sliders: {
       overlay_hue: v('overlay_hue'),
       overlay_strength: v('overlay_strength'),
+      overlay_color: document.getElementById('overlay_color')?.value,
       body_hue: v('body_hue'),
       body_sat: v('body_sat'),
-      bg_type: document.querySelector('input[name=bg_type]:checked').value,
+      body_color: document.getElementById('body_color')?.value,
+      bg_type: document.querySelector('input[name=bg_type]:checked')?.value,
       bg_color: v('bg_color'),
     },
     pins: [...placedPins],
@@ -2723,6 +3643,10 @@ function loadSlot(idx){
     const lbl=document.getElementById(id+'_v');
     if(el && d.sliders[id]!=null){ el.value=d.sliders[id]; if(lbl)lbl.textContent=el.value; }
   });
+  const oc=document.getElementById('overlay_color');
+  if(oc) oc.value=d.sliders.overlay_color||'#0066aa';
+  const bc=document.getElementById('body_color');
+  if(bc) bc.value=d.sliders.body_color||'#a06030';
   if(d.sliders.bg_type){
     document.querySelectorAll('input[name=bg_type]').forEach(r=>{ r.checked=(r.value===d.sliders.bg_type); });
     document.getElementById('flat-color-row').style.display = d.sliders.bg_type==='flat'?'flex':'none';
@@ -2745,14 +3669,15 @@ function loadSlot(idx){
   if(d.image) previewImg.src='data:image/jpeg;base64,'+d.image;
 
   generate();
-  showToast(`Loaded slot ${['I','II','III','IV'][idx]}`);
+  showToast('Bound Soul loaded');
 }
 
 async function deleteSlot(e, idx){
   e.stopPropagation();
   await saveSlotData(idx, null);
+  if(activeSlot === idx) activeSlot = -1;
   renderSlots();
-  showToast(`Slot ${['I','II','III','IV'][idx]} cleared`);
+  showToast('Bound Soul cleared');
 }
 
 function hexToHsv(hex){
@@ -2842,10 +3767,10 @@ function updateInventory(){
 
     if(!path){
       item.className='inv-item empty';
-      item.innerHTML=`<div class="inv-icon-empty"><img src="${TYPE_ICONS[key]||'body/common/burlap.PNG'}" style="width:100%;height:100%;object-fit:cover;border-radius:3px;opacity:0.25;"></div><div class="inv-label-empty">${label}</div>`;
+      item.innerHTML=`<div class="inv-icon-empty"><img src="${TYPE_ICONS[key]||'body/common/burlap.PNG'}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;opacity:0.25;"></div><div class="inv-label-empty">${label}</div>`;
     } else {
       const filename=path.split('/').pop().replace(/\.(png|PNG)$/,'').replace(/_/g,' ');
-      const rarity=path.split('/')[0]||'common';
+      const rarity=path.split('/')[1]||'common';
       const url=(window.itemURLMap||{})[path]||'';
       const stats=itemStats(path);
       totalCurse+=stats.curse; totalDark+=stats.doom; totalHex+=stats.hex;
@@ -2856,7 +3781,7 @@ function updateInventory(){
         <img class="inv-icon${isMouth?' mouth-icon':''} rarity-${rarity}" src="${url}" alt="">
         <div class="inv-info">
           <div class="inv-name">${filename}</div>
-          <div class="inv-meta"><span class="${rc}">${rarity[0].toUpperCase()+rarity.slice(1)}</span></div>
+          <div class="inv-meta"><span style="color:#6a5030;margin-right:4px;">${label}</span><span class="${rc}">${rarity[0].toUpperCase()+rarity.slice(1)}</span></div>
         </div>
         <div class="inv-stats">
           <div class="stat-pip curse">${stats.curse}</div>
@@ -3354,7 +4279,7 @@ async function loadWalletPacks(pubkey){
     const sRes = await fetch(`${WIX_API}/getSlots?wallet=${encodeURIComponent(pubkey)}`);
     if(sRes.ok){
       const sData = await sRes.json();
-      const wixSlots = sData.slots || [null,null,null,null];
+      const wixSlots = sData.slots || [null];
       const localSlots = getSlotsData();
       // merge: Wix params + local thumbnails
       const merged = wixSlots.map((ws, i) => {
@@ -3466,7 +4391,7 @@ async function saveToSlotIdx(e, idx){
   try{
     const b64 = await compositeCanvas({...buildParams(), preview_size:1200});
     await saveToSlot(b64, idx);
-    showToast('☽ Sealed to Slot ' + ['I','II','III','IV'][idx]);
+    showToast('☽ Bound Soul sealed');
   }catch(err){
     showToast('Error: ' + err.message);
   }
@@ -3509,7 +4434,95 @@ async function downloadEffigy(){
 
 async function saveHQ(){}
 
+// ── Leaderboard ────────────────────────────────────────────
+const WIX_BASE = 'https://www.alperozdil.com/_functions';
+let lbData = null;
+let lbTab = 'power';
+
+function openLeaderboard(){
+  document.getElementById('lb-overlay').style.display='flex';
+  if(!lbData) fetchLeaderboard();
+  else renderLb();
+}
+function closeLeaderboard(){
+  document.getElementById('lb-overlay').style.display='none';
+}
+
+async function fetchLeaderboard(){
+  const list = document.getElementById('lb-list');
+  list.innerHTML = '<div id="lb-loading">Consulting the spirits…</div>';
+  document.getElementById('lb-your-rank').style.display='none';
+  try{
+    const r = await fetch(WIX_BASE+'/getLeaderboard');
+    if(!r.ok) throw new Error('No response');
+    lbData = await r.json();
+    renderLb();
+  }catch(e){
+    list.innerHTML = '<div id="lb-loading">The spirits are silent.<br><span style="font-size:12px;color:#5a4020">Rankings not available yet.</span></div>';
+  }
+}
+
+function setLbTab(tab, btn){
+  lbTab = tab;
+  document.querySelectorAll('.lb-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLb();
+}
+
+function renderLb(){
+  if(!lbData || !lbData.entries) return;
+  const list = document.getElementById('lb-list');
+  const yourRank = document.getElementById('lb-your-rank');
+  const connectedWallet = currentWalletKey || null;
+
+  const entries = [...lbData.entries].sort((a,b)=>{
+    if(lbTab==='curse') return (b.curse||0)-(a.curse||0);
+    if(lbTab==='doom')  return (b.doom||0)-(a.doom||0);
+    if(lbTab==='hex')   return (b.hex||0)-(a.hex||0);
+    return (b.power||0)-(a.power||0);
+  });
+
+  const medals = ['🥇','🥈','🥉'];
+  const rankClass = ['gold','silver','bronze'];
+
+  let html = `<div class="lb-col-hdr">
+    <span>#</span><span>Wallet</span>
+    <span>Curse</span><span>Doom</span><span>Hex</span><span>Power</span>
+  </div>`;
+
+  entries.slice(0,50).forEach((e,i)=>{
+    const isYou = connectedWallet && e.wallet && e.wallet.toLowerCase()===connectedWallet.toLowerCase();
+    const rankLabel = i<3 ? `<span class="lb-rank ${rankClass[i]}">${medals[i]}</span>` : `<span class="lb-rank">${i+1}</span>`;
+    const addr = e.wallet ? (e.wallet.slice(0,4)+'…'+e.wallet.slice(-4)) : '???';
+    html += `<div class="lb-row${isYou?' lb-you':''}">
+      ${rankLabel}
+      <span class="lb-addr${isYou?' lb-you':''}${isYou?' " style="color:#e8c060':''}">${addr}${isYou?' ← you':''}</span>
+      <span class="lb-stat curse">${e.curse||0}</span>
+      <span class="lb-stat doom">${e.doom||0}</span>
+      <span class="lb-stat hex">${e.hex||0}</span>
+      <span class="lb-stat power">${e.power||0}</span>
+    </div>`;
+  });
+
+  list.innerHTML = html;
+
+  const myIdx = connectedWallet ? entries.findIndex(e=>e.wallet&&e.wallet.toLowerCase()===connectedWallet.toLowerCase()): -1;
+  if(myIdx>=0){
+    const me = entries[myIdx];
+    yourRank.style.display='block';
+    yourRank.textContent = `Your rank: #${myIdx+1}  ·  Power: ${me.power||0}  ·  Curse: ${me.curse||0}  Doom: ${me.doom||0}  Hex: ${me.hex||0}`;
+  } else {
+    yourRank.style.display='none';
+  }
+}
+
 loadItems().then(()=>{
+  // re-register demo item URLs after itemURLMap reset
+  if(!walletConnected){
+    Object.values(DEMO_ITEMS).flat().forEach(i=>{
+      window.itemURLMap[i.path] = CDN + '/' + i.path;
+    });
+  }
   // auto-select first common body as default
   const defaultBody = PACK_ITEMS.common.body[0];
   if(!window.itemURLMap) window.itemURLMap = {};
@@ -3582,19 +4595,28 @@ async function loadCollection(){
 
 function renderPacks(){
   const inv = document.getElementById('pack-inventory');
-  const empty = document.getElementById('pack-empty');
+  const noWalletMsg = document.getElementById('no-wallet-msg');
   inv.innerHTML = '';
+  inv.style.display = walletConnected ? '' : 'none';
+  if(noWalletMsg) noWalletMsg.style.display = walletConnected ? 'none' : '';
+  const demoMsg = document.getElementById('demo-mode-msg');
+  if(demoMsg) demoMsg.style.display = walletConnected ? 'none' : '';
+  if(!walletConnected){
+    const lbl = document.getElementById('packs-unopened-label');
+    if(lbl) lbl.innerHTML = '';
+    return;
+  }
   let any = false;
   let total = 0;
   ['common','rare','legendary','ultimate'].forEach(r=>{
-    if(packInventory[r]>0){
-      any = true;
-      total += packInventory[r];
+    const count = packInventory[r]||0;
+    if(count > 0){
+      any = true; total += count;
       const card = document.createElement('div');
       card.className = `pack-card rarity-${r}`;
       const col = COLLECTIONS[PACK_COLLECTION];
       const badgeHtml = col ? `<img class="pack-platform-badge" src="${col.logo}" alt="${col.platform}" title="${col.platform} — ${col.name}">` : '';
-      card.innerHTML = `<div class="pack-card-img-wrap"><img class="pack-card-img" src="${PACK_IMGS[r]}" alt="${r}"><div class="pack-card-count">${packInventory[r]}</div>${badgeHtml}</div><div class="pack-card-label">${r}</div>`;
+      card.innerHTML = `<div class="pack-card-img-wrap"><img class="pack-card-img" src="${PACK_IMGS[r]}" alt="${r}"><div class="pack-card-count">${count}</div>${badgeHtml}</div><div class="pack-card-label">${r}</div>`;
       card.onclick = ()=>openPack(r);
       inv.appendChild(card);
     }
@@ -3602,11 +4624,11 @@ function renderPacks(){
   if(!any){
     const e = document.createElement('span');
     e.id='pack-empty'; e.style.cssText='font-family:Bloodcrow,serif;font-size:12px;color:#5a4020;letter-spacing:.05em;padding:4px 0';
-    e.textContent='No packs — add some below';
+    e.textContent='No unopened packs';
     inv.appendChild(e);
   }
   const lbl = document.getElementById('packs-unopened-label');
-  if(lbl) lbl.innerHTML = total > 0 ? `<span style="font-size:36px;font-weight:bold;">${total}</span><span style="font-size:17px;">unopened</span>` : '';
+  if(lbl) lbl.innerHTML = total > 0 ? `<span style="font-size:46px;font-weight:bold;">${total}</span><span style="font-size:20px;">unopened</span>` : '';
 }
 
 function devAddPack(rarity, count){
@@ -3662,21 +4684,43 @@ async function finishPackVideo(){
   showDropReveal();
 }
 
+function rollOne(rarity, cat){
+  const items = PACK_ITEMS[rarity]?.[cat];
+  if(!items||!items.length) return null;
+  return { path: items[Math.floor(Math.random()*items.length)], cat, rarity };
+}
+
 function rollPackItems(rarity){
   const cats = ['body','knife','offhand','necklace','eyes'];
-  const pool = PACK_ITEMS[rarity];
-  // pick 2-3 random items from different categories when possible
-  const count = Math.random()<0.5 ? 2 : 3;
-  const shuffled = [...cats].sort(()=>Math.random()-.5);
   const chosen = [];
-  for(let i=0;i<shuffled.length && chosen.length<count;i++){
-    const cat = shuffled[i];
-    const items = pool[cat];
-    if(items&&items.length){
-      const path = items[Math.floor(Math.random()*items.length)];
-      chosen.push({path, cat, rarity});
-    }
+
+  // slot definitions per pack: [{rarity, cat:null=random}]
+  let slots = [];
+  if(rarity === 'common'){
+    // 5× common, %10 ihtimalle 1 tanesi rare
+    slots = [{r:'common'},{r:'common'},{r:'common'},{r:'common'},{r:'common'}];
+    if(Math.random()<0.10) slots[Math.floor(Math.random()*5)].r = 'rare';
+  } else if(rarity === 'rare'){
+    // 2 rare + 1 common, %10 ihtimalle 1 rare → legendary
+    slots = [{r:'rare'},{r:'rare'},{r:'common'}];
+    if(Math.random()<0.10){ const i=slots.findIndex(s=>s.r==='rare'); slots[i].r='legendary'; }
+  } else if(rarity === 'legendary'){
+    // 2 legendary + 1 rare + 1 common, %10 ihtimalle 1 legendary → ultimate
+    slots = [{r:'legendary'},{r:'legendary'},{r:'rare'},{r:'common'}];
+    if(Math.random()<0.10){ const i=slots.findIndex(s=>s.r==='legendary'); slots[i].r='ultimate'; }
+  } else if(rarity === 'ultimate'){
+    // 2 ultimate + 1 legendary + 1 rare + 1 common
+    slots = [{r:'ultimate'},{r:'ultimate'},{r:'legendary'},{r:'rare'},{r:'common'}];
   }
+
+  // assign categories — no repeats
+  const shuffled = [...cats].sort(()=>Math.random()-.5);
+  slots.forEach((slot, i) => {
+    const cat = shuffled[i % shuffled.length];
+    const item = rollOne(slot.r, cat) || rollOne('common', cat);
+    if(item) chosen.push(item);
+  });
+
   return chosen;
 }
 
@@ -3684,8 +4728,12 @@ function showDropReveal(){
   const title = document.getElementById('drop-rarity-title');
   title.textContent = pendingDropRarity.toUpperCase() + ' PACK';
   title.className = `rarity-${pendingDropRarity}`;
+  const reveal = document.getElementById('drop-reveal');
+  reveal.className = reveal.className.replace(/\brarity-\w+/g,'');
+  reveal.classList.add(`rarity-${pendingDropRarity}`);
   const row = document.getElementById('drop-items-row');
   row.innerHTML = '';
+  console.log('DROP ITEMS:', JSON.stringify(pendingDropItems));
   pendingDropItems.forEach((item,i)=>{
     const name = item.path.split('/').pop().replace(/\.(png|PNG|jpg|JPG)$/,'').replace(/_/g,' ');
     const card = document.createElement('div');
@@ -3694,7 +4742,7 @@ function showDropReveal(){
     const stats = itemStats(item.path);
     card.innerHTML = `<img src="${item.path}" alt="${name}">
       <div class="drop-item-name">${name}</div>
-      <div class="drop-item-cat">${item.cat}</div>
+      <div class="drop-item-cat">${(item.cat||item.category||'').replace(/_file$/i,'').replace(/_/g,' ').split(' ')[0]}</div>
       <div class="drop-item-stats">
         <div class="drop-stat curse"><span class="dsv">${stats.curse}</span><span class="dsl">Curse</span></div>
         <div class="drop-stat doom"><span class="dsv">${stats.doom}</span><span class="dsl">Doom</span></div>
@@ -3752,6 +4800,44 @@ async function processDrop(rarity){
   showToast(`${rarity} pack opened — ${items.length} items added!`);
 }
 
+function rebuildFilterBar(gridId){
+  const grid = document.getElementById(gridId);
+  if(!grid) return;
+  const existing = grid.previousElementSibling;
+  if(existing && existing.classList.contains('rarity-filter')) existing.remove();
+
+  const rarities = ['common','rare','legendary','ultimate'];
+  const present = rarities.filter(r => grid.querySelector(`.rarity-wrap-${r}`));
+  if(present.length < 2) return; // no point showing a filter for 0 or 1 rarity
+
+  const bar = document.createElement('div');
+  bar.className = 'rarity-filter';
+
+  function applyFilter(active){
+    bar.querySelectorAll('.rf-btn').forEach(b=>b.classList.remove('active'));
+    active.classList.add('active');
+    const r = active.dataset.rarity;
+    grid.querySelectorAll('.thumb-wrap').forEach(w=>{
+      const match = r==='all' || rarities.some(rar=>rar===r && w.classList.contains(`rarity-wrap-${rar}`));
+      w.style.display = match ? '' : 'none';
+    });
+  }
+
+  const allBtn = document.createElement('button');
+  allBtn.className='rf-btn active'; allBtn.textContent='All'; allBtn.dataset.rarity='all';
+  allBtn.onclick=()=>applyFilter(allBtn);
+  bar.appendChild(allBtn);
+
+  present.forEach(r=>{
+    const btn=document.createElement('button');
+    btn.className=`rf-btn rf-${r}`; btn.textContent=r[0].toUpperCase()+r.slice(1); btn.dataset.rarity=r;
+    btn.onclick=()=>applyFilter(btn);
+    bar.appendChild(btn);
+  });
+
+  grid.before(bar);
+}
+
 function addItemToGrid(path, cat, rarity){
   const keyMap  = {body:'body_file',knife:'knife_file',offhand:'offhand_file',necklace:'necklace_file',eyes:'eye_left_file'};
   const gridMap = {body:'grid-body',knife:'grid-knife',offhand:'grid-offhand',necklace:'grid-necklace',eyes:'grid-eye-left'};
@@ -3765,7 +4851,7 @@ function addItemToGrid(path, cat, rarity){
 
   const targets = cat === 'eyes'
     ? [{gridId:'grid-eye-left', key:'eye_left_file'}, {gridId:'grid-eye-right', key:'eye_right_file'}]
-    : [{gridId: gridMap[cat], key: keyMap[cat]||'body_file'}];
+    : [{gridId: gridMap[cat]||'grid-body', key: keyMap[cat]||'body_file'}];
 
   targets.forEach(({gridId, key})=>{
     const grid = document.getElementById(gridId);
@@ -3774,11 +4860,66 @@ function addItemToGrid(path, cat, rarity){
     const wrap = makeWrap(path, name, path, `rarity-wrap-${rarity}`);
     wrap.onclick = ()=>selectThumb(grid, wrap, key, path);
     grid.insertBefore(wrap, grid.firstChild);
+    rebuildFilterBar(gridId);
   });
 }
 
 // init on load
-document.addEventListener('DOMContentLoaded', ()=>{ renderPacks(); buildMouthGrid(); });
+// ── Demo items (shown when no wallet connected) ───────────────────────────────
+const DEMO_ITEMS = {
+  body: [
+    { path:'body/common/burlap.PNG',   rarity:'common' },
+    { path:'body/common/wool.PNG',     rarity:'common' },
+  ],
+  knife: [
+    { path:'knife/common/damascus_knife.png',      rarity:'common' },
+    { path:'knife/common/obsidian_tribal_knife.png',rarity:'common' },
+    { path:'knife/rare/astral_dagger.png',          rarity:'rare'   },
+  ],
+  offhand: [
+    { path:'offhand/common/grave_dirt_bottle.png',  rarity:'common' },
+    { path:'offhand/common/cursed_voodoo_doll.png', rarity:'common' },
+  ],
+  necklace: [
+    { path:'necklace/common/obsidian_skull_pendant.png', rarity:'common' },
+    { path:'necklace/common/rune_stones.png',             rarity:'common' },
+  ],
+  eyes: [
+    { path:'eyes/common/abyss_button.png',  rarity:'common' },
+    { path:'eyes/common/coin.png',          rarity:'common' },
+  ],
+};
+
+function buildDemoGrids(){
+  if(!window.itemURLMap) window.itemURLMap = {};
+  const maps = {
+    body:    { gridId:'grid-body',      key:'body_file'      },
+    knife:   { gridId:'grid-knife',     key:'knife_file'     },
+    offhand: { gridId:'grid-offhand',   key:'offhand_file'   },
+    necklace:{ gridId:'grid-necklace',  key:'necklace_file'  },
+    eyes:    { gridId:'grid-eye-left',  key:'eye_left_file', gridId2:'grid-eye-right', key2:'eye_right_file' },
+  };
+  for(const [cat, cfg] of Object.entries(maps)){
+    const items = DEMO_ITEMS[cat].map(i => ({
+      path: i.path, url: CDN + '/' + i.path,
+      filename: i.path.split('/').pop(),
+      rarity: i.rarity,
+    }));
+    items.forEach(i => { window.itemURLMap[i.path] = i.url; });
+    buildGridFlatFromItems(cfg.gridId, items, cfg.key);
+    if(cfg.gridId2) buildGridFlatFromItems(cfg.gridId2, items, cfg.key2);
+  }
+  // show sections
+  const innerWrap = document.getElementById('inner-inventory-body-wrap');
+  if(innerWrap) innerWrap.querySelectorAll('.section').forEach(s => s.style.display = '');
+  document.getElementById('inventory-no-wallet-msg').style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  renderPacks();
+  buildMouthGrid();
+  if(!walletConnected) buildDemoGrids();
+});
 </script>
 </body>
 </html>
