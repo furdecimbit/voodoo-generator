@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open Pack — Hex & Stitch</title>
+<style>
+  @font-face {
+    font-family: 'Bloodcrow';
+    src: url('https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/Bloodcrow.otf') format('opentype');
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #030201;
+    color: #e8d09a;
+    font-family: 'Bloodcrow', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── Smoke particles ── */
+  #smoke-container {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .smoke-particle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0;
+    animation: smokeRise linear infinite;
+  }
+  @keyframes smokeRise {
+    0%   { transform: translateY(0) scale(0.5);  opacity: 0; }
+    15%  { opacity: 0.18; }
+    80%  { opacity: 0.10; }
+    100% { transform: translateY(-80vh) scale(2.5); opacity: 0; }
+  }
+
+  /* ── Room glow ── */
+  #room-glow {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse 60% 40% at 50% 60%, transparent, #030201 80%);
+    transition: background 1s;
+  }
+
+  /* ── Back button ── */
+  #back-btn {
+    position: fixed; top: 18px; left: 18px; z-index: 100;
+    background: rgba(20,12,4,0.8); border: 1px solid #3a2808;
+    color: #7a6040; font-family: 'Bloodcrow', serif; font-size: 14px;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: 8px 16px; border-radius: 20px; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    transition: color .2s, border-color .2s;
+  }
+  #back-btn:hover { color: #e8c060; border-color: #6a4818; }
+  #back-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ── Main stage ── */
+  #stage {
+    position: relative; z-index: 10;
+    display: flex; flex-direction: column; align-items: center; gap: 24px;
+    padding: 40px 20px 80px;
+    width: 100%; max-width: 900px;
+  }
+
+  #rarity-title {
+    font-size: 28px; letter-spacing: .2em; text-transform: uppercase;
+    text-shadow: 0 0 30px currentColor;
+    opacity: 0; transition: opacity .6s;
+  }
+  #rarity-title.visible { opacity: 1; }
+  #rarity-title.rarity-common    { color: #e0e0e0; }
+  #rarity-title.rarity-rare      { color: #e8c050; }
+  #rarity-title.rarity-legendary { color: #80d0ff; }
+  #rarity-title.rarity-ultimate  { color: #ff80c0; }
+
+  /* ── Pack display ── */
+  #pack-display {
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+  }
+  #pack-img-wrap {
+    cursor: pointer; position: relative;
+    transition: transform .2s;
+  }
+  #pack-img-wrap:hover { transform: scale(1.04); }
+  #pack-img {
+    width: 220px; height: auto;
+    filter: drop-shadow(0 0 30px var(--pack-glow, #ffffff44));
+    animation: packFloat 3s ease-in-out infinite;
+  }
+  @keyframes packFloat {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-10px); }
+  }
+  #pack-img-wrap:hover #pack-img { animation: none; }
+
+  #open-hint {
+    font-size: 16px; letter-spacing: .12em; text-transform: uppercase;
+    color: #6a5030; animation: hintPulse 2s ease-in-out infinite;
+  }
+  @keyframes hintPulse {
+    0%, 100% { opacity: .5; }
+    50%       { opacity: 1; }
+  }
+
+  /* ── Video overlay ── */
+  #video-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: #000;
+    display: none; align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px;
+  }
+  #video-overlay.active { display: flex; }
+  #pack-video { width: 100%; max-width: 480px; height: auto; }
+  #skip-btn {
+    color: #5a4020; font-family: 'Bloodcrow', serif; font-size: 13px;
+    letter-spacing: .1em; text-transform: uppercase;
+    background: none; border: none; cursor: pointer;
+    transition: color .2s;
+  }
+  #skip-btn:hover { color: #c8a050; }
+
+  /* ── Cards grid ── */
+  #cards-area {
+    display: none; flex-direction: column; align-items: center; gap: 24px; width: 100%;
+  }
+  #cards-area.visible { display: flex; }
+
+  #cards-row {
+    display: flex; flex-wrap: wrap; gap: 16px;
+    justify-content: center; width: 100%;
+  }
+
+  /* Card flip */
+  .reveal-card {
+    width: 140px; perspective: 900px;
+    opacity: 0; transform: translateY(30px);
+    transition: opacity .4s, transform .4s;
+  }
+  .reveal-card.appeared { opacity: 1; transform: translateY(0); }
+  .reveal-card-inner {
+    position: relative; width: 100%; padding-top: 140%;
+    transform-style: preserve-3d;
+    transition: transform .7s cubic-bezier(.4,0,.2,1);
+    cursor: pointer;
+  }
+  .reveal-card.flipped .reveal-card-inner { transform: rotateY(180deg); cursor: default; }
+  .card-face {
+    position: absolute; inset: 0;
+    border-radius: 12px; overflow: hidden;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  /* Back face — mystical card back */
+  .card-back {
+    background: linear-gradient(135deg, #1a0e06, #0e0804);
+    border: 1px solid #3a2010;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 20px rgba(0,0,0,.8);
+  }
+  .card-back svg { width: 60px; height: 60px; opacity: .4; }
+  /* Front face — item */
+  .card-front {
+    transform: rotateY(180deg);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 10px 8px 10px;
+    background: linear-gradient(160deg, #1a1008, #0e0804);
+    border: 1px solid #4a2810;
+  }
+  .card-front.rarity-common    { border-color: #4a4a4a; box-shadow: 0 0 16px #ffffff22; }
+  .card-front.rarity-rare      { border-color: #8a6820; box-shadow: 0 0 20px #e8c05044; }
+  .card-front.rarity-legendary { border-color: #3060a0; box-shadow: 0 0 24px #60b0f066; }
+  .card-front.rarity-ultimate  { border-color: #902060; box-shadow: 0 0 28px #ff80c077; }
+  .card-item-img {
+    width: 80px; height: 80px; object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,.6));
+  }
+  .card-item-name {
+    font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+    color: #c8a878; margin-top: 6px; text-align: center; line-height: 1.3;
+  }
+  .card-item-cat {
+    font-size: 10px; color: #5a4020; letter-spacing: .08em; text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .card-stats {
+    display: flex; gap: 6px; margin-top: 8px;
+  }
+  .card-stat {
+    display: flex; flex-direction: column; align-items: center; gap: 1px;
+    font-size: 9px; letter-spacing: .05em; text-transform: uppercase;
+  }
+  .card-stat .sv { font-size: 13px; }
+  .card-stat.curse .sv { color: #e05050; }
+  .card-stat.doom  .sv { color: #9060e0; }
+  .card-stat.hex   .sv { color: #50b0e0; }
+  .card-stat .sl { color: #5a4020; }
+
+  /* ── Tap hint under cards ── */
+  #tap-hint {
+    font-size: 14px; letter-spacing: .1em; text-transform: uppercase;
+    color: #5a4020; animation: hintPulse 2s ease-in-out infinite;
+  }
+
+  /* ── Collect button ── */
+  #collect-btn {
+    display: none;
+    background: linear-gradient(135deg, #6030c0, #3a1878);
+    border: 1px solid #8040e0;
+    color: #e8d0ff; font-family: 'Bloodcrow', serif;
+    font-size: 20px; letter-spacing: .12em; text-transform: uppercase;
+    padding: 14px 48px; border-radius: 30px; cursor: pointer;
+    box-shadow: 0 0 30px #6030c066;
+    animation: collectGlow 2s ease-in-out infinite;
+    transition: transform .15s;
+  }
+  #collect-btn.visible { display: block; }
+  #collect-btn:hover { transform: scale(1.04); }
+  @keyframes collectGlow {
+    0%, 100% { box-shadow: 0 0 24px #6030c066; }
+    50%       { box-shadow: 0 0 48px #8050e088; }
+  }
+
+  /* Mobile tweaks */
+  @media (max-width: 600px) {
+    .reveal-card { width: 110px; }
+    .card-item-img { width: 60px; height: 60px; }
+    #pack-img { width: 170px; }
+    #rarity-title { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="smoke-container"></div>
+<div id="room-glow"></div>
+
+<button id="back-btn" onclick="goBack()">
+  <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  Forge
+</button>
+
+<div id="stage">
+  <div id="rarity-title"></div>
+
+  <!-- Pack display -->
+  <div id="pack-display">
+    <div id="pack-img-wrap" onclick="startOpen()">
+      <img id="pack-img" src="" alt="Pack">
+    </div>
+    <div id="open-hint">Click to open</div>
+  </div>
+
+  <!-- Cards after opening -->
+  <div id="cards-area">
+    <div id="tap-hint">Tap each card to reveal</div>
+    <div id="cards-row"></div>
+    <button id="collect-btn" onclick="collectAndReturn()">Add to Collection</button>
+  </div>
+</div>
+
+<!-- Video overlay -->
+<div id="video-overlay">
+  <video id="pack-video" playsinline></video>
+  <button id="skip-btn" onclick="skipVideo()">Skip</button>
+</div>
+
+<script>
+const CDN = 'https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main';
+const WIX_API = 'https://www.alperozdil.com/_functions';
+
+const PACK_IMGS = {
+  common:    'common_pack.png',
+  rare:      'rare_pack.png',
+  legendary: 'legendary_pack.png',
+  ultimate:  'ultimate_pack.png'
+};
+
+const GLOW_COLORS = {
+  common:    '#ffffff44',
+  rare:      '#e8c05066',
+  legendary: '#60b0ff88',
+  ultimate:  '#ff80c099'
+};
+
+const RARITY_TOTALS = { common:15, rare:40, legendary:90, ultimate:180 };
+
+function hashStr(s){
+  let h = 5381;
+  for(let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+function itemStats(path){
+  const filename = path.split('/').pop();
+  const rarity   = path.split('/')[1] || 'common';
+  const h = hashStr(filename);
+  const total = RARITY_TOTALS[rarity] || 15;
+  const a = 1 + (h % 7);
+  const b = 1 + ((h >>> 4) % 7);
+  const sum = a + b + (1 + ((h >>> 8) % 7));
+  const curse = Math.round(total * a / sum);
+  const doom  = Math.round(total * b / sum);
+  const hex   = Math.max(1, total - curse - doom);
+  return { curse, doom, hex };
+}
+
+// ── URL params ──
+const params   = new URLSearchParams(location.search);
+const wallet   = params.get('wallet')   || '';
+const rarity   = params.get('rarity')  || 'common';
+const mint     = params.get('mint')    || '';
+const platform = params.get('platform')|| 'sol';
+
+let rolledItems = [];
+let allFlipped  = false;
+
+// ── Init ──
+(function init(){
+  // Title
+  const title = document.getElementById('rarity-title');
+  title.textContent = rarity.toUpperCase() + ' PACK';
+  title.className = `rarity-${rarity}`;
+  setTimeout(()=> title.classList.add('visible'), 100);
+
+  // Pack image
+  document.getElementById('pack-img').src = PACK_IMGS[rarity];
+  document.documentElement.style.setProperty('--pack-glow', GLOW_COLORS[rarity]);
+
+  // Room glow tint
+  const tints = {
+    common:    'rgba(255,255,255,0.03)',
+    rare:      'rgba(232,192,80,0.04)',
+    legendary: 'rgba(96,176,255,0.05)',
+    ultimate:  'rgba(255,128,192,0.06)'
+  };
+  document.getElementById('room-glow').style.background =
+    `radial-gradient(ellipse 70% 50% at 50% 50%, ${tints[rarity]}, #030201 70%)`;
+
+  buildSmoke();
+})();
+
+// ── Smoke ──
+function buildSmoke(){
+  const container = document.getElementById('smoke-container');
+  const colors = {
+    common:    ['#ffffff', '#cccccc'],
+    rare:      ['#c09040', '#e8c060'],
+    legendary: ['#4080c0', '#80c0ff'],
+    ultimate:  ['#c040a0', '#ff80c0']
+  }[rarity] || ['#ffffff'];
+
+  for(let i = 0; i < 18; i++){
+    const p = document.createElement('div');
+    p.className = 'smoke-particle';
+    const size = 80 + Math.random() * 200;
+    p.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      bottom:${-size}px;
+      background: radial-gradient(circle, ${colors[i%colors.length]}18 0%, transparent 70%);
+      animation-duration: ${6 + Math.random()*8}s;
+      animation-delay: ${Math.random()*8}s;
+    `;
+    container.appendChild(p);
+  }
+}
+
+// ── Open ──
+function startOpen(){
+  document.getElementById('pack-display').style.display = 'none';
+
+  const overlay = document.getElementById('video-overlay');
+  const vid     = document.getElementById('pack-video');
+  vid.src = 'openpack.mp4';
+  vid.currentTime = 0;
+  overlay.classList.add('active');
+  vid.play().catch(()=> skipVideo());
+  vid.onended = skipVideo;
+}
+
+function skipVideo(){
+  const overlay = document.getElementById('video-overlay');
+  const vid     = document.getElementById('pack-video');
+  overlay.classList.remove('active');
+  vid.pause(); vid.src = '';
+  revealCards();
+}
+
+// ── Roll & reveal ──
+async function revealCards(){
+  // Call openPack server-side
+  try {
+    const res = await fetch(`${WIX_API}/openPack`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ wallet, rarity, mintAddress: mint })
+    });
+    const data = await res.json();
+    rolledItems = data.items || [];
+  } catch(e){
+    console.warn('openPack failed, rolling locally');
+    rolledItems = localRoll(rarity);
+  }
+
+  if(rolledItems.length === 0){
+    // Collection complete — nothing new
+    showCollectionComplete();
+    return;
+  }
+
+  const area = document.getElementById('cards-area');
+  const row  = document.getElementById('cards-row');
+  area.classList.add('visible');
+
+  rolledItems.forEach((item, i) => {
+    const card = buildCard(item);
+    row.appendChild(card);
+    setTimeout(()=> card.classList.add('appeared'), 200 + i * 180);
+  });
+}
+
+function buildCard(item){
+  const name  = item.path.split('/').pop().replace(/\.(png|PNG|jpg|JPG)$/,'').replace(/_/g,' ');
+  const cat   = (item.cat || '').split('_')[0];
+  const stats = itemStats(item.path);
+  const imgSrc = CDN + '/' + item.path;
+
+  const card = document.createElement('div');
+  card.className = 'reveal-card';
+  card.innerHTML = `
+    <div class="reveal-card-inner" onclick="flipCard(this)">
+      <div class="card-face card-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#c8a060" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <div class="card-face card-front rarity-${item.rarity}">
+        <img class="card-item-img" src="${imgSrc}" alt="${name}" onerror="this.style.opacity='.3'">
+        <div class="card-item-name">${name}</div>
+        <div class="card-item-cat">${cat}</div>
+        <div class="card-stats">
+          <div class="card-stat curse"><span class="sv">${stats.curse}</span><span class="sl">Curse</span></div>
+          <div class="card-stat doom"><span class="sv">${stats.doom}</span><span class="sl">Doom</span></div>
+          <div class="card-stat hex"><span class="sv">${stats.hex}</span><span class="sl">Hex</span></div>
+        </div>
+      </div>
+    </div>`;
+  return card;
+}
+
+function flipCard(inner){
+  const card = inner.parentElement;
+  if(card.classList.contains('flipped')) return;
+  card.classList.add('flipped');
+  checkAllFlipped();
+}
+
+function checkAllFlipped(){
+  const cards   = document.querySelectorAll('.reveal-card');
+  const flipped = document.querySelectorAll('.reveal-card.flipped');
+  if(cards.length > 0 && cards.length === flipped.length){
+    document.getElementById('tap-hint').style.display = 'none';
+    const btn = document.getElementById('collect-btn');
+    btn.classList.add('visible');
+    allFlipped = true;
+  }
+}
+
+function showCollectionComplete(){
+  const area = document.getElementById('cards-area');
+  area.classList.add('visible');
+  document.getElementById('tap-hint').style.display = 'none';
+  document.getElementById('cards-row').innerHTML =
+    `<div style="font-size:18px;color:#7a6040;letter-spacing:.1em;text-align:center;padding:40px 20px;">
+      Your ${rarity} collection is complete.<br>
+      <span style="font-size:13px;color:#4a3010">No new items remain in this rarity.</span>
+    </div>`;
+  document.getElementById('collect-btn').classList.add('visible');
+  document.getElementById('collect-btn').textContent = 'Return to Forge';
+  allFlipped = true;
+}
+
+// ── Collect & return ──
+function collectAndReturn(){
+  // Mark mint as opened in localStorage
+  if(mint && wallet){
+    const key = `${wallet}_openedMints`;
+    const opened = JSON.parse(localStorage.getItem(key) || '[]');
+    if(!opened.includes(mint)) opened.push(mint);
+    localStorage.setItem(key, JSON.stringify(opened));
+  }
+  // Deduct pack
+  if(wallet){
+    const key = `${wallet}_packInventory`;
+    const inv  = JSON.parse(localStorage.getItem(key) || '{}');
+    inv[rarity] = Math.max(0, (inv[rarity] || 1) - 1);
+    localStorage.setItem(key, JSON.stringify(inv));
+  }
+  goBack();
+}
+
+function goBack(){
+  location.href = 'index.html';
+}
+
+// ── Local fallback roll ──
+const PACK_ITEMS = {"common":{"body":["body/common/burlap.PNG","body/common/corduroy.PNG","body/common/cracked_leather.PNG","body/common/jean.PNG","body/common/tartan.PNG","body/common/wool.PNG"],"knife":["knife/common/antler_bead_dagger.png","knife/common/antler_dagger.png","knife/common/beast_claw_blade.png","knife/common/bone_fetish_dagger.png","knife/common/bone_skull_dagger.png","knife/common/bone_triskele_dagger.png","knife/common/chakra_rope_knife.png","knife/common/constellation_dagger.png","knife/common/crystal_bone_dagger.png","knife/common/damascus_knife.png","knife/common/flint_twine_blade.png","knife/common/ivory_tusk_blade.png","knife/common/jagged_iron_blade.png","knife/common/obsidian_tribal_knife.png","knife/common/serpent_curved_blade.png","knife/common/snakeskin_knife.png","knife/common/talon_grip_blade.png","knife/common/verdant_curved_blade.png","knife/common/wrapped_serrated_blade.png"],"offhand":["offhand/common/bone_idol_mask.png","offhand/common/butterfly_trapped_in_jar.png","offhand/common/cursed_voodoo_doll.png","offhand/common/dark art.png","offhand/common/drink my brain.png","offhand/common/fractured_stone_tablet.png","offhand/common/good plant.png","offhand/common/grave_dirt_bottle.png","offhand/common/king.png","offhand/common/mushroom.png","offhand/common/ordinary_map.png","offhand/common/roots & stuff.png","offhand/common/skeletal_pocket_watch.png","offhand/common/the box of dark art.png","offhand/common/the hand.png","offhand/common/tile.png","offhand/common/totem of animal.png","offhand/common/toy marble from 80's.png","offhand/common/tribal_feather_mask.png","offhand/common/velvet_coin_purse.png"],"necklace":["necklace/common/adventurers_compass.png","necklace/common/amethyst_wire_pendant.png","necklace/common/aquamarine_wire_pendant.png","necklace/common/bone_and_bead_necklace.png","necklace/common/bone_and_crystal_talisman.png","necklace/common/bone_parts.png","necklace/common/bones.png","necklace/common/broken_clock.png","necklace/common/brown_mushroom.png","necklace/common/carnelian_wire_pendant.png","necklace/common/chain.png","necklace/common/colored_rocks.png","necklace/common/common_mirror.png","necklace/common/dark_rope.png","necklace/common/empty_cork_vial.png","necklace/common/iron_thimble.png","necklace/common/jade_orb_pendant.png","necklace/common/jade_spiral_medallion.png","necklace/common/jade_wire_pendant.png","necklace/common/leopard_pearl_brooch.png","necklace/common/marbles.png","necklace/common/midnight_charm_bracelet.png","necklace/common/moonstone_pendant.png","necklace/common/obsidian_skull_pendant.png","necklace/common/rick_with_hole.png","necklace/common/rock.png","necklace/common/rope.png","necklace/common/rune_rock.png","necklace/common/rune_stones.png","necklace/common/runic_bead_wreath.png","necklace/common/seashell.png","necklace/common/shadow_bat.png","necklace/common/shamanic_feather_and_fang_bracelet.png","necklace/common/skull_and_spider_rosary.png","necklace/common/snail_shell.png","necklace/common/sponge.png","necklace/common/talavera_tile_pendant.png","necklace/common/tangled_button_cluster.png","necklace/common/teeth.png","necklace/common/three_keys.png","necklace/common/vegvisir_stone_tablet.png","necklace/common/whelk_shell.png"],"eyes":["eyes/common/abyss_button.png","eyes/common/amethyst_cross.png","eyes/common/aqua_cross.png","eyes/common/blush_cross.png","eyes/common/bone_cross.png","eyes/common/cobalt_cross.png","eyes/common/coin.png","eyes/common/ember_cross.png","eyes/common/ghost_button.png","eyes/common/grave_moss.png","eyes/common/hex_cross.png","eyes/common/iron_laurel_seal_v2.png","eyes/common/jade_hex_nut.png","eyes/common/marsh_button.png","eyes/common/pale_specter.png","eyes/common/swamp_button.png","eyes/common/venom_cross.png"]},"rare":{"body":["body/rare/copper.PNG","body/rare/cracked_stone.PNG","body/rare/glassy.PNG","body/rare/wooden.PNG"],"knife":["knife/rare/abyssal_dagger.png","knife/rare/astral_dagger.png","knife/rare/ice_crystal_blade.png","knife/rare/jade_carved_blade.png","knife/rare/jade_crystal_dagger.png","knife/rare/lunar_copper_dagger.png","knife/rare/nautilus_blade.png","knife/rare/ruby_bone_dagger.png","knife/rare/rune_gold_dagger.png","knife/rare/shadow_crystal_dagger.png","knife/rare/sigil_black_dagger.png","knife/rare/skeleton_claw_grip.png","knife/rare/skull_animal_dagger.png","knife/rare/tribal_totem_blade.png","knife/rare/void_star_dagger.png"],"offhand":["offhand/rare/ancient_rune_scroll.png","offhand/rare/black mirror.png","offhand/rare/blue_king.png","offhand/rare/bone_chalice.png","offhand/rare/dragons handbook.png","offhand/rare/golden_entwined_palm_tree_idol.png","offhand/rare/ice_shard.png","offhand/rare/mummy_hand_with_rings.png","offhand/rare/prismatic_crystal_shard.png","offhand/rare/something potion.png","offhand/rare/sphere of war.png","offhand/rare/the sun card.png","offhand/rare/tiky tonky.png","offhand/rare/totem of people.png","offhand/rare/tsss.png"],"necklace":["necklace/rare/all_seeing_eye_brooch.png","necklace/rare/aquamarine_gemstone_brooch.png","necklace/rare/blue_evil_eye_brooch.png","necklace/rare/blue_pearl_rosette_brooch.png","necklace/rare/brown_cameo_brooch.png","necklace/rare/carved_blossom_medallion.png","necklace/rare/carved_rose_medallion.png","necklace/rare/crystal_crown_reliquary.png","necklace/rare/diamond_eye_of_providence.png","necklace/rare/emerald_ornate_brooch.png","necklace/rare/eye_of_horus_pin.png","necklace/rare/golden_filigree_rosette.png","necklace/rare/golden_heart_locket.png","necklace/rare/golden_heart_tome.png","necklace/rare/golden_keyhole_locket.png","necklace/rare/golden_laurel_medallion.png","necklace/rare/golden_sun.png","necklace/rare/green_agate_bone_rune.png","necklace/rare/grey_cameo_brooch.png","necklace/rare/jeweled_keyplate.png","necklace/rare/portrait_locket.png","necklace/rare/purple_gem_locket.png","necklace/rare/red_sun.png","necklace/rare/rose_gemstone_brooch.png","necklace/rare/ruby_ornate_brooch.png","necklace/rare/runed_frame.png","necklace/rare/sepia_portrait_cameo.png","necklace/rare/silver_celtic_knot.png","necklace/rare/silver_filigree_rosette.png","necklace/rare/silver_pearl_rosette_brooch.png","necklace/rare/smoky_quartz_claw_pendant.png","necklace/rare/teal_lotus_hairpin.png","necklace/rare/teal_star_hairpin.png","necklace/rare/tribal_face_coin.png","necklace/rare/wild_rose_medallion.png"],"eyes":["eyes/rare/blush_star_button.png","eyes/rare/bone_rune_button.png","eyes/rare/celtic_jade_button.png","eyes/rare/celtic_teal_button.png","eyes/rare/cobalt_mandala.png","eyes/rare/cobalt_sun_button.png","eyes/rare/crimson_mandala.png","eyes/rare/crimson_sun_button.png","eyes/rare/gold_sigil_coin.png","eyes/rare/ivory_floral_button.png","eyes/rare/rose_petal_button.png","eyes/rare/serpent_amber_slit.png","eyes/rare/terracotta_mandala.png"]},"legendary":{"body":["body/legendary/cosmic.PNG","body/legendary/fractured.PNG","body/legendary/marble.PNG","body/legendary/mummy.PNG"],"knife":["knife/legendary/amger gem dagger.png","knife/legendary/ancient eye dagger.png","knife/legendary/crimson vein blade.png","knife/legendary/crystal hand blade.png","knife/legendary/dark justice blade.png","knife/legendary/drawgon.png","knife/legendary/jungle serpent blade.png","knife/legendary/ocean serpent knife.png","knife/legendary/silver scorpion dagger.png","knife/legendary/skull tower dagger.png","knife/legendary/sun & moon dagger.png","knife/legendary/totem ritual dagger.png"],"offhand":["offhand/legendary/124.png","offhand/legendary/book of enchant.png","offhand/legendary/cerberus skull.png","offhand/legendary/enchanted cat.png","offhand/legendary/obsidian_scrying_stone.png","offhand/legendary/prismatic_crystal_cluster.png","offhand/legendary/the death card.png","offhand/legendary/totem of the shaman.png"],"necklace":["necklace/legendary/black_cat.png","necklace/legendary/celestial_stone_talisman.png","necklace/legendary/crimson_phoenix_crest.png","necklace/legendary/dark_sun_sigil.png","necklace/legendary/frost_crystal_root.png","necklace/legendary/golden_winged_emblem.png","necklace/legendary/mask_of_dark_magic.png","necklace/legendary/purple_rune_sphere.png","necklace/legendary/runic_vortex_stone.png","necklace/legendary/sapphire_eye_brooch.png","necklace/legendary/sapphire_star_medallion.png","necklace/legendary/void_spiral_pendant.png","necklace/legendary/winged_blood_heart.png"],"eyes":["eyes/legendary/amber_spiral.png","eyes/legendary/emerald_marble.png","eyes/legendary/frost_cracked_orb.png","eyes/legendary/sapphire_marble.png","eyes/legendary/serpent_eye_orb.png"]},"ultimate":{"body":["body/ultimate/infernal_bone_wraith.PNG","body/ultimate/prismatic dragon scale.PNG","body/ultimate/rune_iron_golem.PNG","body/ultimate/void_portal_golem.PNG"],"knife":["knife/ultimate/cosmic eye blade.png","knife/ultimate/cosmic void blade.png","knife/ultimate/cracked lava blade.png","knife/ultimate/death shroud blade.png","knife/ultimate/drawon scale knife.png","knife/ultimate/eternal dagger.png","knife/ultimate/frost skeleton blade.png","knife/ultimate/hellfire blade.png","knife/ultimate/nebula cutter.png","knife/ultimate/starlight knife.png"],"offhand":["offhand/ultimate/ancient_rune_stone_tablet.png","offhand/ultimate/cosmos navigator.png","offhand/ultimate/cosmos stone.png","offhand/ultimate/lava stone.png"],"necklace":["necklace/ultimate/cosmic_void_orb.png","necklace/ultimate/eyes.png","necklace/ultimate/gilded_demon_bell.png","necklace/ultimate/jeweled_scarab_amulet.png","necklace/ultimate/runic_sigil_ring.png","necklace/ultimate/silver_skull_mask.png"],"eyes":["eyes/ultimate/amber_dragon_eye_medallion.png","eyes/ultimate/amber_slit_eye.png","eyes/ultimate/cosmic_nebula_orb.png","eyes/ultimate/illuminati_eye_charm.png","eyes/ultimate/jade_serpent_eye.png","eyes/ultimate/skull_orb_black.png","eyes/ultimate/venom_vortex.png","eyes/ultimate/void_cosmos_orb.png"]}};
+
+function localRoll(rarity){
+  const cats = ['body','knife','offhand','necklace','eyes'];
+  const pool = PACK_ITEMS[rarity];
+  if(!pool) return [];
+  const count = Math.random() < 0.5 ? 2 : 3;
+  const shuffled = [...cats].sort(()=>Math.random()-.5);
+  const chosen = [];
+  for(let i = 0; i < shuffled.length && chosen.length < count; i++){
+    const cat = shuffled[i];
+    const items = pool[cat];
+    if(!items || !items.length) continue;
+    chosen.push({ path: items[Math.floor(Math.random()*items.length)], cat, rarity });
+  }
+  return chosen;
+}
+</script>
+</body>
+</html>

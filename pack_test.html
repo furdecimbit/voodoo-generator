@@ -4617,7 +4617,7 @@ function renderPacks(){
       const col = COLLECTIONS[PACK_COLLECTION];
       const badgeHtml = col ? `<img class="pack-platform-badge" src="${col.logo}" alt="${col.platform}" title="${col.platform} — ${col.name}">` : '';
       card.innerHTML = `<div class="pack-card-img-wrap"><img class="pack-card-img" src="${PACK_IMGS[r]}" alt="${r}"><div class="pack-card-count">${count}</div>${badgeHtml}</div><div class="pack-card-label">${r}</div>`;
-      card.onclick = ()=>openPack(r);
+      card.onclick = ()=>goToPackRoom(r);
       inv.appendChild(card);
     }
   });
@@ -4642,6 +4642,19 @@ function devClearPacks(){
 }
 
 let _previewRarity = null;
+
+function goToPackRoom(rarity){
+  if(!packInventory[rarity] || packInventory[rarity] <= 0) return;
+  const mint = (window._packMints && window._packMints[rarity]?.length)
+    ? window._packMints[rarity][0] : '';
+  const p = new URLSearchParams({
+    wallet: currentWalletKey || '',
+    rarity,
+    mint,
+    platform: window.tezosAddress ? 'tez' : 'sol'
+  });
+  location.href = 'pack-room.html?' + p.toString();
+}
 
 function openPack(rarity){
   if(!packInventory[rarity]||packInventory[rarity]<=0) return;
