@@ -1,268 +1,507 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-page="packs">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Open Pack — Hex & Stitch</title>
+<title>Pack Room — Hex & Stitch</title>
 <style>
   @font-face {
     font-family: 'Bloodcrow';
+    src: url('https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/bloodcrowc.ttf') format('truetype');
+  }
+  @font-face {
+    font-family: 'BloodcrowOtf';
     src: url('https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/Bloodcrow.otf') format('opentype');
   }
-
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: #030201;
+    background: #080608;
     color: #e8d09a;
     font-family: 'Bloodcrow', serif;
     min-height: 100vh;
     overflow-x: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
   }
 
-  /* ── Smoke particles ── */
-  #smoke-container {
-    position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
-  }
+  /* ── Smoke ── */
+  #smoke-container { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
   .smoke-particle {
-    position: absolute;
-    border-radius: 50%;
-    opacity: 0;
+    position:absolute; border-radius:50%; opacity:0;
     animation: smokeRise linear infinite;
   }
   @keyframes smokeRise {
-    0%   { transform: translateY(0) scale(0.5);  opacity: 0; }
-    15%  { opacity: 0.18; }
-    80%  { opacity: 0.10; }
-    100% { transform: translateY(-80vh) scale(2.5); opacity: 0; }
+    0%   { transform:translateY(0) scale(0.5); opacity:0; }
+    15%  { opacity:0.18; }
+    80%  { opacity:0.10; }
+    100% { transform:translateY(-80vh) scale(2.5); opacity:0; }
   }
 
   /* ── Room glow ── */
   #room-glow {
-    position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background: radial-gradient(ellipse 60% 40% at 50% 60%, transparent, #030201 80%);
-    transition: background 1s;
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background: radial-gradient(ellipse 60% 40% at 50% 60%, transparent, #080608 80%);
+    transition: background 1.2s;
   }
 
-  /* ── Back button ── */
-  #back-btn {
-    position: fixed; top: 18px; left: 18px; z-index: 100;
-    background: rgba(20,12,4,0.8); border: 1px solid #3a2808;
-    color: #7a6040; font-family: 'Bloodcrow', serif; font-size: 14px;
-    letter-spacing: .08em; text-transform: uppercase;
-    padding: 8px 16px; border-radius: 20px; cursor: pointer;
-    display: flex; align-items: center; gap: 8px;
-    transition: color .2s, border-color .2s;
-  }
-  #back-btn:hover { color: #e8c060; border-color: #6a4818; }
-  #back-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-  /* ── Main stage ── */
-  #stage {
+  /* ── 3-column layout ── */
+  #room {
+    display: grid;
+    grid-template-columns: 380px 1fr 380px;
+    min-height: calc(100vh - 82px);
     position: relative; z-index: 10;
-    display: flex; flex-direction: column; align-items: center; gap: 24px;
-    padding: 40px 20px 80px;
-    width: 100%; max-width: 900px;
   }
 
+  /* ── Panel shared ── */
+  .panel {
+    display: flex; flex-direction: column;
+    padding: 28px 20px; gap: 24px;
+    overflow-y: auto;
+  }
+  #panel-left {
+    border-right: 1px solid #2a1a06;
+    background-image: linear-gradient(180deg,#2a1a08cc 0%,#1a1006cc 100%), url('verticalback.png');
+    background-size: cover; background-position: center;
+  }
+  #panel-right {
+    border-left: 1px solid #2a1a06;
+    background-image: linear-gradient(180deg,#1a1208cc 0%,#141008cc 100%), url('verticalback.png');
+    background-size: cover; background-position: center;
+  }
+
+  #page-title {
+    font-size: 38px; letter-spacing: .14em; text-transform: uppercase;
+    color: #e8c87a; margin-bottom: 22px; line-height:1.1;
+    text-shadow: 0 0 18px #e8a02066, 0 2px 4px #000;
+  }
+  .panel-title {
+    font-size: 26px; letter-spacing: .18em; text-transform: uppercase;
+    color: #7a5520; margin-bottom: 6px;
+  }
+
+  /* ── Logo ── */
+  #logo-link { display:flex; align-items:center; gap:8px; text-decoration:none; margin-bottom:4px; }
+  #logo-link img { height:28px; opacity:.8; }
+  #logo-link span { font-size:13px; letter-spacing:.08em; color:#5a4020; text-transform:uppercase; }
+
+  /* ── Wallet section ── */
+  #wallet-status-row { display:flex; flex-direction:column; gap:8px; }
+  .wallet-platform-status {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border-radius:8px;
+    border:1px solid #2a1a06; background:rgba(255,255,255,0.02);
+  }
+  .wallet-platform-status img {
+    width:32px; height:32px; border-radius:50%; object-fit:cover;
+    border:2px solid #cc2020; flex-shrink:0;
+    box-shadow:0 0 8px #cc202044;
+  }
+  .wallet-platform-status.connected img {
+    border-color:#20cc50; box-shadow:0 0 10px #20cc5066;
+  }
+  .wallet-platform-status span {
+    font-size:30px; color:#5a4020; letter-spacing:.06em; text-transform:uppercase;
+  }
+  .wallet-platform-status.connected span { color:#70c880; }
+  #wallet-syncing {
+    font-size:28px; color:#70c060; letter-spacing:.1em; display:none;
+    animation: hintPulse 1.4s ease-in-out infinite;
+  }
+
+  /* ── Pack list ── */
+  #pack-list { display:flex; flex-direction:column; gap:6px; }
+  #packs-empty-msg {
+    font-size:14px; color:#5a4020; text-align:center;
+    padding:24px 0; letter-spacing:.08em; text-transform:uppercase;
+  }
+  .packs-loading-msg {
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    font-size:15px; color:#a08050; text-align:center;
+    padding:24px 0; letter-spacing:.12em; text-transform:uppercase;
+  }
+  .pack-spinner {
+    width:18px; height:18px; border-radius:50%; flex-shrink:0;
+    border:2px solid #3a2808;
+    border-top-color:#e8c050;
+    animation:spinnerTurn .7s linear infinite;
+  }
+  @keyframes spinnerTurn { to { transform:rotate(360deg); } }
+  .pack-entry {
+    display:flex; align-items:center; gap:14px;
+    padding:14px 14px; border-radius:12px; cursor:pointer;
+    border:1px solid #4a2880;
+    background:linear-gradient(135deg,#2a1060ee,#1a0840ee);
+    transition:border-color .2s, background .2s, box-shadow .2s;
+  }
+  .pack-entry img    { width:80px; height:80px; object-fit:contain; flex-shrink:0; }
+  .pack-entry-info   { flex:1; min-width:0; }
+  .pack-entry-name {
+    font-size:18px; letter-spacing:.08em; text-transform:uppercase;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .pack-entry-badge {
+    min-width:34px; height:34px; border-radius:50%; flex-shrink:0;
+    background:#c02020; color:#fff;
+    font-size:20px; font-family:'BloodcrowOtf', serif; letter-spacing:0;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 6px; box-shadow:0 0 8px #c0202066;
+  }
+
+  /* rarity-based backgrounds */
+  .pack-entry[data-rarity="common"]    { background:linear-gradient(135deg,#2a2a2aee,#141414ee); border-color:#555; }
+  .pack-entry[data-rarity="rare"]      { background:linear-gradient(135deg,#3a2800ee,#1e1200ee); border-color:#7a5210; }
+  .pack-entry[data-rarity="legendary"] { background:linear-gradient(135deg,#0a1e3aee,#050e20ee); border-color:#2a5080; }
+  .pack-entry[data-rarity="ultimate"]  { background:linear-gradient(135deg,#2a0a1eee,#140510ee); border-color:#701040; }
+
+  .pack-entry[data-rarity="common"]:hover    { border-color:#aaa;    box-shadow:0 0 14px #ffffff22; background:linear-gradient(135deg,#3a3a3aee,#202020ee); }
+  .pack-entry[data-rarity="rare"]:hover      { border-color:#c89030; box-shadow:0 0 16px #e8c05033; background:linear-gradient(135deg,#4a3400ee,#261800ee); }
+  .pack-entry[data-rarity="legendary"]:hover { border-color:#4080c0; box-shadow:0 0 18px #60b0ff44; background:linear-gradient(135deg,#0e2a50ee,#07142aee); }
+  .pack-entry[data-rarity="ultimate"]:hover  { border-color:#c03080; box-shadow:0 0 20px #ff80c055; background:linear-gradient(135deg,#3a0e28ee,#1c0614ee); }
+
+  .pack-entry[data-rarity="common"].active    { border-color:#ccc;    box-shadow:0 0 20px #ffffff33; }
+  .pack-entry[data-rarity="rare"].active      { border-color:#e8c050; box-shadow:0 0 22px #e8c05066; }
+  .pack-entry[data-rarity="legendary"].active { border-color:#60b0ff; box-shadow:0 0 26px #60b0ff77; }
+  .pack-entry[data-rarity="ultimate"].active  { border-color:#ff80c0; box-shadow:0 0 30px #ff80c088; }
+
+  .pack-entry-name.rarity-common    { color:#c0c0c0; }
+  .pack-entry-name.rarity-rare      { color:#e8c050; }
+  .pack-entry-name.rarity-legendary { color:#80d0ff; }
+  .pack-entry-name.rarity-ultimate  { color:#ff80c0; }
+
+  /* ── Center panel ── */
+  #panel-center {
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    padding:40px 24px; gap:24px;
+    min-height:100vh;
+    background-image: linear-gradient(rgba(3,2,1,0.88), rgba(3,2,1,0.88)), url('packs.png');
+    background-size: cover; background-position: center;
+  }
+
+  #center-idle {
+    font-size:20px; color:#5a4020;
+    letter-spacing:.15em; text-transform:uppercase;
+    text-align:center;
+  }
+
+  /* Pack float */
+  #center-pack {
+    display:none; flex-direction:column; align-items:center; gap:16px;
+  }
   #rarity-title {
-    font-size: 28px; letter-spacing: .2em; text-transform: uppercase;
-    text-shadow: 0 0 30px currentColor;
-    opacity: 0; transition: opacity .6s;
+    font-size:42px; letter-spacing:.2em; text-transform:uppercase;
+    text-shadow:0 0 32px currentColor;
+    opacity:0; transition:opacity .6s;
   }
-  #rarity-title.visible { opacity: 1; }
-  #rarity-title.rarity-common    { color: #e0e0e0; }
-  #rarity-title.rarity-rare      { color: #e8c050; }
-  #rarity-title.rarity-legendary { color: #80d0ff; }
-  #rarity-title.rarity-ultimate  { color: #ff80c0; }
+  #rarity-title.visible { opacity:1; }
+  #rarity-title.rarity-common    { color:#e0e0e0; }
+  #rarity-title.rarity-rare      { color:#e8c050; }
+  #rarity-title.rarity-legendary { color:#80d0ff; }
+  #rarity-title.rarity-ultimate  { color:#ff80c0; }
 
-  /* ── Pack display ── */
-  #pack-display {
-    display: flex; flex-direction: column; align-items: center; gap: 16px;
-  }
-  #pack-img-wrap {
-    cursor: pointer; position: relative;
-    transition: transform .2s;
-  }
-  #pack-img-wrap:hover { transform: scale(1.04); }
+  #pack-img-wrap { cursor:pointer; transition:transform .2s; }
+  #pack-img-wrap:hover { transform:scale(1.04); }
   #pack-img {
-    width: 220px; height: auto;
-    filter: drop-shadow(0 0 30px var(--pack-glow, #ffffff44));
-    animation: packFloat 3s ease-in-out infinite;
+    width:360px; height:auto;
+    filter:drop-shadow(0 0 50px var(--pack-glow,#ffffff44));
+    animation:packFloat 3s ease-in-out infinite;
   }
   @keyframes packFloat {
-    0%, 100% { transform: translateY(0); }
-    50%       { transform: translateY(-10px); }
+    0%,100% { transform:translateY(0); }
+    50%      { transform:translateY(-10px); }
   }
-  #pack-img-wrap:hover #pack-img { animation: none; }
-
+  #pack-img-wrap:hover #pack-img { animation:none; }
   #open-hint {
-    font-size: 16px; letter-spacing: .12em; text-transform: uppercase;
-    color: #6a5030; animation: hintPulse 2s ease-in-out infinite;
+    font-size:20px; letter-spacing:.12em; text-transform:uppercase;
+    color:#8a6840; animation:hintPulse 2s ease-in-out infinite;
   }
-  @keyframes hintPulse {
-    0%, 100% { opacity: .5; }
-    50%       { opacity: 1; }
-  }
+  @keyframes hintPulse { 0%,100%{opacity:.5;} 50%{opacity:1;} }
 
-  /* ── Video overlay ── */
+  /* Video overlay */
   #video-overlay {
-    position: fixed; inset: 0; z-index: 200;
-    background: #000;
-    display: none; align-items: center; justify-content: center;
-    flex-direction: column; gap: 16px;
+    position:fixed; inset:0; z-index:200;
+    background:#000;
+    display:none; align-items:center; justify-content:center;
+    flex-direction:column; gap:16px;
   }
-  #video-overlay.active { display: flex; }
-  #pack-video { width: 100%; max-width: 480px; height: auto; }
+  #video-overlay.active { display:flex; }
+  #pack-video  { width:100%; max-width:480px; height:auto; }
   #skip-btn {
-    color: #5a4020; font-family: 'Bloodcrow', serif; font-size: 13px;
-    letter-spacing: .1em; text-transform: uppercase;
-    background: none; border: none; cursor: pointer;
-    transition: color .2s;
+    color:#5a4020; font-family:'Bloodcrow',serif; font-size:13px;
+    letter-spacing:.1em; text-transform:uppercase;
+    background:none; border:none; cursor:pointer; transition:color .2s;
   }
-  #skip-btn:hover { color: #c8a050; }
+  #skip-btn:hover { color:#c8a050; }
 
-  /* ── Cards grid ── */
-  #cards-area {
-    display: none; flex-direction: column; align-items: center; gap: 24px; width: 100%;
+  /* Reveal area */
+  #center-reveal {
+    display:none; flex-direction:column; align-items:center; gap:20px; width:100%;
   }
-  #cards-area.visible { display: flex; }
-
+  #tap-hint {
+    font-size:16px; letter-spacing:.1em; text-transform:uppercase;
+    color:#5a4020; animation:hintPulse 2s ease-in-out infinite;
+  }
   #cards-row {
-    display: flex; flex-wrap: wrap; gap: 16px;
-    justify-content: center; width: 100%;
+    display:flex; flex-wrap:wrap; gap:14px; justify-content:center; width:100%;
   }
 
   /* Card flip */
   .reveal-card {
-    width: 140px; perspective: 900px;
-    opacity: 0; transform: translateY(30px);
-    transition: opacity .4s, transform .4s;
+    width:240px; perspective:900px;
+    opacity:0; transform:translateY(30px);
+    transition:opacity .4s, transform .4s;
   }
-  .reveal-card.appeared { opacity: 1; transform: translateY(0); }
+  .reveal-card.appeared { opacity:1; transform:translateY(0); }
   .reveal-card-inner {
-    position: relative; width: 100%; padding-top: 140%;
-    transform-style: preserve-3d;
-    transition: transform .7s cubic-bezier(.4,0,.2,1);
-    cursor: pointer;
+    position:relative; width:100%; padding-top:140%;
+    transform-style:preserve-3d;
+    transition:transform .7s cubic-bezier(.4,0,.2,1);
+    cursor:pointer;
   }
-  .reveal-card.flipped .reveal-card-inner { transform: rotateY(180deg); cursor: default; }
+  .reveal-card.flipped .reveal-card-inner { transform:rotateY(180deg); cursor:default; }
   .card-face {
-    position: absolute; inset: 0;
-    border-radius: 12px; overflow: hidden;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    position:absolute; inset:0;
+    border-radius:12px; overflow:hidden;
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
   }
-  /* Back face — mystical card back */
   .card-back {
-    background: linear-gradient(135deg, #1a0e06, #0e0804);
-    border: 1px solid #3a2010;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 20px rgba(0,0,0,.8);
+    border:1px solid #3a2010;
+    display:flex; align-items:center; justify-content:center;
+    background-image: url('verticalback.png');
+    background-size: 130%; background-position: center;
   }
-  .card-back svg { width: 60px; height: 60px; opacity: .4; }
-  /* Front face — item */
+  .card-back svg { width:56px; height:56px; opacity:.5; }
+
+  /* rarity glow on card back */
+  .reveal-card.rarity-common  .card-back { box-shadow:0 0 18px #ffffff55; border-color:#6a6a6a; }
+  .reveal-card.rarity-rare    .card-back { box-shadow:0 0 22px #e8c05077; border-color:#8a6820; }
+  .reveal-card.rarity-legendary .card-back { box-shadow:0 0 26px #60b0ff88; border-color:#3060a0; }
+  .reveal-card.rarity-ultimate  .card-back { box-shadow:0 0 30px #ff80c099; border-color:#902060; }
+
   .card-front {
-    transform: rotateY(180deg);
-    display: flex; flex-direction: column; align-items: center;
-    padding: 10px 8px 10px;
-    background: linear-gradient(160deg, #1a1008, #0e0804);
-    border: 1px solid #4a2810;
+    transform:rotateY(180deg);
+    display:flex; flex-direction:column; align-items:center;
+    padding:10px 8px;
+    background-image: url('verticalback.png');
+    background-size: 130%; background-position: center;
+    border:1px solid #4a2810;
   }
-  .card-front.rarity-common    { border-color: #4a4a4a; box-shadow: 0 0 16px #ffffff22; }
-  .card-front.rarity-rare      { border-color: #8a6820; box-shadow: 0 0 20px #e8c05044; }
-  .card-front.rarity-legendary { border-color: #3060a0; box-shadow: 0 0 24px #60b0f066; }
-  .card-front.rarity-ultimate  { border-color: #902060; box-shadow: 0 0 28px #ff80c077; }
+  .card-front::before {
+    content:''; position:absolute; inset:0;
+    background: rgba(8,4,1,0.82);
+    border-radius:12px;
+    pointer-events:none;
+  }
+
+  /* rarity glow on card front (after reveal) */
+  .card-front.rarity-common    { border-color:#6a6a6a; box-shadow:0 0 18px #ffffff44; }
+  .card-front.rarity-rare      { border-color:#8a6820; box-shadow:0 0 22px #e8c05066; }
+  .card-front.rarity-legendary { border-color:#3060a0; box-shadow:0 0 26px #60b0ff77; }
+  .card-front.rarity-ultimate  { border-color:#902060; box-shadow:0 0 30px #ff80c088; }
+  .card-front > * { position:relative; z-index:1; }
   .card-item-img {
-    width: 80px; height: 80px; object-fit: contain;
-    filter: drop-shadow(0 2px 8px rgba(0,0,0,.6));
+    width:150px; height:150px; object-fit:contain;
+    filter:drop-shadow(0 2px 14px rgba(0,0,0,.7));
   }
   .card-item-name {
-    font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
-    color: #c8a878; margin-top: 6px; text-align: center; line-height: 1.3;
+    font-size:16px; letter-spacing:.06em; text-transform:uppercase;
+    color:#c8a878; margin-top:12px; text-align:center; line-height:1.3;
   }
-  .card-item-cat {
-    font-size: 10px; color: #5a4020; letter-spacing: .08em; text-transform: uppercase;
-    margin-top: 2px;
-  }
-  .card-stats {
-    display: flex; gap: 6px; margin-top: 8px;
-  }
-  .card-stat {
-    display: flex; flex-direction: column; align-items: center; gap: 1px;
-    font-size: 9px; letter-spacing: .05em; text-transform: uppercase;
-  }
-  .card-stat .sv { font-size: 13px; }
-  .card-stat.curse .sv { color: #e05050; }
-  .card-stat.doom  .sv { color: #9060e0; }
-  .card-stat.hex   .sv { color: #50b0e0; }
-  .card-stat .sl { color: #5a4020; }
+  .card-item-cat { font-size:13px; color:#6a5030; letter-spacing:.08em; text-transform:uppercase; margin-top:5px; }
+  .card-stats    { display:flex; gap:20px; margin-top:20px; }
+  .card-stat     { display:flex; flex-direction:column; align-items:center; gap:3px; font-size:15px; letter-spacing:.05em; text-transform:uppercase; }
+  .card-stat .sv { font-size:28px; }
+  .card-stat.curse .sv { color:#e05050; }
+  .card-stat.doom  .sv { color:#9060e0; }
+  .card-stat.hex   .sv { color:#50b0e0; }
+  .card-stat .sl { color:#5a4020; }
 
-  /* ── Tap hint under cards ── */
-  #tap-hint {
-    font-size: 14px; letter-spacing: .1em; text-transform: uppercase;
-    color: #5a4020; animation: hintPulse 2s ease-in-out infinite;
-  }
-
-  /* ── Collect button ── */
+  /* Collect btn */
   #collect-btn {
-    display: none;
-    background: linear-gradient(135deg, #6030c0, #3a1878);
-    border: 1px solid #8040e0;
-    color: #e8d0ff; font-family: 'Bloodcrow', serif;
-    font-size: 20px; letter-spacing: .12em; text-transform: uppercase;
-    padding: 14px 48px; border-radius: 30px; cursor: pointer;
-    box-shadow: 0 0 30px #6030c066;
-    animation: collectGlow 2s ease-in-out infinite;
-    transition: transform .15s;
+    display:none;
+    background:linear-gradient(135deg,#6030c0,#3a1878);
+    border:1px solid #8040e0; color:#e8d0ff;
+    font-family:'Bloodcrow',serif; font-size:22px;
+    letter-spacing:.12em; text-transform:uppercase;
+    padding:12px 44px; border-radius:28px; cursor:pointer;
+    box-shadow:0 0 28px #6030c055;
+    animation:collectGlow 2s ease-in-out infinite;
+    transition:transform .15s;
   }
-  #collect-btn.visible { display: block; }
-  #collect-btn:hover { transform: scale(1.04); }
+  #collect-btn:hover { transform:scale(1.04); }
   @keyframes collectGlow {
-    0%, 100% { box-shadow: 0 0 24px #6030c066; }
-    50%       { box-shadow: 0 0 48px #8050e088; }
+    0%,100%{ box-shadow:0 0 22px #6030c055; }
+    50%    { box-shadow:0 0 44px #8050e077; }
   }
 
-  /* Mobile tweaks */
-  @media (max-width: 600px) {
-    .reveal-card { width: 110px; }
-    .card-item-img { width: 60px; height: 60px; }
-    #pack-img { width: 170px; }
-    #rarity-title { font-size: 22px; }
+  /* ── Right panel ── */
+  .stat-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:7px 0; border-bottom:1px solid #160e04;
+  }
+  .stat-label { font-size:28px; letter-spacing:.12em; text-transform:uppercase; color:#7a5520; }
+  .stat-val   { font-size:30px; }
+  .stat-row.total .stat-val         { color:#e8d09a; }
+  .stat-row.rarity-common .stat-val    { color:#c0c0c0; }
+  .stat-row.rarity-rare .stat-val      { color:#e8c050; }
+  .stat-row.rarity-legendary .stat-val { color:#80d0ff; }
+  .stat-row.rarity-ultimate .stat-val  { color:#ff80c0; }
+
+  #home-link {
+    margin-top:auto; display:block; text-align:center;
+    text-decoration:none; padding:10px 14px; border-radius:8px;
+    border:1px solid #2a1a06; color:#5a4020;
+    font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+    transition:border-color .2s, color .2s;
+  }
+  #home-link:hover { border-color:#6a4010; color:#c8a040; }
+
+  /* ── Mobile ── */
+  @media (max-width: 800px) {
+
+    #room {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+    }
+
+    /* Panels stack, center hidden by default (shown as overlay when pack selected) */
+    #panel-left  { order:1; border-right:none; border-bottom:1px solid #2e2010; background: linear-gradient(180deg,#2a1e0eee 0%,#1e1408ee 100%), url('verticalback.png'); background-size:cover; }
+    #panel-right { order:2; border-left:none; border-top:1px solid #2e2010; background: linear-gradient(180deg,#221a0eee 0%,#1a1208ee 100%), url('verticalback.png'); background-size:cover; }
+    #panel-center { display:none; }
+
+    /* Center as fullscreen overlay when pack selected */
+    #panel-center.mob-open {
+      display: flex !important;
+      position: fixed; inset: 0; z-index: 300;
+      overflow-y: auto;
+      background: #070402f0;
+      padding-top: 8px;
+    }
+
+    /* Back button (injected by JS) */
+    #mob-back-btn {
+      position: sticky; top: 8px; align-self: flex-start;
+      z-index: 10; margin: 0 0 8px 12px;
+      background: #0e0804; border: 1px solid #3a2010;
+      border-radius: 8px; padding: 8px 18px;
+      font-family: 'Bloodcrow', serif; font-size: 14px;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: #7a5520; cursor: pointer;
+      transition: color .2s, border-color .2s;
+    }
+    #mob-back-btn:hover { color: #e8c060; border-color: #8a5020; }
+
+    /* Pack entry: bigger tap target */
+    .pack-entry { padding: 12px; }
+    .pack-entry img { width: 60px; height: 60px; }
+    .pack-entry-name { font-size: 15px; }
+    .pack-entry-badge { min-width: 28px; height: 28px; font-size: 16px; }
+
+    /* Text */
+    .wallet-platform-status span { font-size: 16px; }
+    .panel-title  { font-size: 18px; }
+    #page-title   { font-size: 26px; margin-bottom: 10px; }
+    .stat-label   { font-size: 18px; }
+    .stat-val     { font-size: 22px; }
+
+    /* Video overlay full width */
+    #pack-video { max-width: 100%; }
   }
 </style>
 </head>
 <body>
 
+<div id="site-header-mount"></div>
+
 <div id="smoke-container"></div>
 <div id="room-glow"></div>
 
-<button id="back-btn" onclick="goBack()">
-  <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-  Forge
-</button>
+<div id="room">
 
-<div id="stage">
-  <div id="rarity-title"></div>
+  <!-- ════════════════ LEFT PANEL ════════════════ -->
+  <div class="panel" id="panel-left">
 
-  <!-- Pack display -->
-  <div id="pack-display">
-    <div id="pack-img-wrap" onclick="startOpen()">
-      <img id="pack-img" src="" alt="Pack">
+    <div id="page-title">Hex Packs</div>
+
+    <!-- Wallet status -->
+    <div>
+      <div class="panel-title">Wallet</div>
+      <div id="wallet-status-row">
+        <div class="wallet-platform-status" id="wps-sol">
+          <img src="drip.jpeg" alt="Solana">
+          <span id="wps-sol-addr">Not connected</span>
+        </div>
+        <div class="wallet-platform-status" id="wps-tez" style="display:none">
+          <img src="objkt.jpeg" alt="Tezos">
+          <span id="wps-tez-addr">Not connected</span>
+        </div>
+      </div>
+      <div id="wallet-syncing">Loading packs…</div>
     </div>
-    <div id="open-hint">Click to open</div>
+
+    <!-- Packs -->
+    <div>
+      <div class="panel-title">Your Packs</div>
+      <div id="pack-list">
+        <div id="packs-empty-msg">Connect wallet to load packs</div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- Cards after opening -->
-  <div id="cards-area">
-    <div id="tap-hint">Tap each card to reveal</div>
-    <div id="cards-row"></div>
-    <button id="collect-btn" onclick="collectAndReturn()">Add to Collection</button>
+  <!-- ════════════════ CENTER PANEL ════════════════ -->
+  <div id="panel-center">
+
+    <div id="center-idle">Select a pack to open</div>
+
+    <div id="center-pack">
+      <div id="rarity-title"></div>
+      <div id="pack-img-wrap" onclick="startOpen()">
+        <img id="pack-img" src="" alt="Pack">
+      </div>
+      <div id="open-hint">Click to open</div>
+    </div>
+
+    <div id="center-reveal">
+      <div id="tap-hint">Tap each card to reveal</div>
+      <div id="cards-row"></div>
+      <button id="collect-btn" onclick="collectPack()">Claim Items</button>
+    </div>
+
   </div>
+
+  <!-- ════════════════ RIGHT PANEL ════════════════ -->
+  <div class="panel" id="panel-right">
+
+    <div class="panel-title">Session</div>
+
+    <div id="session-stats">
+      <div class="stat-row total">
+        <span class="stat-label">Opened</span>
+        <span class="stat-val" id="stat-total">0</span>
+      </div>
+      <div class="stat-row rarity-ultimate" id="stat-row-ultimate" style="display:none">
+        <span class="stat-label">Ultimate</span>
+        <span class="stat-val" id="stat-ultimate">0</span>
+      </div>
+      <div class="stat-row rarity-legendary" id="stat-row-legendary" style="display:none">
+        <span class="stat-label">Legendary</span>
+        <span class="stat-val" id="stat-legendary">0</span>
+      </div>
+      <div class="stat-row rarity-rare" id="stat-row-rare" style="display:none">
+        <span class="stat-label">Rare</span>
+        <span class="stat-val" id="stat-rare">0</span>
+      </div>
+      <div class="stat-row rarity-common" id="stat-row-common" style="display:none">
+        <span class="stat-label">Common</span>
+        <span class="stat-val" id="stat-common">0</span>
+      </div>
+    </div>
+
+    <a id="home-link" href="index.html">← Home</a>
+
+  </div>
+
 </div>
 
 <!-- Video overlay -->
@@ -271,117 +510,355 @@
   <button id="skip-btn" onclick="skipVideo()">Skip</button>
 </div>
 
+<script src="https://unpkg.com/@airgap/beacon-dapp@4.8.1/dist/walletbeacon.dapp.min.js"></script>
+<script src="site-header.js"></script>
 <script>
-const CDN = 'https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main';
-const WIX_API = 'https://www.alperozdil.com/_functions';
+
+// ── Constants ──────────────────────────────────────────────────
+const CDN  = 'https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main';
+// WIX_API defined in site-header.js
+const PACK_COLLECTION = 'EvoqHMeGs3VxtoLLycVaQ3CjuVTkJsUa6mcUCUcTDcm4';
+const HELIUS_URL = 'https://mainnet.helius-rpc.com/?api-key=d9dba9ac-f923-4ed6-9a90-f389a71e9bcc';
 
 const PACK_IMGS = {
-  common:    'common_pack.png',
-  rare:      'rare_pack.png',
-  legendary: 'legendary_pack.png',
-  ultimate:  'ultimate_pack.png'
+  common:'common_pack.png', rare:'rare_pack.png',
+  legendary:'legendary_pack.png', ultimate:'ultimate_pack.png'
 };
-
 const GLOW_COLORS = {
-  common:    '#ffffff44',
-  rare:      '#e8c05066',
-  legendary: '#60b0ff88',
-  ultimate:  '#ff80c099'
+  common:'#ffffff44', rare:'#e8c05066', legendary:'#60b0ff88', ultimate:'#ff80c099'
 };
-
+const RARITIES = ['ultimate','legendary','rare','common'];
 const RARITY_TOTALS = { common:15, rare:40, legendary:90, ultimate:180 };
 
-function hashStr(s){
-  let h = 5381;
-  for(let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
-  return Math.abs(h);
-}
+// ── State ──────────────────────────────────────────────────────
+let currentWallet   = null;
+let currentPlatform = null;
+let activePack      = null;
+let packCounts      = { common:0, rare:0, legendary:0, ultimate:0 };
+let rolledItems     = [];
+const sessionCounts = { common:0, rare:0, legendary:0, ultimate:0 };
 
-function itemStats(path){
-  const filename = path.split('/').pop();
-  const rarity   = path.split('/')[1] || 'common';
-  const h = hashStr(filename);
-  const total = RARITY_TOTALS[rarity] || 15;
-  const a = 1 + (h % 7);
-  const b = 1 + ((h >>> 4) % 7);
-  const sum = a + b + (1 + ((h >>> 8) % 7));
-  const curse = Math.round(total * a / sum);
-  const doom  = Math.round(total * b / sum);
-  const hex   = Math.max(1, total - curse - doom);
-  return { curse, doom, hex };
-}
+// ── Init ───────────────────────────────────────────────────────
+buildSmoke('neutral');
 
-// ── URL params ──
-const params   = new URLSearchParams(location.search);
-const wallet   = params.get('wallet')   || '';
-const rarity   = params.get('rarity')  || 'common';
-const mint     = params.get('mint')    || '';
-const platform = params.get('platform')|| 'sol';
-
-let rolledItems = [];
-let allFlipped  = false;
-
-// ── Init ──
-(function init(){
-  // Title
-  const title = document.getElementById('rarity-title');
-  title.textContent = rarity.toUpperCase() + ' PACK';
-  title.className = `rarity-${rarity}`;
-  setTimeout(()=> title.classList.add('visible'), 100);
-
-  // Pack image
-  document.getElementById('pack-img').src = PACK_IMGS[rarity];
-  document.documentElement.style.setProperty('--pack-glow', GLOW_COLORS[rarity]);
-
-  // Room glow tint
-  const tints = {
-    common:    'rgba(255,255,255,0.03)',
-    rare:      'rgba(232,192,80,0.04)',
-    legendary: 'rgba(96,176,255,0.05)',
-    ultimate:  'rgba(255,128,192,0.06)'
-  };
-  document.getElementById('room-glow').style.background =
-    `radial-gradient(ellipse 70% 50% at 50% 50%, ${tints[rarity]}, #030201 70%)`;
-
-  buildSmoke();
-})();
-
-// ── Smoke ──
-function buildSmoke(){
+// ── Smoke ──────────────────────────────────────────────────────
+function buildSmoke(rarity){
   const container = document.getElementById('smoke-container');
+  container.innerHTML = '';
   const colors = {
-    common:    ['#ffffff', '#cccccc'],
-    rare:      ['#c09040', '#e8c060'],
-    legendary: ['#4080c0', '#80c0ff'],
-    ultimate:  ['#c040a0', '#ff80c0']
-  }[rarity] || ['#ffffff'];
+    neutral:   ['#c8a040','#6a4010'],
+    common:    ['#ffffff','#cccccc'],
+    rare:      ['#c09040','#e8c060'],
+    legendary: ['#4080c0','#80c0ff'],
+    ultimate:  ['#c040a0','#ff80c0']
+  }[rarity] || ['#c8a040'];
 
   for(let i = 0; i < 18; i++){
     const p = document.createElement('div');
     p.className = 'smoke-particle';
-    const size = 80 + Math.random() * 200;
+    const size = 80 + Math.random()*200;
     p.style.cssText = `
       width:${size}px; height:${size}px;
       left:${Math.random()*100}%;
       bottom:${-size}px;
-      background: radial-gradient(circle, ${colors[i%colors.length]}18 0%, transparent 70%);
-      animation-duration: ${6 + Math.random()*8}s;
-      animation-delay: ${Math.random()*8}s;
+      background:radial-gradient(circle, ${colors[i%colors.length]}18 0%, transparent 70%);
+      animation-duration:${6+Math.random()*8}s;
+      animation-delay:${Math.random()*8}s;
     `;
     container.appendChild(p);
   }
 }
 
-// ── Open ──
-function startOpen(){
-  document.getElementById('pack-display').style.display = 'none';
+function setRoomGlow(rarity){
+  const tints = {
+    common:'rgba(255,255,255,0.03)', rare:'rgba(232,192,80,0.04)',
+    legendary:'rgba(96,176,255,0.05)', ultimate:'rgba(255,128,192,0.06)'
+  };
+  document.getElementById('room-glow').style.background =
+    `radial-gradient(ellipse 70% 50% at 50% 50%, ${tints[rarity]||tints.common}, #030201 70%)`;
+}
 
+// ── Wallet — Solana ────────────────────────────────────────────
+function detectSolanaWallets(){
+  const wallets = []; const seen = new Set();
+  const add = (name, p) => {
+    if(p && typeof p.connect==='function' && !seen.has(p)){ seen.add(p); wallets.push({name, provider:p}); }
+  };
+  add('Phantom',  window.phantom?.solana);
+  add('Phantom',  window.solana?.isPhantom ? window.solana : null);
+  add('Solflare', window.solflare);
+  add('Backpack', window.backpack?.solana ?? window.backpack);
+  add('Brave',    window.solana?.isBraveWallet ? window.solana : null);
+  add('Glow',     window.glowSolana);
+  add('Jupiter',  window.jupiter?.solana ?? window.jupiter);
+  add('Coinbase', window.coinbaseSolana);
+  add('Exodus',   window.exodus?.solana);
+  add('Wallet',   window.solana);
+  return wallets;
+}
+
+function showWalletPicker(wallets){
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;background:#00000099;z-index:9999;display:flex;align-items:center;justify-content:center;';
+    const box = document.createElement('div');
+    box.style.cssText="background:#1a1208;border:1px solid #7a5520;border-radius:10px;padding:24px;display:flex;flex-direction:column;gap:12px;min-width:220px;";
+    const title = document.createElement('div');
+    title.textContent='Select Wallet';
+    title.style.cssText="font-family:'Bloodcrow',serif;font-size:18px;color:#e8c060;letter-spacing:.1em;text-align:center;margin-bottom:4px;";
+    box.appendChild(title);
+    wallets.forEach(w=>{
+      const btn = document.createElement('button');
+      btn.textContent = w.name;
+      btn.style.cssText="font-family:'Bloodcrow',serif;font-size:15px;padding:10px 20px;background:linear-gradient(135deg,#0e3a0e,#1a5a1a);color:#70e870;border:1px solid #2a8a2a;border-radius:6px;cursor:pointer;letter-spacing:.08em;";
+      btn.onclick=()=>{ document.body.removeChild(overlay); resolve(w.provider); };
+      box.appendChild(btn);
+    });
+    const cancel = document.createElement('button');
+    cancel.textContent='Cancel';
+    cancel.style.cssText="font-family:'Bloodcrow',serif;font-size:13px;padding:8px;background:transparent;color:#7a6040;border:1px solid #3a2810;border-radius:6px;cursor:pointer;";
+    cancel.onclick=()=>{ document.body.removeChild(overlay); resolve(null); };
+    box.appendChild(cancel);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  });
+}
+
+async function connectSol(){
+  const wallets = detectSolanaWallets();
+  if(!wallets.length){
+    alert('No Solana wallet found. Please install Phantom, Solflare, or Backpack.');
+    hideSyncing();
+    return;
+  }
+  let provider;
+  if(wallets.length === 1){ provider = wallets[0].provider; }
+  else {
+    const choice = await showWalletPicker(wallets);
+    if(!choice) return;
+    provider = choice;
+  }
+  try{
+    const resp = await provider.connect();
+    const pubkey = resp.publicKey.toString();
+    window._solanaProvider = provider;
+    showWalletConnected(pubkey, 'sol');
+    await new Promise(r => setTimeout(r, 50));
+    await loadWalletPacks(pubkey);
+  } catch(e){ hideSyncing(); console.error('Solana connect error', e); }
+}
+
+function doDisconnect(){
+  if(window._solanaProvider) try{ window._solanaProvider.disconnect(); }catch(e){}
+  if(window._beaconClient)   try{ window._beaconClient.clearActiveAccount(); }catch(e){}
+  currentWallet = null; currentPlatform = null;
+  packCounts = { common:0, rare:0, legendary:0, ultimate:0 };
+  if(typeof window.setHeaderWallet === 'function') window.setHeaderWallet(null, null);
+  const solRow = document.getElementById('wps-sol');
+  const tezRow = document.getElementById('wps-tez');
+  if(solRow){ solRow.classList.remove('connected'); document.getElementById('wps-sol-addr').textContent='Not connected'; solRow.style.display=''; }
+  if(tezRow){ tezRow.classList.remove('connected'); document.getElementById('wps-tez-addr').textContent='Not connected'; tezRow.style.display='none'; }
+  document.getElementById('pack-list').innerHTML = '<div id="packs-empty-msg">Connect wallet to load packs</div>';
+  resetCenter();
+}
+
+// ── Wallet — Tezos ─────────────────────────────────────────────
+let _beaconClient = null;
+async function getBeaconClient(){
+  if(_beaconClient) return _beaconClient;
+  _beaconClient = new beacon.DAppClient({ name: 'Hex & Stitch' });
+  return _beaconClient;
+}
+
+async function connectTez(){
+  try{
+    const client = await getBeaconClient();
+    const acc = await client.requestPermissions();
+    const addr = acc.address;
+    showWalletConnected(addr, 'tez');
+    await new Promise(r => setTimeout(r, 50));
+    packCounts = JSON.parse(localStorage.getItem(`${addr}_packInventory`) || '{"common":0,"rare":0,"legendary":0,"ultimate":0}');
+    window._packMints = { common:[], rare:[], legendary:[], ultimate:[] };
+    renderPackList(packCounts, window._packMints);
+    hideSyncing();
+  } catch(e){ hideSyncing(); console.error('Tezos connect error', e); }
+}
+
+// ── Wallet UI helpers ──────────────────────────────────────────
+function showWalletConnected(pubkey, platform){
+  currentWallet = pubkey; currentPlatform = platform;
+  const short = pubkey.slice(0,4) + '…' + pubkey.slice(-4);
+  const isTez = platform === 'tez';
+  const solRow = document.getElementById('wps-sol');
+  const tezRow = document.getElementById('wps-tez');
+  if(isTez){
+    tezRow.style.display = ''; tezRow.classList.add('connected');
+    document.getElementById('wps-tez-addr').textContent = short;
+    solRow.style.display = 'none';
+  } else {
+    solRow.style.display = ''; solRow.classList.add('connected');
+    document.getElementById('wps-sol-addr').textContent = short;
+    tezRow.style.display = 'none';
+  }
+  if(typeof window.setHeaderWallet === 'function') window.setHeaderWallet(pubkey, platform);
+  setSyncing('Loading packs…');
+  document.getElementById('pack-list').innerHTML =
+    '<div class="packs-loading-msg"><div class="pack-spinner"></div>Loading packs…</div>';
+}
+function setSyncing(msg){
+  const el = document.getElementById('wallet-syncing');
+  el.textContent = msg;
+  el.style.display = '';
+}
+function hideSyncing(){
+  document.getElementById('wallet-syncing').style.display = 'none';
+}
+
+// ── Helius / pack loading ──────────────────────────────────────
+async function fetchAllAssets(pubkey){
+  let all=[], page=1;
+  while(true){
+    const r = await fetch(HELIUS_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({jsonrpc:'2.0',id:'1',method:'getAssetsByOwner',
+        params:{ownerAddress:pubkey,page,limit:1000,displayOptions:{showCollectionMetadata:true}}})});
+    const items=(await r.json()).result?.items||[];
+    all=all.concat(items);
+    if(items.length<1000) break;
+    page++;
+  }
+  return all;
+}
+
+async function loadWalletPacks(pubkey){
+  try{
+    const assets = await fetchAllAssets(pubkey);
+    let openedMints = [];
+    try{
+      const omRes = await fetch(`${WIX_API}/getOpenedMints?wallet=${encodeURIComponent(pubkey)}`);
+      if(omRes.ok){ const d = await omRes.json(); openedMints = d.mints||[]; }
+      localStorage.setItem(`${pubkey}_openedMints`, JSON.stringify(openedMints));
+    } catch(e){
+      openedMints = JSON.parse(localStorage.getItem(`${pubkey}_openedMints`)||'[]');
+    }
+
+    const unopened = assets.filter(a => {
+      if(openedMints.includes(a.id)) return false;
+      return (a.grouping||[]).some(g=>g.group_value===PACK_COLLECTION);
+    });
+
+    const counts = {common:0,rare:0,legendary:0,ultimate:0};
+    window._packMints = {common:[],rare:[],legendary:[],ultimate:[]};
+    for(const asset of unopened){
+      const attrs = asset.content?.metadata?.attributes||[];
+      let rarity = null;
+      for(const a of attrs){
+        const k=(a.trait_type||'').toLowerCase();
+        const v=(a.value||'').toLowerCase();
+        if(k==='rarity'||k==='tier'||k==='pack'){
+          if(v.includes('ultimate')) rarity='ultimate';
+          else if(v.includes('legendary')) rarity='legendary';
+          else if(v.includes('rare')) rarity='rare';
+          else if(v.includes('common')) rarity='common';
+        }
+      }
+      if(!rarity){
+        const name=(asset.content?.metadata?.name||'').toLowerCase();
+        if(name.includes('ultimate')) rarity='ultimate';
+        else if(name.includes('legendary')) rarity='legendary';
+        else if(name.includes('rare')) rarity='rare';
+        else rarity='common';
+      }
+      if(rarity){ counts[rarity]++; window._packMints[rarity].push(asset.id); }
+    }
+    packCounts = counts;
+    renderPackList(packCounts, window._packMints);
+    const total = Object.values(counts).reduce((a,b)=>a+b,0);
+    setSyncing(total > 0 ? `${total} pack${total>1?'s':''} found` : 'No packs found');
+    setTimeout(hideSyncing, 2500);
+  } catch(e){
+    console.error('loadWalletPacks failed', e);
+    hideSyncing();
+    document.getElementById('pack-list').innerHTML =
+      '<div style="font-size:12px;color:#8a4040;text-align:center;padding:20px 0;letter-spacing:.08em;text-transform:uppercase">Failed to load packs</div>';
+  }
+}
+
+// ── Pack list render ───────────────────────────────────────────
+function renderPackList(counts, mints){
+  const list = document.getElementById('pack-list');
+  list.innerHTML = '';
+  let any = false;
+  for(const r of RARITIES){
+    if(!counts[r]) continue;
+    any = true;
+    const entry = document.createElement('div');
+    entry.className = 'pack-entry';
+    entry.dataset.rarity = r;
+    entry.innerHTML = `
+      <img src="${PACK_IMGS[r]}" alt="${r}">
+      <div class="pack-entry-info">
+        <div class="pack-entry-name rarity-${r}">${r} Pack</div>
+      </div>
+      <div class="pack-entry-badge">${counts[r]}</div>`;
+    entry.onclick = () => selectPack(r, mints[r]?.[0]);
+    list.appendChild(entry);
+  }
+  if(!any){
+    list.innerHTML = '<div id="packs-empty-msg">No unopened packs</div>';
+  }
+}
+
+// ── Pack selection ─────────────────────────────────────────────
+function selectPack(rarity, mint){
+  activePack = { rarity, mint };
+
+  document.querySelectorAll('.pack-entry').forEach(e =>
+    e.classList.toggle('active', e.dataset.rarity === rarity)
+  );
+
+  document.getElementById('center-idle').style.display   = 'none';
+  document.getElementById('center-reveal').style.display = 'none';
+  document.getElementById('collect-btn').style.display   = 'none';
+  document.getElementById('cards-row').innerHTML = '';
+  document.getElementById('tap-hint').style.display = '';
+
+  const cp = document.getElementById('center-pack');
+  cp.style.display = 'flex';
+
+  const title = document.getElementById('rarity-title');
+  title.textContent = rarity.toUpperCase() + ' PACK';
+  title.className = `rarity-${rarity}`;
+  setTimeout(() => title.classList.add('visible'), 50);
+
+  document.getElementById('pack-img').src = PACK_IMGS[rarity];
+  document.documentElement.style.setProperty('--pack-glow', GLOW_COLORS[rarity]);
+  setRoomGlow(rarity);
+  buildSmoke(rarity);
+
+  // Mobile: open as overlay
+  if(window.innerWidth <= 800){
+    const center = document.getElementById('panel-center');
+    center.classList.add('mob-open');
+    if(!document.getElementById('mob-back-btn')){
+      const btn = document.createElement('button');
+      btn.id = 'mob-back-btn';
+      btn.textContent = '← Back';
+      btn.onclick = function(){ center.classList.remove('mob-open'); };
+      center.insertBefore(btn, center.firstChild);
+    }
+    center.scrollTop = 0;
+  }
+}
+
+// ── Open flow ──────────────────────────────────────────────────
+function startOpen(){
+  document.getElementById('center-pack').style.display = 'none';
   const overlay = document.getElementById('video-overlay');
   const vid     = document.getElementById('pack-video');
   vid.src = 'openpack.mp4';
   vid.currentTime = 0;
   overlay.classList.add('active');
-  vid.play().catch(()=> skipVideo());
+  vid.play().catch(() => skipVideo());
   vid.onended = skipVideo;
 }
 
@@ -393,47 +870,42 @@ function skipVideo(){
   revealCards();
 }
 
-// ── Roll & reveal ──
+// ── Reveal ─────────────────────────────────────────────────────
 async function revealCards(){
-  // Call openPack server-side
-  try {
+  document.getElementById('center-reveal').style.display = 'flex';
+  const row = document.getElementById('cards-row');
+  row.innerHTML = '';
+
+  const { rarity, mint } = activePack;
+  try{
     const res = await fetch(`${WIX_API}/openPack`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ wallet, rarity, mintAddress: mint })
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ wallet:currentWallet, rarity, mintAddress:mint })
     });
     const data = await res.json();
     rolledItems = data.items || [];
   } catch(e){
     console.warn('openPack failed, rolling locally');
-    rolledItems = localRoll(rarity);
+    rolledItems = rollPackItems(rarity);
   }
 
-  if(rolledItems.length === 0){
-    // Collection complete — nothing new
-    showCollectionComplete();
-    return;
-  }
-
-  const area = document.getElementById('cards-area');
-  const row  = document.getElementById('cards-row');
-  area.classList.add('visible');
+  if(!rolledItems.length){ rolledItems = rollPackItems(rarity); }
 
   rolledItems.forEach((item, i) => {
     const card = buildCard(item);
     row.appendChild(card);
-    setTimeout(()=> card.classList.add('appeared'), 200 + i * 180);
+    setTimeout(() => card.classList.add('appeared'), 200 + i*180);
   });
 }
 
 function buildCard(item){
   const name  = item.path.split('/').pop().replace(/\.(png|PNG|jpg|JPG)$/,'').replace(/_/g,' ');
-  const cat   = (item.cat || '').split('_')[0];
+  const cat   = (item.cat||'').split('_')[0];
   const stats = itemStats(item.path);
   const imgSrc = CDN + '/' + item.path;
-
   const card = document.createElement('div');
-  card.className = 'reveal-card';
+  card.className = `reveal-card rarity-${item.rarity||'common'}`;
   card.innerHTML = `
     <div class="reveal-card-inner" onclick="flipCard(this)">
       <div class="card-face card-back">
@@ -467,67 +939,146 @@ function checkAllFlipped(){
   const flipped = document.querySelectorAll('.reveal-card.flipped');
   if(cards.length > 0 && cards.length === flipped.length){
     document.getElementById('tap-hint').style.display = 'none';
-    const btn = document.getElementById('collect-btn');
-    btn.classList.add('visible');
-    allFlipped = true;
+    document.getElementById('collect-btn').style.display = 'block';
   }
 }
 
-function showCollectionComplete(){
-  const area = document.getElementById('cards-area');
-  area.classList.add('visible');
-  document.getElementById('tap-hint').style.display = 'none';
-  document.getElementById('cards-row').innerHTML =
-    `<div style="font-size:18px;color:#7a6040;letter-spacing:.1em;text-align:center;padding:40px 20px;">
-      Your ${rarity} collection is complete.<br>
-      <span style="font-size:13px;color:#4a3010">No new items remain in this rarity.</span>
-    </div>`;
-  document.getElementById('collect-btn').classList.add('visible');
-  document.getElementById('collect-btn').textContent = 'Return to Forge';
-  allFlipped = true;
-}
+// ── Collect ────────────────────────────────────────────────────
+function collectPack(){
+  const { rarity, mint } = activePack;
 
-// ── Collect & return ──
-function collectAndReturn(){
-  // Mark mint as opened in localStorage
-  if(mint && wallet){
-    const key = `${wallet}_openedMints`;
-    const opened = JSON.parse(localStorage.getItem(key) || '[]');
+  // Save opened mint
+  if(mint && currentWallet){
+    const key = `${currentWallet}_openedMints`;
+    const opened = JSON.parse(localStorage.getItem(key)||'[]');
     if(!opened.includes(mint)) opened.push(mint);
     localStorage.setItem(key, JSON.stringify(opened));
   }
-  // Deduct pack
-  if(wallet){
-    const key = `${wallet}_packInventory`;
-    const inv  = JSON.parse(localStorage.getItem(key) || '{}');
-    inv[rarity] = Math.max(0, (inv[rarity] || 1) - 1);
-    localStorage.setItem(key, JSON.stringify(inv));
-  }
-  goBack();
+
+  // Decrement counts + remove mint
+  packCounts[rarity] = Math.max(0, (packCounts[rarity]||1) - 1);
+  if(window._packMints?.[rarity]?.length) window._packMints[rarity].shift();
+
+  // Log session
+  logPackOpen(rarity);
+
+  // Re-render left
+  renderPackList(packCounts, window._packMints);
+
+  // Reset center
+  resetCenter();
 }
 
-function goBack(){
-  location.href = 'index.html';
+function resetCenter(){
+  activePack = null;
+  document.getElementById('center-reveal').style.display = 'none';
+  document.getElementById('center-pack').style.display   = 'none';
+  document.getElementById('cards-row').innerHTML = '';
+  document.getElementById('collect-btn').style.display = 'none';
+  document.getElementById('tap-hint').style.display = '';
+  document.querySelectorAll('.pack-entry').forEach(e => e.classList.remove('active'));
+  // Mobile: close overlay
+  document.getElementById('panel-center').classList.remove('mob-open');
+
+  const allEmpty = RARITIES.every(r => !packCounts[r]);
+  const idleEl = document.getElementById('center-idle');
+  idleEl.style.display = '';
+  idleEl.textContent = allEmpty && currentWallet
+    ? 'All packs opened!'
+    : 'Select a pack to open';
 }
 
-// ── Local fallback roll ──
+// ── Session stats ──────────────────────────────────────────────
+function logPackOpen(rarity){
+  sessionCounts[rarity]++;
+  const total = Object.values(sessionCounts).reduce((a,b)=>a+b,0);
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById(`stat-${rarity}`).textContent = sessionCounts[rarity];
+  document.getElementById(`stat-row-${rarity}`).style.display = '';
+}
+
+// ── Item stats (deterministic) ─────────────────────────────────
+function hashStr(s){
+  let h=5381;
+  for(let i=0;i<s.length;i++) h=((h<<5)+h+s.charCodeAt(i))|0;
+  return Math.abs(h);
+}
+function itemStats(path){
+  const filename = path.split('/').pop();
+  const rarity   = path.split('/')[1]||'common';
+  const h = hashStr(filename);
+  const total = RARITY_TOTALS[rarity]||15;
+  const a=1+(h%7), b=1+((h>>>4)%7), sum=a+b+(1+((h>>>8)%7));
+  const curse=Math.round(total*a/sum), doom=Math.round(total*b/sum);
+  return { curse, doom, hex:Math.max(1,total-curse-doom) };
+}
+
+// ── Local roll (PACK_ITEMS) ────────────────────────────────────
 const PACK_ITEMS = {"common":{"body":["body/common/burlap.PNG","body/common/corduroy.PNG","body/common/cracked_leather.PNG","body/common/jean.PNG","body/common/tartan.PNG","body/common/wool.PNG"],"knife":["knife/common/antler_bead_dagger.png","knife/common/antler_dagger.png","knife/common/beast_claw_blade.png","knife/common/bone_fetish_dagger.png","knife/common/bone_skull_dagger.png","knife/common/bone_triskele_dagger.png","knife/common/chakra_rope_knife.png","knife/common/constellation_dagger.png","knife/common/crystal_bone_dagger.png","knife/common/damascus_knife.png","knife/common/flint_twine_blade.png","knife/common/ivory_tusk_blade.png","knife/common/jagged_iron_blade.png","knife/common/obsidian_tribal_knife.png","knife/common/serpent_curved_blade.png","knife/common/snakeskin_knife.png","knife/common/talon_grip_blade.png","knife/common/verdant_curved_blade.png","knife/common/wrapped_serrated_blade.png"],"offhand":["offhand/common/bone_idol_mask.png","offhand/common/butterfly_trapped_in_jar.png","offhand/common/cursed_voodoo_doll.png","offhand/common/dark art.png","offhand/common/drink my brain.png","offhand/common/fractured_stone_tablet.png","offhand/common/good plant.png","offhand/common/grave_dirt_bottle.png","offhand/common/king.png","offhand/common/mushroom.png","offhand/common/ordinary_map.png","offhand/common/roots & stuff.png","offhand/common/skeletal_pocket_watch.png","offhand/common/the box of dark art.png","offhand/common/the hand.png","offhand/common/tile.png","offhand/common/totem of animal.png","offhand/common/toy marble from 80's.png","offhand/common/tribal_feather_mask.png","offhand/common/velvet_coin_purse.png"],"necklace":["necklace/common/adventurers_compass.png","necklace/common/amethyst_wire_pendant.png","necklace/common/aquamarine_wire_pendant.png","necklace/common/bone_and_bead_necklace.png","necklace/common/bone_and_crystal_talisman.png","necklace/common/bone_parts.png","necklace/common/bones.png","necklace/common/broken_clock.png","necklace/common/brown_mushroom.png","necklace/common/carnelian_wire_pendant.png","necklace/common/chain.png","necklace/common/colored_rocks.png","necklace/common/common_mirror.png","necklace/common/dark_rope.png","necklace/common/empty_cork_vial.png","necklace/common/iron_thimble.png","necklace/common/jade_orb_pendant.png","necklace/common/jade_spiral_medallion.png","necklace/common/jade_wire_pendant.png","necklace/common/leopard_pearl_brooch.png","necklace/common/marbles.png","necklace/common/midnight_charm_bracelet.png","necklace/common/moonstone_pendant.png","necklace/common/obsidian_skull_pendant.png","necklace/common/rick_with_hole.png","necklace/common/rock.png","necklace/common/rope.png","necklace/common/rune_rock.png","necklace/common/rune_stones.png","necklace/common/runic_bead_wreath.png","necklace/common/seashell.png","necklace/common/shadow_bat.png","necklace/common/shamanic_feather_and_fang_bracelet.png","necklace/common/skull_and_spider_rosary.png","necklace/common/snail_shell.png","necklace/common/sponge.png","necklace/common/talavera_tile_pendant.png","necklace/common/tangled_button_cluster.png","necklace/common/teeth.png","necklace/common/three_keys.png","necklace/common/vegvisir_stone_tablet.png","necklace/common/whelk_shell.png"],"eyes":["eyes/common/abyss_button.png","eyes/common/amethyst_cross.png","eyes/common/aqua_cross.png","eyes/common/blush_cross.png","eyes/common/bone_cross.png","eyes/common/cobalt_cross.png","eyes/common/coin.png","eyes/common/ember_cross.png","eyes/common/ghost_button.png","eyes/common/grave_moss.png","eyes/common/hex_cross.png","eyes/common/iron_laurel_seal_v2.png","eyes/common/jade_hex_nut.png","eyes/common/marsh_button.png","eyes/common/pale_specter.png","eyes/common/swamp_button.png","eyes/common/venom_cross.png"]},"rare":{"body":["body/rare/copper.PNG","body/rare/cracked_stone.PNG","body/rare/glassy.PNG","body/rare/wooden.PNG"],"knife":["knife/rare/abyssal_dagger.png","knife/rare/astral_dagger.png","knife/rare/ice_crystal_blade.png","knife/rare/jade_carved_blade.png","knife/rare/jade_crystal_dagger.png","knife/rare/lunar_copper_dagger.png","knife/rare/nautilus_blade.png","knife/rare/ruby_bone_dagger.png","knife/rare/rune_gold_dagger.png","knife/rare/shadow_crystal_dagger.png","knife/rare/sigil_black_dagger.png","knife/rare/skeleton_claw_grip.png","knife/rare/skull_animal_dagger.png","knife/rare/tribal_totem_blade.png","knife/rare/void_star_dagger.png"],"offhand":["offhand/rare/ancient_rune_scroll.png","offhand/rare/black mirror.png","offhand/rare/blue_king.png","offhand/rare/bone_chalice.png","offhand/rare/dragons handbook.png","offhand/rare/golden_entwined_palm_tree_idol.png","offhand/rare/ice_shard.png","offhand/rare/mummy_hand_with_rings.png","offhand/rare/prismatic_crystal_shard.png","offhand/rare/something potion.png","offhand/rare/sphere of war.png","offhand/rare/the sun card.png","offhand/rare/tiky tonky.png","offhand/rare/totem of people.png","offhand/rare/tsss.png"],"necklace":["necklace/rare/all_seeing_eye_brooch.png","necklace/rare/aquamarine_gemstone_brooch.png","necklace/rare/blue_evil_eye_brooch.png","necklace/rare/blue_pearl_rosette_brooch.png","necklace/rare/brown_cameo_brooch.png","necklace/rare/carved_blossom_medallion.png","necklace/rare/carved_rose_medallion.png","necklace/rare/crystal_crown_reliquary.png","necklace/rare/diamond_eye_of_providence.png","necklace/rare/emerald_ornate_brooch.png","necklace/rare/eye_of_horus_pin.png","necklace/rare/golden_filigree_rosette.png","necklace/rare/golden_heart_locket.png","necklace/rare/golden_heart_tome.png","necklace/rare/golden_keyhole_locket.png","necklace/rare/golden_laurel_medallion.png","necklace/rare/golden_sun.png","necklace/rare/green_agate_bone_rune.png","necklace/rare/grey_cameo_brooch.png","necklace/rare/jeweled_keyplate.png","necklace/rare/portrait_locket.png","necklace/rare/purple_gem_locket.png","necklace/rare/red_sun.png","necklace/rare/rose_gemstone_brooch.png","necklace/rare/ruby_ornate_brooch.png","necklace/rare/runed_frame.png","necklace/rare/sepia_portrait_cameo.png","necklace/rare/silver_celtic_knot.png","necklace/rare/silver_filigree_rosette.png","necklace/rare/silver_pearl_rosette_brooch.png","necklace/rare/smoky_quartz_claw_pendant.png","necklace/rare/teal_lotus_hairpin.png","necklace/rare/teal_star_hairpin.png","necklace/rare/tribal_face_coin.png","necklace/rare/wild_rose_medallion.png"],"eyes":["eyes/rare/blush_star_button.png","eyes/rare/bone_rune_button.png","eyes/rare/celtic_jade_button.png","eyes/rare/celtic_teal_button.png","eyes/rare/cobalt_mandala.png","eyes/rare/cobalt_sun_button.png","eyes/rare/crimson_mandala.png","eyes/rare/crimson_sun_button.png","eyes/rare/gold_sigil_coin.png","eyes/rare/ivory_floral_button.png","eyes/rare/rose_petal_button.png","eyes/rare/serpent_amber_slit.png","eyes/rare/terracotta_mandala.png"]},"legendary":{"body":["body/legendary/cosmic.PNG","body/legendary/fractured.PNG","body/legendary/marble.PNG","body/legendary/mummy.PNG"],"knife":["knife/legendary/amger gem dagger.png","knife/legendary/ancient eye dagger.png","knife/legendary/crimson vein blade.png","knife/legendary/crystal hand blade.png","knife/legendary/dark justice blade.png","knife/legendary/drawgon.png","knife/legendary/jungle serpent blade.png","knife/legendary/ocean serpent knife.png","knife/legendary/silver scorpion dagger.png","knife/legendary/skull tower dagger.png","knife/legendary/sun & moon dagger.png","knife/legendary/totem ritual dagger.png"],"offhand":["offhand/legendary/124.png","offhand/legendary/book of enchant.png","offhand/legendary/cerberus skull.png","offhand/legendary/enchanted cat.png","offhand/legendary/obsidian_scrying_stone.png","offhand/legendary/prismatic_crystal_cluster.png","offhand/legendary/the death card.png","offhand/legendary/totem of the shaman.png"],"necklace":["necklace/legendary/black_cat.png","necklace/legendary/celestial_stone_talisman.png","necklace/legendary/crimson_phoenix_crest.png","necklace/legendary/dark_sun_sigil.png","necklace/legendary/frost_crystal_root.png","necklace/legendary/golden_winged_emblem.png","necklace/legendary/mask_of_dark_magic.png","necklace/legendary/purple_rune_sphere.png","necklace/legendary/runic_vortex_stone.png","necklace/legendary/sapphire_eye_brooch.png","necklace/legendary/sapphire_star_medallion.png","necklace/legendary/void_spiral_pendant.png","necklace/legendary/winged_blood_heart.png"],"eyes":["eyes/legendary/amber_spiral.png","eyes/legendary/emerald_marble.png","eyes/legendary/frost_cracked_orb.png","eyes/legendary/sapphire_marble.png","eyes/legendary/serpent_eye_orb.png"]},"ultimate":{"body":["body/ultimate/infernal_bone_wraith.PNG","body/ultimate/prismatic dragon scale.PNG","body/ultimate/rune_iron_golem.PNG","body/ultimate/void_portal_golem.PNG"],"knife":["knife/ultimate/cosmic eye blade.png","knife/ultimate/cosmic void blade.png","knife/ultimate/cracked lava blade.png","knife/ultimate/death shroud blade.png","knife/ultimate/drawon scale knife.png","knife/ultimate/eternal dagger.png","knife/ultimate/frost skeleton blade.png","knife/ultimate/hellfire blade.png","knife/ultimate/nebula cutter.png","knife/ultimate/starlight knife.png"],"offhand":["offhand/ultimate/ancient_rune_stone_tablet.png","offhand/ultimate/cosmos navigator.png","offhand/ultimate/cosmos stone.png","offhand/ultimate/lava stone.png"],"necklace":["necklace/ultimate/cosmic_void_orb.png","necklace/ultimate/eyes.png","necklace/ultimate/gilded_demon_bell.png","necklace/ultimate/jeweled_scarab_amulet.png","necklace/ultimate/runic_sigil_ring.png","necklace/ultimate/silver_skull_mask.png"],"eyes":["eyes/ultimate/amber_dragon_eye_medallion.png","eyes/ultimate/amber_slit_eye.png","eyes/ultimate/cosmic_nebula_orb.png","eyes/ultimate/illuminati_eye_charm.png","eyes/ultimate/jade_serpent_eye.png","eyes/ultimate/skull_orb_black.png","eyes/ultimate/venom_vortex.png","eyes/ultimate/void_cosmos_orb.png"]}};
 
-function localRoll(rarity){
-  const cats = ['body','knife','offhand','necklace','eyes'];
-  const pool = PACK_ITEMS[rarity];
-  if(!pool) return [];
-  const count = Math.random() < 0.5 ? 2 : 3;
-  const shuffled = [...cats].sort(()=>Math.random()-.5);
-  const chosen = [];
-  for(let i = 0; i < shuffled.length && chosen.length < count; i++){
-    const cat = shuffled[i];
-    const items = pool[cat];
-    if(!items || !items.length) continue;
-    chosen.push({ path: items[Math.floor(Math.random()*items.length)], cat, rarity });
-  }
-  return chosen;
+function rollOne(rarity, cat){
+  const pool = PACK_ITEMS[rarity]?.[cat];
+  if(!pool||!pool.length) return null;
+  return { path:pool[Math.floor(Math.random()*pool.length)], cat, rarity };
 }
+
+function rollPackItems(rarity){
+  const cats = ['body','knife','offhand','necklace','eyes'];
+  let slots = [];
+  if(rarity==='common'){
+    slots=[{r:'common'},{r:'common'},{r:'common'},{r:'common'},{r:'common'}];
+    if(Math.random()<0.10) slots[Math.floor(Math.random()*5)].r='rare';
+  } else if(rarity==='rare'){
+    slots=[{r:'rare'},{r:'rare'},{r:'common'}];
+    if(Math.random()<0.10){ const i=slots.findIndex(s=>s.r==='rare'); slots[i].r='legendary'; }
+  } else if(rarity==='legendary'){
+    slots=[{r:'legendary'},{r:'legendary'},{r:'rare'},{r:'common'}];
+    if(Math.random()<0.10){ const i=slots.findIndex(s=>s.r==='legendary'); slots[i].r='ultimate'; }
+  } else if(rarity==='ultimate'){
+    slots=[{r:'ultimate'},{r:'ultimate'},{r:'legendary'},{r:'rare'},{r:'common'}];
+  }
+  const shuffled=[...cats].sort(()=>Math.random()-.5);
+  return slots.map((slot,i)=>{
+    const cat=shuffled[i%shuffled.length];
+    return rollOne(slot.r,cat)||rollOne('common',cat);
+  }).filter(Boolean);
+}
+
+// ── site-header.js bridge ─────────────────────────────────────
+window.connectWallet    = connectSol;
+window.connectTezos     = connectTez;
+window.disconnectWallet = doDisconnect;
+window.disconnectTezos  = doDisconnect;
+
+// ── Auto-connect from sessionStorage ──────────────────────────
+setTimeout(async function autoConnect(){
+
+  const key      = sessionStorage.getItem('wallet_key');
+  const platform = sessionStorage.getItem('wallet_platform');
+  if(!key) return;
+  showWalletConnected(key, platform || 'sol');
+  await new Promise(r => setTimeout(r, 50));
+  if(platform === 'tez'){
+    packCounts = JSON.parse(localStorage.getItem(`${key}_packInventory`) || '{"common":0,"rare":0,"legendary":0,"ultimate":0}');
+    window._packMints = { common:[], rare:[], legendary:[], ultimate:[] };
+    renderPackList(packCounts, window._packMints);
+    hideSyncing();
+  } else {
+    await loadWalletPacks(key);
+  }
+}, 0);
+
+// ── Dev helper ─────────────────────────────────────────────────
+function devLoadPacks(){
+  currentWallet='DEV_WALLET'; currentPlatform='sol';
+  packCounts={common:3,rare:2,legendary:1,ultimate:1};
+  window._packMints={common:['m1','m2','m3'],rare:['m4','m5'],legendary:['m6'],ultimate:['m7']};
+  showWalletConnected('DEV_WALLET_ADDRESS_HERE','sol');
+  hideSyncing();
+  renderPackList(packCounts,window._packMints);
+}
+
+
 </script>
 </body>
 </html>

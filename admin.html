@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hex Admin</title>
+<style>
+  @font-face {
+    font-family: 'Bloodcrow';
+    src: url('https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/bloodcrowc.ttf') format('truetype');
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #050302;
+    color: #c8a060;
+    font-family: 'Bloodcrow', serif;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── Auth gate ── */
+  #auth-gate {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 16px;
+  }
+  #auth-gate h1 { font-size: 32px; letter-spacing: .14em; color: #e8c060; }
+  #auth-gate input {
+    padding: 12px 18px; font-family: 'Bloodcrow', serif; font-size: 18px;
+    background: #0e0904; border: 1px solid #4a3010; border-radius: 8px;
+    color: #c8a060; width: 260px; text-align: center; letter-spacing: .1em;
+  }
+  #auth-gate button {
+    padding: 10px 28px; font-family: 'Bloodcrow', serif; font-size: 16px;
+    background: #1a1006; border: 1px solid #6a4010; border-radius: 8px;
+    color: #e8c060; cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  #auth-gate button:hover { background: #241608; border-color: #e8c060; }
+  #auth-error { color: #cc4030; font-size: 14px; }
+
+  /* ── Main app ── */
+  #app { display: none; }
+
+  .admin-header {
+    background: linear-gradient(90deg, #0e0904, #080603);
+    border-bottom: 2px solid #3a2808;
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .admin-header h1 { font-size: 24px; letter-spacing: .12em; color: #e8c060; flex: 1; }
+  .admin-header .badge {
+    font-size: 11px; letter-spacing: .08em; color: #6a4a20;
+    background: #1a1006; border: 1px solid #3a2008; border-radius: 4px;
+    padding: 3px 8px;
+  }
+
+  .admin-body {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    min-height: calc(100vh - 56px);
+  }
+
+  /* ── Search panel ── */
+  #search-panel {
+    border-right: 1px solid #1e1208;
+    background: #080603;
+    padding: 20px 16px;
+    overflow-y: auto;
+  }
+
+  .section-title {
+    font-size: 13px; letter-spacing: .1em; text-transform: uppercase;
+    color: #6a4a20; margin-bottom: 10px; padding-bottom: 6px;
+    border-bottom: 1px solid #1e1208;
+  }
+
+  .search-row {
+    display: flex; gap: 8px; margin-bottom: 16px;
+  }
+  .search-row input {
+    flex: 1; padding: 9px 12px;
+    font-family: 'Bloodcrow', serif; font-size: 14px;
+    background: #0e0904; border: 1px solid #3a2808; border-radius: 6px;
+    color: #c8a060; outline: none;
+    transition: border-color .2s;
+  }
+  .search-row input:focus { border-color: #8a5020; }
+  .search-row input::placeholder { color: #3a2808; }
+
+  .btn {
+    padding: 9px 16px; font-family: 'Bloodcrow', serif; font-size: 14px;
+    background: #0e0904; border: 1px solid #4a3010; border-radius: 6px;
+    color: #c8a060; cursor: pointer; white-space: nowrap;
+    transition: border-color .2s, color .2s;
+  }
+  .btn:hover { border-color: #c8a060; color: #e8d080; }
+  .btn.primary { border-color: #8a5020; color: #e8c060; background: #1a1006; }
+  .btn.primary:hover { border-color: #e8c060; background: #221608; }
+  .btn.danger { border-color: #6a2020; color: #e07060; }
+  .btn.danger:hover { border-color: #cc3030; color: #ff8070; background: #1a0806; }
+  .btn.success { border-color: #2a6a2a; color: #70c870; }
+  .btn.success:hover { border-color: #50c850; background: #081808; }
+  .btn:disabled { opacity: .4; cursor: default; }
+
+  /* Result list */
+  .result-item {
+    padding: 10px 12px; border-radius: 6px; margin-bottom: 6px;
+    border: 1px solid #1e1208; background: #0a0704;
+    cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .result-item:hover { border-color: #4a3010; background: #0e0904; }
+  .result-item.active { border-color: #8a5020; background: #141008; }
+  .result-name { font-size: 16px; color: #e8c060; letter-spacing: .06em; }
+  .result-meta { font-size: 11px; color: #5a4020; margin-top: 3px; letter-spacing: .03em; }
+
+  /* ── Edit panel ── */
+  #edit-panel {
+    padding: 24px 28px;
+    overflow-y: auto;
+  }
+
+  #edit-empty {
+    display: flex; align-items: center; justify-content: center;
+    height: 100%; color: #3a2808; font-size: 20px; letter-spacing: .08em;
+  }
+
+  #edit-content { display: none; }
+
+  .field-row {
+    display: flex; gap: 10px; margin-bottom: 12px; align-items: center;
+  }
+  .field-row label {
+    font-size: 12px; letter-spacing: .08em; color: #6a4a20;
+    text-transform: uppercase; width: 120px; flex-shrink: 0;
+  }
+  .field-row input {
+    flex: 1; padding: 8px 12px;
+    font-family: 'Bloodcrow', serif; font-size: 15px;
+    background: #0e0904; border: 1px solid #3a2808; border-radius: 6px;
+    color: #c8a060; outline: none;
+    transition: border-color .2s;
+  }
+  .field-row input:focus { border-color: #8a5020; }
+
+  .divider {
+    border: none; border-top: 1px solid #1e1208; margin: 20px 0;
+  }
+
+  /* Items section */
+  #items-wrap {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;
+  }
+  .item-tag {
+    display: flex; align-items: center; gap: 5px;
+    padding: 4px 8px 4px 10px; border-radius: 4px; font-size: 11px;
+    border: 1px solid #2a1a08; background: #0a0703; color: #a08040;
+    max-width: 220px;
+  }
+  .item-tag span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item-tag .rarity-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  }
+  .rarity-dot.common    { background: #888; }
+  .rarity-dot.rare      { background: #e8c050; }
+  .rarity-dot.legendary { background: #60b0ff; }
+  .rarity-dot.ultimate  { background: #ff80c0; }
+  .item-tag .rm-btn {
+    background: none; border: none; color: #5a3020; cursor: pointer;
+    font-size: 13px; line-height: 1; padding: 0 2px; flex-shrink: 0;
+    transition: color .15s;
+  }
+  .item-tag .rm-btn:hover { color: #ff5030; }
+
+  /* Add item row */
+  .add-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;
+  }
+  select.adm-select {
+    padding: 7px 10px; font-family: 'Bloodcrow', serif; font-size: 13px;
+    background: #0e0904; border: 1px solid #3a2808; border-radius: 6px;
+    color: #c8a060; outline: none; cursor: pointer;
+  }
+  select.adm-select:focus { border-color: #8a5020; }
+
+  /* Grant pack section */
+  .grant-row {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  }
+  .grant-result {
+    font-size: 12px; color: #70c870; margin-top: 6px;
+    min-height: 18px; letter-spacing: .04em;
+  }
+
+  /* Action bar */
+  .action-bar {
+    display: flex; gap: 10px; margin-top: 24px; padding-top: 20px;
+    border-top: 1px solid #1e1208; flex-wrap: wrap;
+  }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #1a1006; border: 1px solid #6a4010; border-radius: 8px;
+    padding: 10px 20px; font-size: 14px; color: #e8c060; z-index: 9999;
+    opacity: 0; transition: opacity .3s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+  .toast.error { border-color: #6a2020; color: #ff6050; }
+
+  .spinner-inline {
+    display: inline-block; width: 12px; height: 12px; border-radius: 50%;
+    border: 2px solid #3a2808; border-top-color: #c8a060;
+    animation: spin .7s linear infinite; vertical-align: middle; margin-right: 4px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .stat-pills {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .stat-pill {
+    padding: 4px 12px; border-radius: 20px; font-size: 12px; letter-spacing: .06em;
+    background: #0a0703; border: 1px solid #2a1a08; color: #6a5030;
+  }
+  .stat-pill b { color: #c8a060; }
+</style>
+</head>
+<body>
+
+<!-- ── Auth gate ── -->
+<div id="auth-gate">
+  <h1>⛧ Hex Admin</h1>
+  <input type="password" id="secret-input" placeholder="Admin secret" autocomplete="off"
+    onkeydown="if(event.key==='Enter') login()">
+  <button onclick="login()">Enter</button>
+  <div id="auth-error"></div>
+</div>
+
+<!-- ── Main app ── -->
+<div id="app">
+  <div class="admin-header">
+    <h1>⛧ Hex Admin</h1>
+    <span class="badge">ADMIN</span>
+    <button class="btn" onclick="logout()" style="font-size:12px;padding:6px 12px;">Logout</button>
+  </div>
+
+  <div class="admin-body">
+
+    <!-- Search panel -->
+    <div id="search-panel">
+      <div class="section-title">Search Profile</div>
+      <div class="search-row">
+        <input type="text" id="search-input" placeholder="Wallet address or witch name…"
+          onkeydown="if(event.key==='Enter') doSearch()">
+        <button class="btn primary" onclick="doSearch()" id="search-btn">Search</button>
+      </div>
+      <div id="result-list"></div>
+    </div>
+
+    <!-- Edit panel -->
+    <div id="edit-panel">
+      <div id="edit-empty">Select a profile to edit</div>
+
+      <div id="edit-content">
+
+        <!-- Identity -->
+        <div class="section-title">Identity</div>
+        <div class="stat-pills" id="stat-pills"></div>
+
+        <div class="field-row">
+          <label>Witch Name</label>
+          <input type="text" id="f-witchname">
+        </div>
+        <div class="field-row">
+          <label>Solana Wallet</label>
+          <input type="text" id="f-sol">
+        </div>
+        <div class="field-row">
+          <label>Tezos Wallet</label>
+          <input type="text" id="f-tez">
+        </div>
+
+        <hr class="divider">
+
+        <!-- Items -->
+        <div class="section-title" style="margin-bottom:10px">
+          Items
+          <span id="items-count" style="margin-left:8px;color:#c8a060;font-size:13px;"></span>
+        </div>
+        <div id="items-wrap"></div>
+
+        <!-- Add item -->
+        <div class="add-row">
+          <select class="adm-select" id="add-rarity" onchange="populateItemSelect()">
+            <option value="common">Common</option>
+            <option value="rare">Rare</option>
+            <option value="legendary">Legendary</option>
+            <option value="ultimate">Ultimate</option>
+          </select>
+          <select class="adm-select" id="add-cat" onchange="populateItemSelect()">
+            <option value="body">Body</option>
+            <option value="knife">Knife</option>
+            <option value="offhand">Offhand</option>
+            <option value="necklace">Necklace</option>
+            <option value="eyes">Eyes</option>
+          </select>
+          <select class="adm-select" id="add-item" style="flex:1;min-width:160px;"></select>
+          <button class="btn success" onclick="addItem()">+ Add</button>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Grant packs -->
+        <div class="section-title">Grant Packs</div>
+        <div class="grant-row">
+          <select class="adm-select" id="grant-rarity">
+            <option value="common">Common</option>
+            <option value="rare">Rare</option>
+            <option value="legendary">Legendary</option>
+            <option value="ultimate">Ultimate</option>
+          </select>
+          <select class="adm-select" id="grant-count">
+            <option value="1">1 pack</option>
+            <option value="2">2 packs</option>
+            <option value="3">3 packs</option>
+            <option value="5">5 packs</option>
+          </select>
+          <button class="btn primary" onclick="grantPack()">Grant Packs</button>
+        </div>
+        <div class="grant-result" id="grant-result"></div>
+
+        <!-- Action bar -->
+        <div class="action-bar">
+          <button class="btn primary" onclick="saveProfile()">💾 Save Changes</button>
+          <button class="btn danger" onclick="deleteProfile()">🗑 Delete Profile</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BASE = 'https://www.alperozdil.com/_functions';
+const ADMIN_SECRET = 'hex-admin-2026';
+
+const PACK_ITEMS = {"common":{"body":["body/common/burlap.PNG","body/common/corduroy.PNG","body/common/cracked_leather.PNG","body/common/jean.PNG","body/common/tartan.PNG","body/common/wool.PNG"],"knife":["knife/common/antler_bead_dagger.png","knife/common/antler_dagger.png","knife/common/beast_claw_blade.png","knife/common/bone_fetish_dagger.png","knife/common/bone_skull_dagger.png","knife/common/bone_triskele_dagger.png","knife/common/chakra_rope_knife.png","knife/common/constellation_dagger.png","knife/common/crystal_bone_dagger.png","knife/common/damascus_knife.png","knife/common/flint_twine_blade.png","knife/common/ivory_tusk_blade.png","knife/common/jagged_iron_blade.png","knife/common/obsidian_tribal_knife.png","knife/common/serpent_curved_blade.png","knife/common/snakeskin_knife.png","knife/common/talon_grip_blade.png","knife/common/verdant_curved_blade.png","knife/common/wrapped_serrated_blade.png"],"offhand":["offhand/common/bone_idol_mask.png","offhand/common/butterfly_trapped_in_jar.png","offhand/common/cursed_voodoo_doll.png","offhand/common/dark art.png","offhand/common/drink my brain.png","offhand/common/fractured_stone_tablet.png","offhand/common/good plant.png","offhand/common/grave_dirt_bottle.png","offhand/common/king.png","offhand/common/mushroom.png","offhand/common/ordinary_map.png","offhand/common/roots & stuff.png","offhand/common/skeletal_pocket_watch.png","offhand/common/the box of dark art.png","offhand/common/the hand.png","offhand/common/tile.png","offhand/common/totem of animal.png","offhand/common/toy marble from 80's.png","offhand/common/tribal_feather_mask.png","offhand/common/velvet_coin_purse.png"],"necklace":["necklace/common/adventurers_compass.png","necklace/common/amethyst_wire_pendant.png","necklace/common/aquamarine_wire_pendant.png","necklace/common/bone_and_bead_necklace.png","necklace/common/bone_and_crystal_talisman.png","necklace/common/bone_parts.png","necklace/common/bones.png","necklace/common/broken_clock.png","necklace/common/brown_mushroom.png","necklace/common/carnelian_wire_pendant.png","necklace/common/chain.png","necklace/common/colored_rocks.png","necklace/common/common_mirror.png","necklace/common/dark_rope.png","necklace/common/empty_cork_vial.png","necklace/common/iron_thimble.png","necklace/common/jade_orb_pendant.png","necklace/common/jade_spiral_medallion.png","necklace/common/jade_wire_pendant.png","necklace/common/leopard_pearl_brooch.png","necklace/common/marbles.png","necklace/common/midnight_charm_bracelet.png","necklace/common/moonstone_pendant.png","necklace/common/obsidian_skull_pendant.png","necklace/common/rick_with_hole.png","necklace/common/rock.png","necklace/common/rope.png","necklace/common/rune_rock.png","necklace/common/rune_stones.png","necklace/common/runic_bead_wreath.png","necklace/common/seashell.png","necklace/common/shadow_bat.png","necklace/common/shamanic_feather_and_fang_bracelet.png","necklace/common/skull_and_spider_rosary.png","necklace/common/snail_shell.png","necklace/common/sponge.png","necklace/common/talavera_tile_pendant.png","necklace/common/tangled_button_cluster.png","necklace/common/teeth.png","necklace/common/three_keys.png","necklace/common/vegvisir_stone_tablet.png","necklace/common/whelk_shell.png"],"eyes":["eyes/common/abyss_button.png","eyes/common/amethyst_cross.png","eyes/common/aqua_cross.png","eyes/common/blush_cross.png","eyes/common/bone_cross.png","eyes/common/cobalt_cross.png","eyes/common/coin.png","eyes/common/ember_cross.png","eyes/common/ghost_button.png","eyes/common/grave_moss.png","eyes/common/hex_cross.png","eyes/common/iron_laurel_seal_v2.png","eyes/common/jade_hex_nut.png","eyes/common/marsh_button.png","eyes/common/pale_specter.png","eyes/common/swamp_button.png","eyes/common/venom_cross.png"]},"rare":{"body":["body/rare/copper.PNG","body/rare/cracked_stone.PNG","body/rare/glassy.PNG","body/rare/wooden.PNG"],"knife":["knife/rare/abyssal_dagger.png","knife/rare/astral_dagger.png","knife/rare/ice_crystal_blade.png","knife/rare/jade_carved_blade.png","knife/rare/jade_crystal_dagger.png","knife/rare/lunar_copper_dagger.png","knife/rare/nautilus_blade.png","knife/rare/ruby_bone_dagger.png","knife/rare/rune_gold_dagger.png","knife/rare/shadow_crystal_dagger.png","knife/rare/sigil_black_dagger.png","knife/rare/skeleton_claw_grip.png","knife/rare/skull_animal_dagger.png","knife/rare/tribal_totem_blade.png","knife/rare/void_star_dagger.png"],"offhand":["offhand/rare/ancient_rune_scroll.png","offhand/rare/black mirror.png","offhand/rare/blue_king.png","offhand/rare/bone_chalice.png","offhand/rare/dragons handbook.png","offhand/rare/golden_entwined_palm_tree_idol.png","offhand/rare/ice_shard.png","offhand/rare/mummy_hand_with_rings.png","offhand/rare/prismatic_crystal_shard.png","offhand/rare/something potion.png","offhand/rare/sphere of war.png","offhand/rare/the sun card.png","offhand/rare/tiky tonky.png","offhand/rare/totem of people.png","offhand/rare/tsss.png"],"necklace":["necklace/rare/all_seeing_eye_brooch.png","necklace/rare/aquamarine_gemstone_brooch.png","necklace/rare/blue_evil_eye_brooch.png","necklace/rare/blue_pearl_rosette_brooch.png","necklace/rare/brown_cameo_brooch.png","necklace/rare/carved_blossom_medallion.png","necklace/rare/carved_rose_medallion.png","necklace/rare/crystal_crown_reliquary.png","necklace/rare/diamond_eye_of_providence.png","necklace/rare/emerald_ornate_brooch.png","necklace/rare/eye_of_horus_pin.png","necklace/rare/golden_filigree_rosette.png","necklace/rare/golden_heart_locket.png","necklace/rare/golden_heart_tome.png","necklace/rare/golden_keyhole_locket.png","necklace/rare/golden_laurel_medallion.png","necklace/rare/golden_sun.png","necklace/rare/green_agate_bone_rune.png","necklace/rare/grey_cameo_brooch.png","necklace/rare/jeweled_keyplate.png","necklace/rare/portrait_locket.png","necklace/rare/purple_gem_locket.png","necklace/rare/red_sun.png","necklace/rare/rose_gemstone_brooch.png","necklace/rare/ruby_ornate_brooch.png","necklace/rare/runed_frame.png","necklace/rare/sepia_portrait_cameo.png","necklace/rare/silver_celtic_knot.png","necklace/rare/silver_filigree_rosette.png","necklace/rare/silver_pearl_rosette_brooch.png","necklace/rare/smoky_quartz_claw_pendant.png","necklace/rare/teal_lotus_hairpin.png","necklace/rare/teal_star_hairpin.png","necklace/rare/tribal_face_coin.png","necklace/rare/wild_rose_medallion.png"],"eyes":["eyes/rare/blush_star_button.png","eyes/rare/bone_rune_button.png","eyes/rare/celtic_jade_button.png","eyes/rare/celtic_teal_button.png","eyes/rare/cobalt_mandala.png","eyes/rare/cobalt_sun_button.png","eyes/rare/crimson_mandala.png","eyes/rare/crimson_sun_button.png","eyes/rare/gold_sigil_coin.png","eyes/rare/ivory_floral_button.png","eyes/rare/rose_petal_button.png","eyes/rare/serpent_amber_slit.png","eyes/rare/terracotta_mandala.png"]},"legendary":{"body":["body/legendary/cosmic.PNG","body/legendary/fractured.PNG","body/legendary/marble.PNG","body/legendary/mummy.PNG"],"knife":["knife/legendary/amger gem dagger.png","knife/legendary/ancient eye dagger.png","knife/legendary/crimson vein blade.png","knife/legendary/crystal hand blade.png","knife/legendary/dark justice blade.png","knife/legendary/drawgon.png","knife/legendary/jungle serpent blade.png","knife/legendary/ocean serpent knife.png","knife/legendary/silver scorpion dagger.png","knife/legendary/skull tower dagger.png","knife/legendary/sun & moon dagger.png","knife/legendary/totem ritual dagger.png"],"offhand":["offhand/legendary/124.png","offhand/legendary/book of enchant.png","offhand/legendary/cerberus skull.png","offhand/legendary/enchanted cat.png","offhand/legendary/obsidian_scrying_stone.png","offhand/legendary/prismatic_crystal_cluster.png","offhand/legendary/the death card.png","offhand/legendary/totem of the shaman.png"],"necklace":["necklace/legendary/black_cat.png","necklace/legendary/celestial_stone_talisman.png","necklace/legendary/crimson_phoenix_crest.png","necklace/legendary/dark_sun_sigil.png","necklace/legendary/frost_crystal_root.png","necklace/legendary/golden_winged_emblem.png","necklace/legendary/mask_of_dark_magic.png","necklace/legendary/purple_rune_sphere.png","necklace/legendary/runic_vortex_stone.png","necklace/legendary/sapphire_eye_brooch.png","necklace/legendary/sapphire_star_medallion.png","necklace/legendary/void_spiral_pendant.png","necklace/legendary/winged_blood_heart.png"],"eyes":["eyes/legendary/amber_spiral.png","eyes/legendary/emerald_marble.png","eyes/legendary/frost_cracked_orb.png","eyes/legendary/sapphire_marble.png","eyes/legendary/serpent_eye_orb.png"]},"ultimate":{"body":["body/ultimate/infernal_bone_wraith.PNG","body/ultimate/prismatic dragon scale.PNG","body/ultimate/rune_iron_golem.PNG","body/ultimate/void_portal_golem.PNG"],"knife":["knife/ultimate/cosmic eye blade.png","knife/ultimate/cosmic void blade.png","knife/ultimate/cracked lava blade.png","knife/ultimate/death shroud blade.png","knife/ultimate/drawon scale knife.png","knife/ultimate/eternal dagger.png","knife/ultimate/frost skeleton blade.png","knife/ultimate/hellfire blade.png","knife/ultimate/nebula cutter.png","knife/ultimate/starlight knife.png"],"offhand":["offhand/ultimate/ancient_rune_stone_tablet.png","offhand/ultimate/cosmos navigator.png","offhand/ultimate/cosmos stone.png","offhand/ultimate/lava stone.png"],"necklace":["necklace/ultimate/cosmic_void_orb.png","necklace/ultimate/eyes.png","necklace/ultimate/gilded_demon_bell.png","necklace/ultimate/jeweled_scarab_amulet.png","necklace/ultimate/runic_sigil_ring.png","necklace/ultimate/silver_skull_mask.png"],"eyes":["eyes/ultimate/amber_dragon_eye_medallion.png","eyes/ultimate/amber_slit_eye.png","eyes/ultimate/cosmic_nebula_orb.png","eyes/ultimate/illuminati_eye_charm.png","eyes/ultimate/jade_serpent_eye.png","eyes/ultimate/skull_orb_black.png","eyes/ultimate/venom_vortex.png","eyes/ultimate/void_cosmos_orb.png"]}};
+
+let currentProfile = null;
+let currentItems   = [];
+
+// ── Auth ──────────────────────────────────────────────────────
+function login() {
+  const val = document.getElementById('secret-input').value.trim();
+  if (val === ADMIN_SECRET) {
+    document.getElementById('auth-gate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    populateItemSelect();
+  } else {
+    document.getElementById('auth-error').textContent = 'Wrong secret.';
+  }
+}
+function logout() {
+  location.reload();
+}
+
+// ── Search ────────────────────────────────────────────────────
+async function doSearch() {
+  const q = document.getElementById('search-input').value.trim();
+  if (!q) return;
+  const btn = document.getElementById('search-btn');
+  btn.innerHTML = '<span class="spinner-inline"></span>';
+  btn.disabled = true;
+
+  try {
+    const res = await api('adminSearch', { query: q });
+    renderResults(res.results || []);
+  } catch(e) {
+    showToast('Search failed: ' + e.message, true);
+  } finally {
+    btn.textContent = 'Search';
+    btn.disabled = false;
+  }
+}
+
+function renderResults(results) {
+  const el = document.getElementById('result-list');
+  if (!results.length) {
+    el.innerHTML = '<div style="color:#3a2808;font-size:13px;padding:8px 0;">No results.</div>';
+    return;
+  }
+  el.innerHTML = results.map((r, i) => `
+    <div class="result-item" id="ri-${i}" onclick="selectProfile(${i})" data-idx="${i}">
+      <div class="result-name">${r.witchname || '—'}</div>
+      <div class="result-meta">
+        ${r.solanaWallet ? '◎ ' + shortAddr(r.solanaWallet) : ''}
+        ${r.tezosWallet  ? ' · ꜩ ' + shortAddr(r.tezosWallet)  : ''}
+        &nbsp;·&nbsp; ${r.items.length} items
+      </div>
+    </div>
+  `).join('');
+  el.dataset.results = JSON.stringify(results);
+}
+
+function selectProfile(idx) {
+  const results = JSON.parse(document.getElementById('result-list').dataset.results || '[]');
+  currentProfile = results[idx];
+  currentItems   = [...(currentProfile.items || [])];
+
+  document.querySelectorAll('.result-item').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+
+  document.getElementById('edit-empty').style.display   = 'none';
+  document.getElementById('edit-content').style.display = 'block';
+
+  document.getElementById('f-witchname').value = currentProfile.witchname || '';
+  document.getElementById('f-sol').value        = currentProfile.solanaWallet || '';
+  document.getElementById('f-tez').value        = currentProfile.tezosWallet  || '';
+
+  renderStatPills();
+  renderItems();
+  populateItemSelect();
+}
+
+// ── Items ─────────────────────────────────────────────────────
+function rarityOf(path) {
+  const p = path.split('/');
+  return p[1] || 'common';
+}
+
+function renderStatPills() {
+  const counts = { common:0, rare:0, legendary:0, ultimate:0 };
+  currentItems.forEach(p => { const r = rarityOf(p); if(counts[r] !== undefined) counts[r]++; });
+  document.getElementById('stat-pills').innerHTML =
+    `<div class="stat-pill">Total <b>${currentItems.length}</b></div>` +
+    Object.entries(counts).map(([r,c]) =>
+      `<div class="stat-pill">${cap(r)} <b>${c}</b></div>`
+    ).join('');
+}
+
+function renderItems() {
+  document.getElementById('items-count').textContent = `(${currentItems.length})`;
+  document.getElementById('items-wrap').innerHTML = currentItems.map((path, idx) => {
+    const r = rarityOf(path);
+    const name = path.split('/').pop().replace(/\.(png|PNG)$/, '').replace(/_/g, ' ');
+    return `<div class="item-tag">
+      <div class="rarity-dot ${r}"></div>
+      <span title="${path}">${name}</span>
+      <button class="rm-btn" onclick="removeItem(${idx})">✕</button>
+    </div>`;
+  }).join('');
+  renderStatPills();
+}
+
+function removeItem(idx) {
+  currentItems.splice(idx, 1);
+  renderItems();
+}
+
+function populateItemSelect() {
+  const rarity = document.getElementById('add-rarity').value;
+  const cat    = document.getElementById('add-cat').value;
+  const items  = (PACK_ITEMS[rarity] && PACK_ITEMS[rarity][cat]) || [];
+  const sel    = document.getElementById('add-item');
+  sel.innerHTML = items.map(p => {
+    const name = p.split('/').pop().replace(/\.(png|PNG)$/, '').replace(/_/g, ' ');
+    const owned = currentItems.includes(p);
+    return `<option value="${p}" ${owned?'disabled':''} style="color:${owned?'#3a2808':'inherit'}">${name}${owned?' ✓':''}</option>`;
+  }).join('');
+}
+
+function addItem() {
+  const path = document.getElementById('add-item').value;
+  if (!path || currentItems.includes(path)) return;
+  currentItems.push(path);
+  renderItems();
+  populateItemSelect();
+}
+
+// ── Grant pack (calls backend) ────────────────────────────────
+async function grantPack() {
+  if (!currentProfile) return;
+  const rarity = document.getElementById('grant-rarity').value;
+  const count  = parseInt(document.getElementById('grant-count').value);
+  const el     = document.getElementById('grant-result');
+  el.textContent = 'Granting…';
+
+  try {
+    const res = await api('adminGrantPack', { _id: currentProfile._id, rarity, count });
+    if (res.granted && res.granted.length) {
+      const names = res.granted.map(i => i.path.split('/').pop().replace(/\.(png|PNG)$/,'')).join(', ');
+      el.textContent = `✓ Granted ${res.granted.length} items: ${names}`;
+      currentItems = res.granted.map(i => i.path).concat(currentItems);
+      // Re-fetch full items list
+      currentItems = [];
+      const r2 = await api('adminSearch', { query: currentProfile.solanaWallet || currentProfile.witchname });
+      const fresh = (r2.results||[]).find(x => x._id === currentProfile._id);
+      if (fresh) { currentProfile = fresh; currentItems = [...fresh.items]; }
+    } else {
+      el.textContent = res.message || 'No new items (collection may be full).';
+    }
+    renderItems();
+    populateItemSelect();
+  } catch(e) {
+    el.textContent = 'Error: ' + e.message;
+  }
+}
+
+// ── Save ──────────────────────────────────────────────────────
+async function saveProfile() {
+  if (!currentProfile) return;
+  try {
+    await api('adminSave', {
+      _id:          currentProfile._id,
+      witchname:    document.getElementById('f-witchname').value.trim(),
+      solanaWallet: document.getElementById('f-sol').value.trim() || null,
+      tezosWallet:  document.getElementById('f-tez').value.trim() || null,
+      items:        currentItems
+    });
+    showToast('Saved ✓');
+    // Update local cache
+    currentProfile.witchname    = document.getElementById('f-witchname').value.trim();
+    currentProfile.solanaWallet = document.getElementById('f-sol').value.trim();
+    currentProfile.tezosWallet  = document.getElementById('f-tez').value.trim();
+    currentProfile.items        = [...currentItems];
+  } catch(e) {
+    showToast('Save failed: ' + e.message, true);
+  }
+}
+
+// ── Delete ────────────────────────────────────────────────────
+async function deleteProfile() {
+  if (!currentProfile) return;
+  if (!confirm(`Delete ${currentProfile.witchname}? This cannot be undone.`)) return;
+  try {
+    await api('adminDelete', { _id: currentProfile._id });
+    showToast('Profile deleted.');
+    currentProfile = null;
+    currentItems   = [];
+    document.getElementById('edit-content').style.display = 'none';
+    document.getElementById('edit-empty').style.display   = 'block';
+    document.getElementById('result-list').innerHTML = '';
+    document.getElementById('search-input').value = '';
+  } catch(e) {
+    showToast('Delete failed: ' + e.message, true);
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+async function api(endpoint, body) {
+  const res = await fetch(`${BASE}/${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ secret: ADMIN_SECRET, ...body })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+
+function shortAddr(addr) {
+  if (!addr) return '';
+  return addr.length > 14 ? addr.slice(0,6) + '…' + addr.slice(-4) : addr;
+}
+
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+let toastTimer;
+function showToast(msg, isError) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = 'toast show' + (isError ? ' error' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = 'toast', 2800);
+}
+
+// Enter key on search
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('secret-input').focus();
+});
+</script>
+</body>
+</html>

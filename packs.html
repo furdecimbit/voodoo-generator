@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en" data-page="packs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Packs — Hex &amp; Stitch</title>
+<link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@airgap/beacon-dapp@4.8.1/dist/walletbeacon.dapp.min.js"></script>
+<style>
+  @font-face { font-family:'Blackburn'; src:url('https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/Blackburn.ttf'); }
+  @font-face { font-family:'Bloodcrow'; src:url('https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/bloodcrowc.ttf'); }
+</style>
+<style>
+/* ── RESET ── */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{margin:0;padding:0;background:#080608;}
+body{
+  background:#080608;color:#d0c8b8;
+  font-family:'Crimson Text',Georgia,serif;font-size:15px;
+  display:flex;flex-direction:column;height:100vh;overflow:hidden;
+}
+
+/* ── 3-COLUMN GRID ── */
+#packs-body{
+  display:grid;
+  grid-template-columns:460px 1fr 460px;
+  grid-template-rows:1fr;
+  grid-template-areas:"left center right";
+  flex:1;overflow:hidden;
+}
+
+/* ── LEFT PANEL ── */
+#left-panel{
+  grid-area:left;
+  background:linear-gradient(180deg,#3d2b0fcc 0%,#2c1e0acc 40%,#1e1508cc 100%),url('verticalback.png');
+  background-size:cover;background-position:center;
+  border-right:3px solid #7a5520;
+  box-shadow:inset -6px 0 24px #00000099;
+  display:flex;flex-direction:column;
+  height:100%;overflow-y:auto;
+}
+#left-panel::-webkit-scrollbar{width:6px}
+#left-panel::-webkit-scrollbar-track{background:#140e04}
+#left-panel::-webkit-scrollbar-thumb{background:#7a5520;border-radius:3px}
+
+#lp-header{
+  width:100%;border-bottom:2px solid #7a5520;
+  flex-shrink:0;overflow:hidden;position:relative;
+  display:flex;align-items:center;height:103px;
+}
+#lp-header>img:first-child{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+#lp-logo{position:relative;z-index:2;width:56px;height:56px;object-fit:contain;margin-left:14px;flex-shrink:0;}
+#lp-title{
+  position:relative;z-index:2;margin-left:auto;margin-right:14px;
+  font-family:'Bloodcrow',serif;font-size:18px;line-height:1.15;
+  letter-spacing:.1em;text-transform:uppercase;color:#c8a050;text-align:right;
+  text-shadow:0 0 14px #c8a05077,0 1px 5px #000;
+}
+
+.sidebar-section-label{
+  padding:12px 16px;display:flex;align-items:center;gap:10px;
+  font-family:'Bloodcrow',serif;font-size:20px;letter-spacing:.12em;text-transform:uppercase;
+  color:#e8d09a;background:linear-gradient(90deg,#2a1e0a,#1a1206);
+  border-top:1px solid #4a3010;border-bottom:2px solid #4a3010;
+}
+.ssl-icon{
+  display:flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:6px;flex-shrink:0;
+  background:#1a1006;border:1px solid #6a4a18;color:#c8a050;
+}
+
+/* Pack summary */
+#pack-summary{padding:16px 16px 8px;}
+.summary-label{
+  font-family:'Bloodcrow',serif;font-size:13px;letter-spacing:.1em;text-transform:uppercase;
+  color:#5a4020;margin-bottom:10px;
+}
+.summary-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:6px 10px;border-radius:6px;margin-bottom:4px;
+  background:rgba(0,0,0,0.2);border:1px solid #2a1a08;
+}
+.sr-rarity{font-family:'Bloodcrow',serif;font-size:15px;letter-spacing:.06em;}
+.sr-count{font-family:'Bloodcrow',serif;font-size:22px;font-weight:bold;}
+.summary-row.common  .sr-rarity{color:#a0a080} .summary-row.common  .sr-count{color:#c8c8a8}
+.summary-row.rare    .sr-rarity{color:#c8a010} .summary-row.rare    .sr-count{color:#f0d020}
+.summary-row.legendary .sr-rarity{color:#40c0e0} .summary-row.legendary .sr-count{color:#60e0ff}
+.summary-row.ultimate  .sr-rarity{color:#e050b0} .summary-row.ultimate  .sr-count{color:#ff80d8}
+
+/* Rarity filter */
+#rarity-filter-bar{padding:12px 16px;border-top:1px solid #2a1a08;}
+.rf-label{font-family:'Bloodcrow',serif;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#5a4020;margin-bottom:8px;}
+#rf-btns{display:flex;flex-wrap:wrap;gap:6px;}
+.rf-btn{
+  padding:5px 14px;border:1px solid #3a2c12;border-radius:4px;
+  background:linear-gradient(180deg,#221808,#1a1205);
+  font-family:'Bloodcrow',serif;font-size:13px;letter-spacing:.05em;
+  color:#7a6040;cursor:pointer;text-transform:uppercase;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.rf-btn:hover{color:#e8c060;border-color:#7a5820;}
+.rf-btn.active{background:linear-gradient(180deg,#5a3c10,#3a2808);color:#f0d060;border-color:#c0900a;box-shadow:0 0 8px #c0900a44;}
+.rf-btn.rf-common.active{color:#c8c8a8;border-color:#a0a080;background:linear-gradient(180deg,#2a2a20,#1e1e18);}
+.rf-btn.rf-rare.active{color:#f0d020;border-color:#c09008;background:linear-gradient(180deg,#2e2400,#221a00);}
+.rf-btn.rf-legendary.active{color:#60e0ff;border-color:#30b0d8;background:linear-gradient(180deg,#001e2e,#001422);}
+.rf-btn.rf-ultimate.active{color:#ff80d8;border-color:#c040a0;background:linear-gradient(180deg,#280018,#1a0010);}
+
+/* ── CENTER PANEL ── */
+#center-panel{
+  grid-area:center;
+  display:flex;flex-direction:column;
+  background:#080608;position:relative;overflow:hidden;
+}
+#center-panel::before{
+  content:'';position:absolute;inset:0;
+  background:url('verticalback.png') center/cover no-repeat;
+  opacity:.12;pointer-events:none;z-index:0;
+}
+#cp-header{
+  position:relative;z-index:1;flex-shrink:0;
+  display:flex;align-items:center;gap:14px;
+  padding:20px 28px 16px;
+  border-bottom:1px solid #2a1a08;
+  background:linear-gradient(180deg,#12100800,transparent);
+}
+#cp-title{
+  font-family:'Bloodcrow',serif;font-size:26px;letter-spacing:.14em;
+  text-transform:uppercase;color:#e8d09a;
+  text-shadow:0 0 20px #c8a05044;
+}
+#cp-total-badge{
+  font-family:'Bloodcrow',serif;font-size:14px;letter-spacing:.08em;
+  color:#7a6040;padding:3px 12px;border:1px solid #3a2808;
+  border-radius:20px;background:#0e0a04;
+}
+
+#pack-grid-wrap{
+  position:relative;z-index:1;flex:1;overflow-y:auto;padding:24px 28px;
+}
+#pack-grid-wrap::-webkit-scrollbar{width:4px}
+#pack-grid-wrap::-webkit-scrollbar-thumb{background:#4a3010;border-radius:2px}
+
+#pack-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:20px;
+}
+
+/* Pack card */
+.pack-card{
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  padding:16px 10px 14px;border-radius:12px;cursor:pointer;
+  border:1px solid #3a2808;
+  background:linear-gradient(160deg,#1a1208,#0e0a06);
+  position:relative;transition:transform .15s,box-shadow .2s,border-color .2s;
+}
+.pack-card:hover{transform:translateY(-4px);}
+.pack-card.rarity-common{border-color:#4a4a3a;}
+.pack-card.rarity-rare{border-color:#7a5808;box-shadow:0 0 14px #c8a01022;}
+.pack-card.rarity-legendary{border-color:#2a6a8a;box-shadow:0 0 14px #40c0e022;}
+.pack-card.rarity-ultimate{border-color:#7a2060;box-shadow:0 0 14px #e050b022;}
+.pack-card:hover.rarity-common{border-color:#8a8a6a;box-shadow:0 0 18px #c8c8a822;}
+.pack-card:hover.rarity-rare{border-color:#e8b020;box-shadow:0 0 20px #f0c04055;}
+.pack-card:hover.rarity-legendary{border-color:#50d0f0;box-shadow:0 0 20px #50d0f055;}
+.pack-card:hover.rarity-ultimate{border-color:#f060b8;box-shadow:0 0 20px #f060b855;}
+
+.pc-img-wrap{position:relative;width:120px;height:120px;}
+.pc-img{width:100%;height:100%;object-fit:contain;display:block;border-radius:8px;}
+.pc-count{
+  position:absolute;top:-6px;right:-6px;
+  background:#cc2222;color:#fff;
+  font-family:'Bloodcrow',serif;font-size:14px;font-weight:bold;
+  width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 8px #cc222299;
+}
+.pc-label{
+  font-family:'Bloodcrow',serif;font-size:17px;letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.pack-card.rarity-common .pc-label{color:#c8c8a8}
+.pack-card.rarity-rare .pc-label{color:#f0d020}
+.pack-card.rarity-legendary .pc-label{color:#60e0ff}
+.pack-card.rarity-ultimate .pc-label{color:#ff80d8}
+
+.pc-open-btn{
+  font-family:'Bloodcrow',serif;font-size:14px;letter-spacing:.08em;text-transform:uppercase;
+  padding:7px 20px;border-radius:20px;cursor:pointer;
+  border:1px solid #4a3010;background:#0e0a04;color:#c8a050;
+  transition:border-color .2s,color .2s,box-shadow .2s;
+}
+.pc-open-btn:hover{border-color:#e8c060;color:#e8c060;box-shadow:0 0 12px #e8c06033;}
+
+/* Empty state */
+#pack-empty-state{
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;padding:60px 20px;text-align:center;
+}
+#pack-empty-state.visible{display:flex;}
+#pes-icon{font-size:48px;opacity:.3;}
+#pes-text{font-family:'Bloodcrow',serif;font-size:20px;letter-spacing:.08em;color:#5a4020;}
+#pes-sub{font-family:'Bloodcrow',serif;font-size:14px;color:#3a2810;}
+
+/* No wallet overlay */
+#no-wallet-overlay{
+  display:none;position:absolute;inset:0;z-index:10;
+  background:rgba(8,6,8,.75);backdrop-filter:blur(4px);
+  align-items:center;justify-content:center;
+}
+#no-wallet-overlay.visible{display:flex;}
+#nwo-inner{text-align:center;}
+#nwo-icon{font-size:40px;margin-bottom:12px;}
+#nwo-text{font-family:'Bloodcrow',serif;font-size:20px;letter-spacing:.08em;color:#c8a050;line-height:1.5;}
+
+/* ── RIGHT PANEL ── */
+#right-panel{
+  grid-area:right;
+  background:linear-gradient(180deg,#1a1208cc,#141008cc),url('verticalback.png');
+  background-size:cover;background-position:center;
+  border-left:3px solid #7a5520;
+  box-shadow:inset 6px 0 24px #00000099;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+#rp-header-img{flex-shrink:0;height:103px;border-bottom:2px solid #7a5520;overflow:hidden;}
+#rp-header-img img{width:100%;height:100%;object-fit:cover;object-position:center 50%;display:block;}
+#rp-scroll{flex:1;overflow-y:auto;padding:0;}
+#rp-scroll::-webkit-scrollbar{width:4px}
+#rp-scroll::-webkit-scrollbar-thumb{background:#4a3010;border-radius:2px}
+
+.rp-section-title{
+  font-family:'Bloodcrow',serif;font-size:14px;letter-spacing:.12em;text-transform:uppercase;
+  color:#5a4020;padding:14px 16px 6px;border-bottom:1px solid #2a1a08;
+}
+
+/* Buy links */
+#buy-links{display:flex;flex-direction:column;gap:8px;padding:12px 14px;}
+.buy-link-btn{
+  display:flex;align-items:center;gap:12px;padding:12px 16px;
+  background:linear-gradient(135deg,#1a1008,#120c04);
+  border:1px solid #3a2808;border-radius:10px;text-decoration:none;
+  font-family:'Bloodcrow',serif;font-size:16px;letter-spacing:.06em;color:#c8a050;
+  transition:border-color .2s,box-shadow .2s;
+}
+.buy-link-btn:hover{border-color:#7a5520;box-shadow:0 0 14px #c8a05022;}
+.buy-link-icon{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid #4a3010;flex-shrink:0;}
+
+/* Drop table */
+#drop-table{padding:10px 14px;display:flex;flex-direction:column;gap:8px;}
+.dt-row{
+  padding:10px 12px;border-radius:8px;border:1px solid;
+  background:rgba(0,0,0,.25);
+}
+.dt-row.rarity-common{border-color:#4a4a3a;}
+.dt-row.rarity-rare{border-color:#7a5808;}
+.dt-row.rarity-legendary{border-color:#2a6a8a;}
+.dt-row.rarity-ultimate{border-color:#7a2060;}
+.dt-rarity{
+  font-family:'Bloodcrow',serif;font-size:14px;letter-spacing:.08em;text-transform:uppercase;
+  margin-bottom:4px;
+}
+.dt-row.rarity-common .dt-rarity{color:#c8c8a8}
+.dt-row.rarity-rare .dt-rarity{color:#f0d020}
+.dt-row.rarity-legendary .dt-rarity{color:#60e0ff}
+.dt-row.rarity-ultimate .dt-rarity{color:#ff80d8}
+.dt-contents{font-family:'Crimson Text',serif;font-size:13px;color:#7a6040;line-height:1.5;}
+.dt-bonus{color:#5a4030;font-style:italic;}
+
+#rp-footer{
+  flex-shrink:0;padding:8px 14px;border-top:1px solid #2a1808;
+  font-family:'Bloodcrow',serif;font-size:11px;color:#3a2810;text-align:center;
+}
+#rp-footer a{color:#5a4020;text-decoration:none;}
+
+/* ── PACK PREVIEW POPUP ── */
+#pack-preview-popup{
+  display:none;position:fixed;inset:0;z-index:3000;
+  background:rgba(0,0,0,.8);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;
+}
+#pack-preview-popup.active{display:flex;}
+#ppp-box{
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  background:linear-gradient(160deg,#1a1208,#0e0a06);
+  border:1px solid #4a3010;border-radius:16px;
+  padding:32px 40px;
+  box-shadow:0 8px 48px #000000cc;
+  animation:pppIn .25s ease;
+}
+@keyframes pppIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+#ppp-img{width:200px;height:200px;object-fit:contain;border-radius:12px;}
+#ppp-rarity{
+  font-family:'Bloodcrow',serif;font-size:22px;letter-spacing:.12em;text-transform:uppercase;color:#e8d09a;
+}
+#ppp-count{font-family:'Bloodcrow',serif;font-size:14px;letter-spacing:.06em;color:#5a4020;}
+#ppp-open-btn{
+  font-family:'Bloodcrow',serif;font-size:20px;letter-spacing:.1em;
+  padding:12px 40px;border-radius:8px;cursor:pointer;
+  background:linear-gradient(135deg,#3a0a5a,#6a1aaa);color:#e8c0ff;
+  border:2px solid #aa44ee;box-shadow:0 0 18px #aa44ee44;
+  transition:box-shadow .2s;
+}
+#ppp-open-btn:hover{box-shadow:0 0 32px #cc66ffaa;}
+#ppp-cancel-btn{
+  font-family:'Bloodcrow',serif;font-size:14px;color:#4a3820;
+  background:none;border:none;cursor:pointer;
+}
+#ppp-cancel-btn:hover{color:#c8a050;}
+
+/* ── CARD FLIP OVERLAY ── */
+#card-reveal-overlay{
+  display:none;position:fixed;inset:0;z-index:4000;
+  background:radial-gradient(ellipse at 50% 40%,#1a0a0a 0%,#030201 70%);
+  flex-direction:column;align-items:center;justify-content:center;gap:32px;
+  padding:24px;
+}
+#card-reveal-overlay.active{display:flex;}
+
+#cro-header{text-align:center;}
+#cro-rarity-label{
+  font-family:'Bloodcrow',serif;font-size:28px;letter-spacing:.16em;text-transform:uppercase;
+  color:#e8d09a;text-shadow:0 0 30px #c8a05066;
+}
+
+#cro-cards-row{
+  display:flex;gap:16px;flex-wrap:wrap;justify-content:center;
+  max-width:900px;
+}
+
+.flip-card{
+  width:140px;height:200px;perspective:800px;cursor:pointer;flex-shrink:0;
+}
+.flip-card-inner{
+  width:100%;height:100%;position:relative;
+  transform-style:preserve-3d;
+  transition:transform .55s cubic-bezier(.4,0,.2,1);
+}
+.flip-card.flipped .flip-card-inner{ transform:rotateY(180deg); }
+
+.flip-card-back,.flip-card-front{
+  position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;overflow:hidden;
+  border:2px solid #3a2808;
+}
+.flip-card-back{
+  background:linear-gradient(135deg,#1a1208,#0e0a06);
+  display:flex;align-items:center;justify-content:center;
+  font-size:48px;color:#3a2808;
+}
+.flip-card-front{
+  transform:rotateY(180deg);
+  background:linear-gradient(160deg,#1e1408,#120e06);
+  display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 8px 12px;
+}
+.fc-img{width:100px;height:100px;object-fit:contain;border-radius:8px;flex-shrink:0;}
+.fc-name{
+  font-family:'Bloodcrow',serif;font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+  color:#e8d09a;text-align:center;line-height:1.3;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+}
+.fc-cat{font-family:'Bloodcrow',serif;font-size:10px;color:#5a4020;letter-spacing:.04em;text-transform:uppercase;}
+.fc-stats{display:flex;gap:4px;margin-top:2px;}
+.fc-stat{
+  font-family:'Bloodcrow',serif;font-size:11px;font-weight:bold;padding:2px 5px;
+  border-radius:3px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);
+}
+.fc-stat.curse{color:#ff6040}.fc-stat.doom{color:#a0b8ff}.fc-stat.hex{color:#dd88ff}
+
+.flip-card.rarity-common  .flip-card-front{border-color:#6a6a5a;}
+.flip-card.rarity-rare    .flip-card-front{border-color:#c8a010;box-shadow:0 0 10px #c8a01044;}
+.flip-card.rarity-legendary .flip-card-front{border-color:#40c0e0;box-shadow:0 0 12px #40c0e044;}
+.flip-card.rarity-ultimate  .flip-card-front{border-color:#e050b0;box-shadow:0 0 14px #e050b055;}
+
+#cro-claim-btn{
+  font-family:'Bloodcrow',serif;font-size:22px;letter-spacing:.1em;text-transform:uppercase;
+  padding:14px 48px;border-radius:8px;cursor:pointer;
+  background:linear-gradient(135deg,#1a3020,#0e1e14);
+  color:#70cc70;border:1px solid #308030;
+  box-shadow:0 2px 18px #70cc7022;
+  transition:box-shadow .2s,transform .1s;
+  animation:claimIn .35s ease;
+}
+@keyframes claimIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+#cro-claim-btn:hover{box-shadow:0 2px 30px #70cc7055;transform:translateY(-2px);}
+
+/* ── MOBILE ── */
+@media(max-width:900px){
+  body{ overflow-y:auto; }
+  #packs-body{
+    display:flex;flex-direction:column;height:auto;
+  }
+  #left-panel,#right-panel{ width:100%;border-right:none;border-left:none;border-top:2px solid #3a2808; }
+  #center-panel{ min-height:60vh; }
+  #cro-cards-row{ gap:10px; }
+  .flip-card{ width:120px;height:170px; }
+  .fc-img{ width:80px;height:80px; }
+}
+</style>
+</head>
+<body>
+<div id="site-header-mount"></div>
+<script src="site-header.js"></script>
+<div id="packs-body">
+
+  <!-- LEFT PANEL -->
+  <div id="left-panel">
+    <div id="lp-header">
+      <img src="panelback.png" alt="">
+      <img id="lp-logo" src="logo2.png" alt="">
+      <span id="lp-title">Pack<br>Vault</span>
+    </div>
+
+    <div class="sidebar-section-label" id="wallet-section-label">
+      <span class="ssl-icon">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+      </span>
+      <span>Wallet</span>
+    </div>
+
+    <div id="pack-summary">
+      <div class="summary-label">Your Packs</div>
+      <div id="summary-counts">
+        <div class="summary-row common"><span class="sr-rarity">Common</span><span class="sr-count" id="sc-common">0</span></div>
+        <div class="summary-row rare"><span class="sr-rarity">Rare</span><span class="sr-count" id="sc-rare">0</span></div>
+        <div class="summary-row legendary"><span class="sr-rarity">Legendary</span><span class="sr-count" id="sc-legendary">0</span></div>
+        <div class="summary-row ultimate"><span class="sr-rarity">Ultimate</span><span class="sr-count" id="sc-ultimate">0</span></div>
+      </div>
+    </div>
+
+    <div id="rarity-filter-bar">
+      <div class="rf-label">Filter</div>
+      <div id="rf-btns">
+        <button class="rf-btn active" data-rarity="all" onclick="setFilter('all',this)">All</button>
+        <button class="rf-btn rf-common" data-rarity="common" onclick="setFilter('common',this)">Common</button>
+        <button class="rf-btn rf-rare" data-rarity="rare" onclick="setFilter('rare',this)">Rare</button>
+        <button class="rf-btn rf-legendary" data-rarity="legendary" onclick="setFilter('legendary',this)">Legendary</button>
+        <button class="rf-btn rf-ultimate" data-rarity="ultimate" onclick="setFilter('ultimate',this)">Ultimate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER PANEL -->
+  <div id="center-panel">
+    <div id="cp-header">
+      <span id="cp-title">Pack Inventory</span>
+      <span id="cp-total-badge"></span>
+    </div>
+    <div id="pack-grid-wrap">
+      <div id="pack-grid"></div>
+      <div id="pack-empty-state">
+        <div id="pes-icon">⛧</div>
+        <div id="pes-text">No packs in your collection.</div>
+        <div id="pes-sub">Get one from the Drip or Objkt marketplace →</div>
+      </div>
+      <div id="no-wallet-overlay">
+        <div id="nwo-inner">
+          <div id="nwo-icon">🔒</div>
+          <div id="nwo-text">Connect your wallet<br>to view your packs</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div id="right-panel">
+    <div id="rp-header-img"><img src="equipback.png" alt=""></div>
+    <div id="rp-scroll">
+      <div class="rp-section-title">Get Packs</div>
+      <div id="buy-links">
+        <a href="#" target="_blank" class="buy-link-btn" id="buy-drip-btn">
+          <img src="drip.jpeg" class="buy-link-icon" alt="Drip">
+          <span>Buy on Drip</span>
+        </a>
+        <a href="#" target="_blank" class="buy-link-btn" id="buy-objkt-btn">
+          <img src="objkt.jpeg" class="buy-link-icon" alt="Objkt">
+          <span>Buy on Objkt</span>
+        </a>
+      </div>
+
+      <div class="rp-section-title" style="margin-top:16px;">Pack Contents</div>
+      <div id="drop-table">
+        <div class="dt-row rarity-common">
+          <div class="dt-rarity">Common</div>
+          <div class="dt-contents">5 items · 5× Common<br><span class="dt-bonus">10% chance: 1 → Rare</span></div>
+        </div>
+        <div class="dt-row rarity-rare">
+          <div class="dt-rarity">Rare</div>
+          <div class="dt-contents">3 items · 2× Rare + 1× Common<br><span class="dt-bonus">10% chance: 1 Rare → Legendary</span></div>
+        </div>
+        <div class="dt-row rarity-legendary">
+          <div class="dt-rarity">Legendary</div>
+          <div class="dt-contents">4 items · 2× Legendary + 1× Rare + 1× Common<br><span class="dt-bonus">10% chance: 1 Legendary → Ultimate</span></div>
+        </div>
+        <div class="dt-row rarity-ultimate">
+          <div class="dt-rarity">Ultimate</div>
+          <div class="dt-contents">5 items · 2× Ultimate + 1× Legendary + 1× Rare + 1× Common<br><span class="dt-bonus">No upgrade — already the peak</span></div>
+        </div>
+      </div>
+    </div>
+    <div id="rp-footer">Hex &amp; Stitch &nbsp;·&nbsp; <a href="https://alperozdil.com" target="_blank">alperozdil.com</a></div>
+  </div>
+
+</div>
+
+<!-- PACK PREVIEW POPUP -->
+<div id="pack-preview-popup">
+  <div id="ppp-box">
+    <img id="ppp-img" src="" alt="">
+    <div id="ppp-rarity"></div>
+    <div id="ppp-count"></div>
+    <button id="ppp-open-btn" onclick="startPackOpen()">⛧ Open Pack</button>
+    <button id="ppp-cancel-btn" onclick="closePackPreview()">Cancel</button>
+  </div>
+</div>
+
+<!-- CARD FLIP REVEAL OVERLAY -->
+<div id="card-reveal-overlay">
+  <div id="cro-header">
+    <span id="cro-rarity-label"></span>
+  </div>
+  <div id="cro-cards-row"></div>
+  <button id="cro-claim-btn" onclick="claimAll()" style="display:none">✦ Claim All Items</button>
+</div>
+
+<script>
+const CDN = 'https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main';
+
+const PACK_IMGS = {
+  common:'common_pack.png', rare:'rare_pack.png',
+  legendary:'legendary_pack.png', ultimate:'ultimate_pack.png'
+};
+const RARITIES = ['common','rare','legendary','ultimate'];
+
+let walletConnected = false;
+let currentWalletKey = null;
+let packInventory = {common:0,rare:0,legendary:0,ultimate:0};
+let activeFilter = 'all';
+let _previewRarity = null;
+let _pendingItems = [];
+let _beaconClient = null;
+
+function walletKey(k){ return currentWalletKey ? `wallet_${currentWalletKey}_${k}` : k; }
+
+function loadPackInventory(){
+  const saved = JSON.parse(localStorage.getItem(walletKey('packInventory'))||'null');
+  if(saved) packInventory = saved;
+}
+
+function renderPackGrid(){
+  const grid = document.getElementById('pack-grid');
+  const empty = document.getElementById('pack-empty-state');
+  grid.innerHTML = '';
+  let any = false;
+  let total = 0;
+  RARITIES.forEach(r=>{
+    const count = packInventory[r]||0;
+    if(count<=0) return;
+    if(activeFilter !== 'all' && activeFilter !== r) return;
+    any = true; total += count;
+    const card = document.createElement('div');
+    card.className = `pack-card rarity-${r}`;
+    card.dataset.rarity = r;
+    card.innerHTML = `
+      <div class="pc-img-wrap">
+        <img class="pc-img" src="${PACK_IMGS[r]}" alt="${r}">
+        <div class="pc-count">${count}</div>
+      </div>
+      <div class="pc-label">${r}</div>
+      <button class="pc-open-btn" onclick="event.stopPropagation();openPackPreview('${r}')">Open</button>`;
+    grid.appendChild(card);
+  });
+  empty.classList.toggle('visible', !any);
+  RARITIES.forEach(r=>{
+    const el = document.getElementById('sc-'+r);
+    if(el) el.textContent = packInventory[r]||0;
+  });
+  const badge = document.getElementById('cp-total-badge');
+  if(badge) badge.textContent = total > 0 ? total + ' packs' : '';
+}
+
+function setFilter(rarity, btn){
+  activeFilter = rarity;
+  document.querySelectorAll('.rf-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPackGrid();
+}
+
+function updateWalletOverlay(){
+  const ov = document.getElementById('no-wallet-overlay');
+  if(ov) ov.classList.toggle('visible', !walletConnected);
+}
+
+// ── Preview popup ──
+function openPackPreview(rarity){
+  if(!packInventory[rarity]||packInventory[rarity]<=0) return;
+  _previewRarity = rarity;
+  const popup = document.getElementById('pack-preview-popup');
+  document.getElementById('ppp-img').src = PACK_IMGS[rarity];
+  document.getElementById('ppp-rarity').textContent = rarity + ' Pack';
+  document.getElementById('ppp-count').textContent = packInventory[rarity] + ' remaining';
+  popup.classList.add('active');
+}
+function closePackPreview(){
+  document.getElementById('pack-preview-popup').classList.remove('active');
+  _previewRarity = null;
+}
+
+// ── Pack opening ──
+const PACK_ITEMS = {"common":{"body":["body/common/burlap.PNG","body/common/corduroy.PNG","body/common/cracked_leather.PNG","body/common/jean.PNG","body/common/tartan.PNG","body/common/wool.PNG"],"knife":["knife/common/antler_bead_dagger.png","knife/common/antler_dagger.png","knife/common/beast_claw_blade.png","knife/common/bone_fetish_dagger.png","knife/common/bone_skull_dagger.png","knife/common/bone_triskele_dagger.png","knife/common/chakra_rope_knife.png","knife/common/constellation_dagger.png","knife/common/crystal_bone_dagger.png","knife/common/damascus_knife.png","knife/common/flint_twine_blade.png","knife/common/ivory_tusk_blade.png","knife/common/jagged_iron_blade.png","knife/common/obsidian_tribal_knife.png","knife/common/serpent_curved_blade.png","knife/common/snakeskin_knife.png","knife/common/talon_grip_blade.png","knife/common/verdant_curved_blade.png","knife/common/wrapped_serrated_blade.png"],"offhand":["offhand/common/bone_idol_mask.png","offhand/common/butterfly_trapped_in_jar.png","offhand/common/cursed_voodoo_doll.png","offhand/common/dark art.png","offhand/common/drink my brain.png","offhand/common/fractured_stone_tablet.png","offhand/common/good plant.png","offhand/common/grave_dirt_bottle.png","offhand/common/king.png","offhand/common/mushroom.png","offhand/common/ordinary_map.png","offhand/common/roots & stuff.png","offhand/common/skeletal_pocket_watch.png","offhand/common/the box of dark art.png","offhand/common/the hand.png","offhand/common/tile.png","offhand/common/totem of animal.png","offhand/common/toy marble from 80's.png","offhand/common/tribal_feather_mask.png","offhand/common/velvet_coin_purse.png"],"necklace":["necklace/common/adventurers_compass.png","necklace/common/amethyst_wire_pendant.png","necklace/common/aquamarine_wire_pendant.png","necklace/common/bone_and_bead_necklace.png","necklace/common/bone_and_crystal_talisman.png","necklace/common/bone_parts.png","necklace/common/bones.png","necklace/common/broken_clock.png","necklace/common/brown_mushroom.png","necklace/common/carnelian_wire_pendant.png","necklace/common/chain.png","necklace/common/colored_rocks.png","necklace/common/common_mirror.png","necklace/common/dark_rope.png","necklace/common/empty_cork_vial.png","necklace/common/iron_thimble.png","necklace/common/jade_orb_pendant.png","necklace/common/jade_spiral_medallion.png","necklace/common/jade_wire_pendant.png","necklace/common/leopard_pearl_brooch.png","necklace/common/marbles.png","necklace/common/midnight_charm_bracelet.png","necklace/common/moonstone_pendant.png","necklace/common/obsidian_skull_pendant.png","necklace/common/rick_with_hole.png","necklace/common/rock.png","necklace/common/rope.png","necklace/common/rune_rock.png","necklace/common/rune_stones.png","necklace/common/runic_bead_wreath.png","necklace/common/seashell.png","necklace/common/shadow_bat.png","necklace/common/shamanic_feather_and_fang_bracelet.png","necklace/common/skull_and_spider_rosary.png","necklace/common/snail_shell.png","necklace/common/sponge.png","necklace/common/talavera_tile_pendant.png","necklace/common/tangled_button_cluster.png","necklace/common/teeth.png","necklace/common/three_keys.png","necklace/common/vegvisir_stone_tablet.png","necklace/common/whelk_shell.png"],"eyes":["eyes/common/abyss_button.png","eyes/common/amethyst_cross.png","eyes/common/aqua_cross.png","eyes/common/blush_cross.png","eyes/common/bone_cross.png","eyes/common/cobalt_cross.png","eyes/common/coin.png","eyes/common/ember_cross.png","eyes/common/ghost_button.png","eyes/common/grave_moss.png","eyes/common/hex_cross.png","eyes/common/iron_laurel_seal_v2.png","eyes/common/jade_hex_nut.png","eyes/common/marsh_button.png","eyes/common/pale_specter.png","eyes/common/swamp_button.png","eyes/common/venom_cross.png"]},"rare":{"body":["body/rare/copper.PNG","body/rare/cracked_stone.PNG","body/rare/glassy.PNG","body/rare/wooden.PNG"],"knife":["knife/rare/abyssal_dagger.png","knife/rare/astral_dagger.png","knife/rare/ice_crystal_blade.png","knife/rare/jade_carved_blade.png","knife/rare/jade_crystal_dagger.png","knife/rare/lunar_copper_dagger.png","knife/rare/nautilus_blade.png","knife/rare/ruby_bone_dagger.png","knife/rare/rune_gold_dagger.png","knife/rare/shadow_crystal_dagger.png","knife/rare/sigil_black_dagger.png","knife/rare/skeleton_claw_grip.png","knife/rare/skull_animal_dagger.png","knife/rare/tribal_totem_blade.png","knife/rare/void_star_dagger.png"],"offhand":["offhand/rare/ancient_rune_scroll.png","offhand/rare/black mirror.png","offhand/rare/blue_king.png","offhand/rare/bone_chalice.png","offhand/rare/dragons handbook.png","offhand/rare/golden_entwined_palm_tree_idol.png","offhand/rare/ice_shard.png","offhand/rare/mummy_hand_with_rings.png","offhand/rare/prismatic_crystal_shard.png","offhand/rare/something potion.png","offhand/rare/sphere of war.png","offhand/rare/the sun card.png","offhand/rare/tiky tonky.png","offhand/rare/totem of people.png","offhand/rare/tsss.png"],"necklace":["necklace/rare/all_seeing_eye_brooch.png","necklace/rare/aquamarine_gemstone_brooch.png","necklace/rare/blue_evil_eye_brooch.png","necklace/rare/blue_pearl_rosette_brooch.png","necklace/rare/brown_cameo_brooch.png","necklace/rare/carved_blossom_medallion.png","necklace/rare/carved_rose_medallion.png","necklace/rare/crystal_crown_reliquary.png","necklace/rare/diamond_eye_of_providence.png","necklace/rare/emerald_ornate_brooch.png","necklace/rare/eye_of_horus_pin.png","necklace/rare/golden_filigree_rosette.png","necklace/rare/golden_heart_locket.png","necklace/rare/golden_heart_tome.png","necklace/rare/golden_keyhole_locket.png","necklace/rare/golden_laurel_medallion.png","necklace/rare/golden_sun.png","necklace/rare/green_agate_bone_rune.png","necklace/rare/grey_cameo_brooch.png","necklace/rare/jeweled_keyplate.png","necklace/rare/portrait_locket.png","necklace/rare/purple_gem_locket.png","necklace/rare/red_sun.png","necklace/rare/rose_gemstone_brooch.png","necklace/rare/ruby_ornate_brooch.png","necklace/rare/runed_frame.png","necklace/rare/sepia_portrait_cameo.png","necklace/rare/silver_celtic_knot.png","necklace/rare/silver_filigree_rosette.png","necklace/rare/silver_pearl_rosette_brooch.png","necklace/rare/smoky_quartz_claw_pendant.png","necklace/rare/teal_lotus_hairpin.png","necklace/rare/teal_star_hairpin.png","necklace/rare/tribal_face_coin.png","necklace/rare/wild_rose_medallion.png"],"eyes":["eyes/rare/blush_star_button.png","eyes/rare/bone_rune_button.png","eyes/rare/celtic_jade_button.png","eyes/rare/celtic_teal_button.png","eyes/rare/cobalt_mandala.png","eyes/rare/cobalt_sun_button.png","eyes/rare/crimson_mandala.png","eyes/rare/crimson_sun_button.png","eyes/rare/gold_sigil_coin.png","eyes/rare/ivory_floral_button.png","eyes/rare/rose_petal_button.png","eyes/rare/serpent_amber_slit.png","eyes/rare/terracotta_mandala.png"]},"legendary":{"body":["body/legendary/cosmic.PNG","body/legendary/fractured.PNG","body/legendary/marble.PNG","body/legendary/mummy.PNG"],"knife":["knife/legendary/amger gem dagger.png","knife/legendary/ancient eye dagger.png","knife/legendary/crimson vein blade.png","knife/legendary/crystal hand blade.png","knife/legendary/dark justice blade.png","knife/legendary/drawgon.png","knife/legendary/jungle serpent blade.png","knife/legendary/ocean serpent knife.png","knife/legendary/silver scorpion dagger.png","knife/legendary/skull tower dagger.png","knife/legendary/sun & moon dagger.png","knife/legendary/totem ritual dagger.png"],"offhand":["offhand/legendary/124.png","offhand/legendary/book of enchant.png","offhand/legendary/cerberus skull.png","offhand/legendary/enchanted cat.png","offhand/legendary/obsidian_scrying_stone.png","offhand/legendary/prismatic_crystal_cluster.png","offhand/legendary/the death card.png","offhand/legendary/totem of the shaman.png"],"necklace":["necklace/legendary/black_cat.png","necklace/legendary/celestial_stone_talisman.png","necklace/legendary/crimson_phoenix_crest.png","necklace/legendary/dark_sun_sigil.png","necklace/legendary/frost_crystal_root.png","necklace/legendary/golden_winged_emblem.png","necklace/legendary/mask_of_dark_magic.png","necklace/legendary/purple_rune_sphere.png","necklace/legendary/runic_vortex_stone.png","necklace/legendary/sapphire_eye_brooch.png","necklace/legendary/sapphire_star_medallion.png","necklace/legendary/void_spiral_pendant.png","necklace/legendary/winged_blood_heart.png"],"eyes":["eyes/legendary/amber_spiral.png","eyes/legendary/emerald_marble.png","eyes/legendary/frost_cracked_orb.png","eyes/legendary/sapphire_marble.png","eyes/legendary/serpent_eye_orb.png"]},"ultimate":{"body":["body/ultimate/infernal_bone_wraith.PNG","body/ultimate/prismatic dragon scale.PNG","body/ultimate/rune_iron_golem.PNG","body/ultimate/void_portal_golem.PNG"],"knife":["knife/ultimate/cosmic eye blade.png","knife/ultimate/cosmic void blade.png","knife/ultimate/cracked lava blade.png","knife/ultimate/death shroud blade.png","knife/ultimate/drawon scale knife.png","knife/ultimate/eternal dagger.png","knife/ultimate/frost skeleton blade.png","knife/ultimate/hellfire blade.png","knife/ultimate/nebula cutter.png","knife/ultimate/starlight knife.png"],"offhand":["offhand/ultimate/ancient_rune_stone_tablet.png","offhand/ultimate/cosmos navigator.png","offhand/ultimate/cosmos stone.png","offhand/ultimate/lava stone.png"],"necklace":["necklace/ultimate/cosmic_void_orb.png","necklace/ultimate/eyes.png","necklace/ultimate/gilded_demon_bell.png","necklace/ultimate/jeweled_scarab_amulet.png","necklace/ultimate/runic_sigil_ring.png","necklace/ultimate/silver_skull_mask.png"],"eyes":["eyes/ultimate/amber_dragon_eye_medallion.png","eyes/ultimate/amber_slit_eye.png","eyes/ultimate/cosmic_nebula_orb.png","eyes/ultimate/illuminati_eye_charm.png","eyes/ultimate/jade_serpent_eye.png","eyes/ultimate/skull_orb_black.png","eyes/ultimate/venom_vortex.png","eyes/ultimate/void_cosmos_orb.png"]}};
+
+function rollOne(rarity, cat){
+  const items = PACK_ITEMS[rarity]?.[cat];
+  if(!items||!items.length) return null;
+  return {path:items[Math.floor(Math.random()*items.length)],cat,rarity};
+}
+
+function rollPackItems(rarity){
+  const cats=['body','knife','offhand','necklace','eyes'];
+  let slots=[];
+  if(rarity==='common'){
+    slots=[{r:'common'},{r:'common'},{r:'common'},{r:'common'},{r:'common'}];
+    if(Math.random()<.10) slots[Math.floor(Math.random()*5)].r='rare';
+  } else if(rarity==='rare'){
+    slots=[{r:'rare'},{r:'rare'},{r:'common'}];
+    if(Math.random()<.10){const i=slots.findIndex(s=>s.r==='rare');slots[i].r='legendary';}
+  } else if(rarity==='legendary'){
+    slots=[{r:'legendary'},{r:'legendary'},{r:'rare'},{r:'common'}];
+    if(Math.random()<.10){const i=slots.findIndex(s=>s.r==='legendary');slots[i].r='ultimate';}
+  } else {
+    slots=[{r:'ultimate'},{r:'ultimate'},{r:'legendary'},{r:'rare'},{r:'common'}];
+  }
+  const shuffled=[...cats].sort(()=>Math.random()-.5);
+  return slots.map((slot,i)=>rollOne(slot.r,shuffled[i%shuffled.length])||rollOne('common',shuffled[i%shuffled.length])).filter(Boolean);
+}
+
+const STAT_SEEDS = {};
+function itemStats(path){
+  if(!STAT_SEEDS[path]){
+    let h=0; for(const c of path){h=(h<<5)-h+c.charCodeAt(0)|0;}
+    const r=path.includes('/rare/')?1:path.includes('/legendary/')?2:path.includes('/ultimate/')?3:0;
+    const b=(r+1)*4;
+    STAT_SEEDS[path]={curse:b+Math.abs(h)%5,doom:b+Math.abs(h>>3)%5,hex:b+Math.abs(h>>6)%5};
+  }
+  return STAT_SEEDS[path];
+}
+
+async function startPackOpen(){
+  if(!_previewRarity) return;
+  closePackPreview();
+  const rarity = _previewRarity;
+
+  packInventory[rarity] = Math.max(0,(packInventory[rarity]||1)-1);
+  localStorage.setItem(walletKey('packInventory'), JSON.stringify(packInventory));
+  renderPackGrid();
+
+  let items = [];
+  try{
+    const WIX_API = window.WIX_API || 'https://www.alperozdil.com/_functions';
+    const res = await fetch(`${WIX_API}/openPack`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({wallet:currentWalletKey,rarity,mintAddress:''})
+    });
+    const data = await res.json();
+    if(data.items) items = data.items;
+  }catch(e){ items = rollPackItems(rarity); }
+  if(!items.length) items = rollPackItems(rarity);
+  _pendingItems = items;
+
+  saveToCollection(items);
+  showCardReveal(rarity, items);
+}
+
+function saveToCollection(items){
+  const saved = JSON.parse(localStorage.getItem(walletKey('collection'))||'[]');
+  items.forEach(item=>{ if(!saved.find(s=>s.path===item.path)) saved.push(item); });
+  localStorage.setItem(walletKey('collection'), JSON.stringify(saved));
+}
+
+function showCardReveal(rarity, items){
+  const overlay = document.getElementById('card-reveal-overlay');
+  document.getElementById('cro-rarity-label').textContent = rarity.toUpperCase() + ' PACK';
+  document.getElementById('cro-claim-btn').style.display = 'none';
+  const row = document.getElementById('cro-cards-row');
+  row.innerHTML = '';
+
+  items.forEach((item, i)=>{
+    const name = item.path.split('/').pop().replace(/\.(png|PNG|jpg)$/i,'').replace(/_/g,' ');
+    const stats = itemStats(item.path);
+    const catLabel = (item.cat||'').split('_')[0];
+    const imgSrc = CDN + '/' + item.path;
+
+    const card = document.createElement('div');
+    card.className = `flip-card rarity-${item.rarity}`;
+    card.innerHTML = `
+      <div class="flip-card-inner">
+        <div class="flip-card-back">⛧</div>
+        <div class="flip-card-front">
+          <img class="fc-img" src="${imgSrc}" alt="${name}">
+          <div class="fc-name">${name}</div>
+          <div class="fc-cat">${catLabel}</div>
+          <div class="fc-stats">
+            <span class="fc-stat curse">${stats.curse}</span>
+            <span class="fc-stat doom">${stats.doom}</span>
+            <span class="fc-stat hex">${stats.hex}</span>
+          </div>
+        </div>
+      </div>`;
+    row.appendChild(card);
+
+    setTimeout(()=>{
+      card.classList.add('flipped');
+      if(i === items.length-1){
+        setTimeout(()=>{
+          document.getElementById('cro-claim-btn').style.display='';
+        }, 600);
+      }
+    }, 600 + i * 350);
+  });
+
+  overlay.classList.add('active');
+}
+
+function claimAll(){
+  document.getElementById('card-reveal-overlay').classList.remove('active');
+  _pendingItems = [];
+  _previewRarity = null;
+}
+
+// ── Wallet ──
+function setSyncing(on){
+  if(typeof window.setHeaderSyncing === 'function') window.setHeaderSyncing(on);
+}
+
+function detectSolanaWallets(){
+  const wallets = [];
+  const seen = new Set();
+  const add = (name, p) => {
+    if(p && typeof p.connect==='function' && !seen.has(p)){ seen.add(p); wallets.push({name, provider:p}); }
+  };
+  add('Phantom',  window.phantom?.solana);
+  add('Phantom',  window.solana?.isPhantom ? window.solana : null);
+  add('Solflare', window.solflare);
+  add('Backpack', window.backpack?.solana ?? window.backpack);
+  add('Brave',    window.solana?.isBraveWallet ? window.solana : null);
+  add('Glow',     window.glowSolana);
+  add('Jupiter',  window.jupiter?.solana ?? window.jupiter);
+  add('Coinbase', window.coinbaseSolana);
+  add('Exodus',   window.exodus?.solana);
+  add('Wallet',   window.solana);
+  return wallets;
+}
+
+function showWalletPicker(wallets){
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;background:#00000099;z-index:9999;display:flex;align-items:center;justify-content:center;';
+    const box = document.createElement('div');
+    box.style.cssText='background:#1a1208;border:1px solid #7a5520;border-radius:10px;padding:24px;display:flex;flex-direction:column;gap:12px;min-width:220px;';
+    const title = document.createElement('div');
+    title.textContent='Select Wallet';
+    title.style.cssText="font-family:'Bloodcrow',serif;font-size:18px;color:#e8c060;letter-spacing:.1em;text-align:center;margin-bottom:4px;";
+    box.appendChild(title);
+    wallets.forEach(w=>{
+      const btn = document.createElement('button');
+      btn.textContent = w.name;
+      btn.style.cssText="font-family:'Bloodcrow',serif;font-size:15px;padding:10px 20px;background:linear-gradient(135deg,#0e3a0e,#1a5a1a);color:#70e870;border:1px solid #2a8a2a;border-radius:6px;cursor:pointer;letter-spacing:.08em;";
+      btn.onclick=()=>{ document.body.removeChild(overlay); resolve(w.provider); };
+      box.appendChild(btn);
+    });
+    const cancel = document.createElement('button');
+    cancel.textContent='Cancel';
+    cancel.style.cssText="font-family:'Bloodcrow',serif;font-size:13px;padding:8px;background:transparent;color:#7a6040;border:1px solid #3a2810;border-radius:6px;cursor:pointer;";
+    cancel.onclick=()=>{ document.body.removeChild(overlay); resolve(null); };
+    box.appendChild(cancel);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  });
+}
+
+async function connectWallet(){
+  const wallets = detectSolanaWallets();
+  if(!wallets.length){
+    alert('No Solana wallet found. Please install Phantom, Solflare, or Backpack.');
+    return;
+  }
+  let provider;
+  if(wallets.length === 1){
+    provider = wallets[0].provider;
+  } else {
+    const choice = await showWalletPicker(wallets);
+    if(!choice) return;
+    provider = choice;
+  }
+  try{
+    const resp = await provider.connect();
+    const pubkey = resp.publicKey.toString();
+    window._solanaProvider = provider;
+    walletConnected = true;
+    currentWalletKey = pubkey;
+    setSyncing(true);
+    if(typeof window.setHeaderWallet === 'function') window.setHeaderWallet(pubkey, 'sol');
+    await loadPacksFromWallet();
+    setSyncing(false);
+  } catch(e){
+    setSyncing(false);
+    console.error('Wallet connect error', e);
+  }
+}
+
+function disconnectWallet(){
+  if(window._solanaProvider) window._solanaProvider.disconnect();
+  walletConnected = false;
+  currentWalletKey = null;
+  packInventory = {common:0,rare:0,legendary:0,ultimate:0};
+  setSyncing(false);
+  renderPackGrid();
+  updateWalletOverlay();
+  if(typeof window.setHeaderWallet === 'function') window.setHeaderWallet(null, null);
+}
+
+async function getBeaconClient(){
+  if(_beaconClient) return _beaconClient;
+  _beaconClient = new beacon.DAppClient({ name: 'Hex & Stitch' });
+  return _beaconClient;
+}
+
+async function connectTezos(){
+  try{
+    const client = await getBeaconClient();
+    const acc = await client.requestPermissions();
+    const addr = acc.address;
+    window.tezosAddress = addr;
+    walletConnected = true;
+    currentWalletKey = addr;
+    setSyncing(true);
+    if(typeof window.setHeaderWallet === 'function') window.setHeaderWallet(addr, 'tez');
+    await loadPacksFromWallet();
+    setSyncing(false);
+  } catch(e){
+    setSyncing(false);
+    console.error('Tezos connect error', e);
+  }
+}
+
+async function disconnectTezos(){
+  try{
+    const client = await getBeaconClient();
+    await client.clearActiveAccount();
+  } catch(e){}
+  window.tezosAddress = null;
+  walletConnected = false;
+  currentWalletKey = null;
+  packInventory = {common:0,rare:0,legendary:0,ultimate:0};
+  setSyncing(false);
+  renderPackGrid();
+  updateWalletOverlay();
+  if(typeof window.setHeaderWallet === 'function') window.setHeaderWallet(null, null);
+}
+
+async function loadPacksFromWallet(){
+  if(typeof window.setHeaderSyncing === 'function') window.setHeaderSyncing(true);
+  try{
+    const WIX_API = window.WIX_API || 'https://www.alperozdil.com/_functions';
+    const res = await fetch(`${WIX_API}/getPacks?wallet=${encodeURIComponent(currentWalletKey)}`);
+    if(res.ok){
+      const data = await res.json();
+      if(data.packs) packInventory = data.packs;
+    }
+  }catch(e){
+    loadPackInventory();
+  }
+  renderPackGrid();
+  updateWalletOverlay();
+  if(typeof window.setHeaderSyncing === 'function') window.setHeaderSyncing(false);
+}
+
+// Expose for site-header.js
+window.connectWallet    = connectWallet;
+window.connectTezos     = connectTezos;
+window.disconnectWallet = disconnectWallet;
+window.disconnectTezos  = disconnectTezos;
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadPackInventory();
+  renderPackGrid();
+  updateWalletOverlay();
+});
+</script>
+</body>
+</html>
