@@ -90,7 +90,8 @@
     flex-shrink:0;
   }
   #avatar-img {
-    width:100%; height:100%; object-fit:cover;
+    position:absolute; inset:0;
+    width:100%; height:100%; object-fit:contain;
     display:none;
   }
   #avatar-placeholder {
@@ -111,6 +112,49 @@
     transition:color .2s, border-color .2s;
   }
   #avatar-forge-link:hover { color:#e8c060; border-color:#7a5020; }
+
+  /* Avatar picker */
+  #avatar-pick-btn {
+    position:absolute; bottom:8px; right:8px;
+    background:rgba(0,0,0,.6); border:1px solid #3a2010;
+    border-radius:8px; color:#c8a050; font-family:'Bloodcrow',serif;
+    font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+    padding:4px 10px; cursor:pointer; transition:background .2s;
+  }
+  #avatar-pick-btn:hover { background:rgba(40,20,0,.8); }
+  #avatar-picker-overlay {
+    display:none; position:fixed; inset:0; z-index:2000;
+    background:rgba(0,0,0,.8); align-items:center; justify-content:center;
+  }
+  #avatar-picker-overlay.open { display:flex; }
+  #avatar-picker-box {
+    background:#0e0904; border:1px solid #3a2010; border-radius:16px;
+    padding:24px; max-width:600px; width:90vw;
+  }
+  #avatar-picker-title {
+    font-size:22px; letter-spacing:.14em; text-transform:uppercase;
+    color:#e8c060; margin-bottom:16px; text-align:center;
+  }
+  #avatar-grid {
+    display:grid; grid-template-columns: repeat(7, 1fr);
+    gap:8px; max-height:60vh; overflow-y:auto;
+  }
+  .av-thumb {
+    border-radius:8px; overflow:hidden; cursor:pointer;
+    border:2px solid transparent; transition:border-color .15s, transform .15s;
+    background:#1a0e04; aspect-ratio:1;
+  }
+  .av-thumb:hover { border-color:#7a5020; transform:scale(1.06); }
+  .av-thumb.selected { border-color:#e8c060; box-shadow:0 0 10px #e8c06044; }
+  .av-thumb img { width:100%; height:100%; object-fit:contain; display:block; }
+  #avatar-picker-close {
+    display:block; margin:16px auto 0;
+    background:transparent; border:1px solid #3a2010; border-radius:8px;
+    color:#7a5020; font-family:'Bloodcrow',serif; font-size:14px;
+    letter-spacing:.1em; text-transform:uppercase;
+    padding:8px 24px; cursor:pointer; transition:color .2s, border-color .2s;
+  }
+  #avatar-picker-close:hover { color:#e8c060; border-color:#7a5020; }
 
   /* Witch name */
   #witch-name-display {
@@ -179,6 +223,36 @@
   }
   #collection-link:hover { border-color:#8a5020; color:#e8c060; background:rgba(200,160,60,0.05); }
 
+  /* ── Collaborations ── */
+  #collab-section { margin-top: 28px; }
+  #collab-section .panel-title { margin-bottom: 12px; }
+  .collab-card {
+    border-radius: 12px; border: 1px solid #1e1208;
+    background: rgba(255,255,255,0.02);
+    margin-bottom: 10px; transition: border-color .2s; overflow: hidden;
+  }
+  .collab-card.eligible { border-color: #20cc5044; background: rgba(32,204,80,0.04); }
+  .collab-logo {
+    width: 100%; height: 100px;
+    background: #0a0603; overflow: hidden; position: relative;
+  }
+  .collab-logo img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .collab-logo-placeholder { font-size: 32px; display:flex; align-items:center; justify-content:center; height:100%; }
+  .collab-footer {
+    padding: 12px 14px; text-align: center;
+  }
+  .collab-name {
+    font-size: 22px; letter-spacing: .12em; text-transform: uppercase; color: #e8c060;
+    margin-bottom: 4px;
+  }
+  .collab-badge {
+    font-size: 13px; letter-spacing: .08em; text-transform: uppercase;
+    color: #4a3010;
+  }
+  .collab-badge.eligible { color: #70c880; }
+  .collab-badge.checking { color: #7a5520; animation: collab-pulse 1.2s infinite; }
+  @keyframes collab-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
   #no-wallet-msg {
     font-size:20px; letter-spacing:.1em; text-transform:uppercase;
     color:#4a3010; text-align:center; padding:60px 20px;
@@ -241,6 +315,10 @@
         <span id="wps-tez-addr">Not connected</span>
       </div>
     </div>
+    <div id="collab-section" style="display:none">
+      <div class="panel-title">Collaborations</div>
+      <div id="collab-list"></div>
+    </div>
   </div>
 
   <!-- ════ MAIN PANEL ════ -->
@@ -249,11 +327,20 @@
 
       <!-- Avatar -->
       <div id="avatar-wrap">
-        <img id="avatar-img" src="" alt="Effigy">
+        <img id="avatar-img" src="" alt="Avatar">
         <div id="avatar-placeholder">
           <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#c8a060" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          <span>No effigy forged yet</span>
-          <a href="forge.html" id="avatar-forge-link">Go to Hex Ritual</a>
+          <span>No avatar chosen</span>
+        </div>
+        <button id="avatar-pick-btn" onclick="openAvatarPicker()">Change</button>
+      </div>
+
+      <!-- Avatar picker overlay -->
+      <div id="avatar-picker-overlay" onclick="if(event.target===this)closeAvatarPicker()">
+        <div id="avatar-picker-box">
+          <div id="avatar-picker-title">Choose Your Avatar</div>
+          <div id="avatar-grid"></div>
+          <button id="avatar-picker-close" onclick="closeAvatarPicker()">Close</button>
         </div>
       </div>
 
@@ -355,19 +442,21 @@ async function init(){
   // Witch name
   if(witchName) document.getElementById('witch-name-value').textContent = witchName;
 
-  // Avatar from localStorage (forge saves preview as data URL)
-  const avatar = localStorage.getItem('profile_avatar');
-  if(avatar){
-    const img = document.getElementById('avatar-img');
-    img.src = avatar;
-    img.style.display = 'block';
-    document.getElementById('avatar-placeholder').style.display = 'none';
+  // Avatar — assign random on first connect, otherwise load saved
+  const savedIdx = localStorage.getItem('profile_avatar_idx');
+  if (savedIdx !== null) {
+    applyAvatar(parseInt(savedIdx));
+  } else {
+    assignRandomAvatar();
   }
 
   // Show current wallet immediately from sessionStorage
   const solNow = platform === 'sol' ? key : null;
   const tezNow = platform === 'tez' ? key : null;
   showLinkedWallets(solNow, tezNow);
+
+  // Collaborations
+  checkCollabs(key, platform);
 
   // Profile from Wix — may reveal additional linked wallet + items
   try {
@@ -493,6 +582,175 @@ window.disconnectTezos  = disconnectTezos;
 
 // Called by site-header.js after every wallet state change
 window.updateLandingWallet = function(){ init(); };
+
+// ── Collaboration System ───────────────────────────────────────
+const HELIUS_KEY = 'd9dba9ac-f923-4ed6-9a90-f389a71e9bcc';
+
+// Add your collections here. chain: 'sol' | 'tez'
+const COLLAB_COLLECTIONS = [
+  { id: 'solamyst', name: 'Solamyst', chain: 'sol', address: 'EG1x6cDjwNCqH4GxkTNvzGFpndgvRYLQmxot3gRDKwX6', logo: 'solamyst.png', reward: 'Exclusive Collaboration Pack' },
+];
+
+async function checkCollabs(walletKey, platform) {
+  const section = document.getElementById('collab-section');
+  const list = document.getElementById('collab-list');
+  if (!COLLAB_COLLECTIONS.length) return;
+
+  section.style.display = '';
+  list.innerHTML = '';
+
+  // Render all cards in "checking" state
+  COLLAB_COLLECTIONS.forEach(col => {
+    const card = document.createElement('div');
+    card.className = 'collab-card';
+    card.id = `collab-card-${col.id}`;
+    card.innerHTML = `
+      <div class="collab-logo">
+        ${col.logo ? `<img src="${col.logo}" alt="${col.name}">` : `<div class="collab-logo-placeholder">⛧</div>`}
+      </div>
+      <div class="collab-footer">
+        <div class="collab-name">${col.name}</div>
+        <div class="collab-badge checking" id="collab-badge-${col.id}">Checking…</div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  // Fetch holdings based on chain
+  let solHoldings = null;
+  let tezHoldings = {};
+
+  const solCols = COLLAB_COLLECTIONS.filter(c => c.chain === 'sol');
+  const tezCols = COLLAB_COLLECTIONS.filter(c => c.chain === 'tez');
+
+  // Solana: fetch all assets by owner once, filter per collection
+  if (solCols.length && platform === 'sol') {
+    try {
+      solHoldings = await fetchSolAssets(walletKey);
+    } catch(e) { solHoldings = []; }
+  }
+
+  // Tezos: one request per collection
+  if (tezCols.length && platform === 'tez') {
+    await Promise.all(tezCols.map(async col => {
+      try {
+        const r = await fetch(`https://api.tzkt.io/v1/tokens/balances?account=${walletKey}&token.contract=${col.address}&balance.gt=0&limit=1`);
+        const data = await r.json();
+        tezHoldings[col.id] = data.length > 0;
+      } catch(e) { tezHoldings[col.id] = false; }
+    }));
+  }
+
+  // Update badges
+  COLLAB_COLLECTIONS.forEach(col => {
+    const badge = document.getElementById(`collab-badge-${col.id}`);
+    const card  = document.getElementById(`collab-card-${col.id}`);
+    let eligible = false;
+
+    if (col.chain === 'sol') {
+      if (platform !== 'sol') {
+        badge.textContent = 'Sol wallet needed';
+        badge.className = 'collab-badge';
+        return;
+      }
+      const held = solHoldings
+        ? solHoldings.filter(a => a.grouping?.some(g => g.group_value === col.address))
+        : [];
+      eligible = held.length > 0;
+      if (eligible) {
+        badge.innerHTML = `${held.length} held`;
+      }
+    } else if (col.chain === 'tez') {
+      if (platform !== 'tez') {
+        badge.textContent = 'Tez wallet needed';
+        badge.className = 'collab-badge';
+        return;
+      }
+      eligible = !!tezHoldings[col.id];
+    }
+
+    if (!eligible) badge.textContent = 'Not eligible';
+    badge.className = 'collab-badge' + (eligible ? ' eligible' : '');
+    if (eligible) card.classList.add('eligible');
+  });
+}
+
+async function fetchSolAssets(wallet) {
+  const url = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`;
+  let page = 1; const all = [];
+  while (true) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc:'2.0', id:'collab', method:'getAssetsByOwner',
+        params: { ownerAddress: wallet, page, limit: 1000, displayOptions: { showCollectionMetadata: false } }
+      })
+    });
+    const data = await res.json();
+    const items = data.result?.items || [];
+    all.push(...items);
+    if (items.length < 1000) break;
+    page++;
+  }
+  return all;
+}
+
+// ── Avatar system ──────────────────────────────────────────────
+const AVATAR_COUNT = 84;
+const AVATAR_BASE = 'avatars/';
+
+function applyAvatar(idx) {
+  const img = document.getElementById('avatar-img');
+  const placeholder = document.getElementById('avatar-placeholder');
+  img.src = `${AVATAR_BASE}avatar_${String(idx).padStart(2,'0')}.png`;
+  img.style.display = 'block';
+  if(placeholder) placeholder.style.display = 'none';
+  localStorage.setItem('profile_avatar_idx', idx);
+  if(typeof window._headerAvatarRefresh === 'function') window._headerAvatarRefresh(false);
+}
+
+function buildAvatarGrid() {
+  const grid = document.getElementById('avatar-grid');
+  if (grid.children.length) return;
+  const current = parseInt(localStorage.getItem('profile_avatar_idx') ?? -1);
+  for (let i = 0; i < AVATAR_COUNT; i++) {
+    const div = document.createElement('div');
+    div.className = 'av-thumb' + (i === current ? ' selected' : '');
+    div.dataset.idx = i;
+    const img = document.createElement('img');
+    img.src = `${AVATAR_BASE}avatar_${String(i).padStart(2,'0')}.png`;
+    img.loading = 'lazy';
+    div.appendChild(img);
+    div.onclick = () => {
+      document.querySelectorAll('.av-thumb').forEach(t => t.classList.remove('selected'));
+      div.classList.add('selected');
+      applyAvatar(i);
+    };
+    grid.appendChild(div);
+  }
+}
+
+function openAvatarPicker() {
+  buildAvatarGrid();
+  document.getElementById('avatar-picker-overlay').classList.add('open');
+}
+
+function closeAvatarPicker() {
+  document.getElementById('avatar-picker-overlay').classList.remove('open');
+}
+
+function assignRandomAvatar() {
+  const idx = Math.floor(Math.random() * AVATAR_COUNT);
+  applyAvatar(idx);
+}
+
+// Load saved avatar on page load
+(function() {
+  const saved = localStorage.getItem('profile_avatar_idx');
+  if (saved !== null) {
+    applyAvatar(parseInt(saved));
+  }
+})();
 </script>
 </body>
 </html>

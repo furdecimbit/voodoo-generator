@@ -16,260 +16,222 @@
       color: #c8a060;
       font-family: 'Bloodcrow', serif;
       min-height: 100vh;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
     body::before {
       content: '';
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: url('verticalback.png') center top / cover no-repeat;
-      opacity: 0.65;
-      z-index: 0;
+      opacity: 0.65; z-index: 0;
     }
-
     body::after {
       content: '';
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: linear-gradient(160deg, #1a0c0499 0%, #120a04bb 50%, #0e0804cc 100%);
       z-index: 0;
     }
 
-    #site-header-mount, #landing-body {
-      position: relative;
-      z-index: 1;
-    }
-
-    #landing-body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 0;
+    /* ── Splash ── */
+    #splash {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       gap: 0;
-      height: calc(100vh - 82px);
     }
 
-    #landing-hero, #wallet-status-bar { display: none; }
-
-    #landing-hero {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-      text-align: center;
+    #splash-logo {
+      width: 200px; height: 200px; object-fit: contain;
+      filter: drop-shadow(0 0 40px #e8a02066);
+      margin-bottom: 16px;
+      animation: splash-float 3s ease-in-out infinite;
+    }
+    @keyframes splash-float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
     }
 
-    #landing-logo {
-      width: 140px; height: 140px;
-      object-fit: contain;
-      filter: drop-shadow(0 0 24px #8040208a);
-    }
-
-    #landing-title {
-      font-size: 48px; letter-spacing: .12em;
+    #splash-title {
+      font-size: clamp(36px, 8vw, 64px);
+      letter-spacing: .16em; text-transform: uppercase;
       color: #e8c060;
-      text-shadow: 0 0 30px #c0800060;
-      line-height: 1.1;
+      text-shadow: 0 0 40px #c0800066, 0 0 80px #c0800033;
+      margin-bottom: 8px;
     }
 
-    #landing-subtitle {
-      font-size: 16px; letter-spacing: .06em;
-      color: #906840; max-width: 480px; line-height: 1.7;
+    #splash-sub {
+      font-size: clamp(13px, 2vw, 17px);
+      letter-spacing: .1em; text-transform: uppercase;
+      color: #5a3a10; margin-bottom: 48px;
     }
 
-    /* ── Cards: shared base ── */
+    /* Connect buttons */
+    #splash-connect {
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      transition: opacity .4s;
+    }
+    #splash-connect.hidden { display: none; }
+
+    .splash-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 32px; border-radius: 12px;
+      border: 1px solid #3a2810; background: rgba(20,12,4,0.8);
+      color: #c8a060; font-family: 'Bloodcrow', serif;
+      font-size: 18px; letter-spacing: .1em; text-transform: uppercase;
+      cursor: pointer; transition: border-color .2s, background .2s, color .2s;
+      width: 260px; justify-content: center;
+    }
+    .splash-btn:hover { border-color: #7a5020; background: rgba(40,20,4,0.9); color: #e8c060; }
+    .splash-btn img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+
+    #splash-or {
+      font-size: 12px; letter-spacing: .16em; color: #2a1a06; text-transform: uppercase;
+    }
+
+    /* Profile reveal */
+    #splash-profile {
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .6s;
+    }
+    #splash-profile.visible { opacity: 1; pointer-events: auto; }
+
+    #splash-profile-card {
+      display: flex; align-items: center; gap: 20px;
+      padding: 18px 28px; border-radius: 14px;
+      border: 1px solid #2a1a06; background: rgba(14,10,4,0.8);
+    }
+
+    #splash-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      border: 2px solid #e8c06066;
+      background: #0e0a04; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 20px #e8c06033; flex-shrink: 0;
+    }
+    #splash-avatar img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    #splash-avatar svg { width: 28px; height: 28px; }
+
+    #splash-profile-info { display: flex; flex-direction: column; gap: 4px; }
+
+    #splash-witch-name {
+      font-size: clamp(18px, 4vw, 28px);
+      letter-spacing: .12em; text-transform: uppercase;
+      color: #e8c87a; text-shadow: 0 0 16px #e8a02066;
+    }
+
+    #splash-wallet-row {
+      display: flex; align-items: center; gap: 8px;
+    }
+    #splash-wallet-addr {
+      font-size: 13px; letter-spacing: .06em; color: #4a3010;
+    }
+    #splash-connected-badge {
+      font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+      color: #40c060; border: 1px solid #20cc5044;
+      border-radius: 20px; padding: 2px 10px;
+    }
+
+    #splash-enter {
+      padding: 14px 48px; border-radius: 12px;
+      border: 1px solid #e8c06044; background: rgba(20,12,4,0.8);
+      color: #e8c060; font-family: 'Bloodcrow', serif;
+      font-size: 20px; letter-spacing: .14em; text-transform: uppercase;
+      cursor: pointer; transition: border-color .2s, background .2s, box-shadow .2s;
+    }
+    #splash-enter:hover {
+      border-color: #e8c060; background: rgba(40,24,4,0.9);
+      box-shadow: 0 0 24px #e8c06033;
+    }
+
+    /* Menu — hidden initially */
+    #menu-body {
+      position: fixed; inset: 0; z-index: 5;
+      display: none;
+    }
+    #menu-body.visible { display: flex; }
+
+    /* Cards */
     #landing-cards {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      width: 100vw;
-      margin-left: calc(-50vw + 50%);
-      flex: 1;
+      display: flex; flex-direction: column;
+      width: 100vw; height: 100vh; gap: 0;
     }
-
     .lc {
-      position: relative;
-      overflow: hidden;
-      text-decoration: none;
-      cursor: pointer;
-      display: flex;
-      align-items: stretch;
-      border-radius: 0;
-      border: none;
-      border-bottom: 2px solid #1a1008;
-      flex: 1;
-      transition: filter .2s;
+      position: relative; overflow: hidden;
+      text-decoration: none; cursor: pointer;
+      display: flex; align-items: stretch;
+      border: none; border-bottom: 2px solid #1a1008;
+      flex: 1; transition: filter .2s;
     }
     .lc:last-child { border-bottom: none; }
-
     .lc::before {
-      content: '';
-      position: absolute; inset: 0;
+      content: ''; position: absolute; inset: 0;
       background-size: cover; background-position: center;
       opacity: 1; z-index: 0;
     }
     .lc[data-accent="forge"]::before  { background-image: url('forge.png'); }
     .lc[data-accent="packs"]::before  { background-image: url('packs.png'); }
-    .lc[data-accent="col"]::before     { background-image: url('collection.png'); }
-    .lc[data-accent="profile"]::before { background-image: url('collection.png'); }
+    .lc[data-accent="col"]::before    { background-image: url('collection.png'); }
     .lc[data-accent="lb"]::before     { background-image: url('leaderboard.png'); }
-
-    .lc-bg-overlay {
-      position: absolute; inset: 0; z-index: 0; transition: background .2s;
-    }
+    .lc-bg-overlay { position: absolute; inset: 0; z-index: 0; transition: background .2s; }
     .lc[data-accent="forge"] .lc-bg-overlay { background: #5a1e08dd; }
     .lc[data-accent="packs"] .lc-bg-overlay { background: #1e0a60dd; }
-    .lc[data-accent="col"]     .lc-bg-overlay { background: #083828dd; }
-    .lc[data-accent="profile"] .lc-bg-overlay { background: #1e0840dd; }
-    .lc[data-accent="lb"]      .lc-bg-overlay { background: #3a2808dd; }
-
-    .lc[data-accent="forge"]  { border-bottom-color: #5a2810; }
-    .lc[data-accent="packs"]  { border-bottom-color: #3a2060; }
-    .lc[data-accent="col"]     { border-bottom-color: #103830; }
-    .lc[data-accent="profile"] { border-bottom-color: #381060; }
-    .lc[data-accent="lb"]      { border-bottom-color: #503a10; }
-
+    .lc[data-accent="col"]   .lc-bg-overlay { background: #083828dd; }
+    .lc[data-accent="lb"]    .lc-bg-overlay { background: #3a2808dd; }
+    .lc[data-accent="forge"] { border-bottom-color: #5a2810; }
+    .lc[data-accent="packs"] { border-bottom-color: #3a2060; }
+    .lc[data-accent="col"]   { border-bottom-color: #103830; }
+    .lc[data-accent="lb"]    { border-bottom-color: #503a10; }
     .lc-text {
       position: relative; z-index: 1;
       padding: 4vw 6vw;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 1vh; width: 100%; text-align: center;
     }
-    .lc-icon {
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
+    .lc-icon { display: flex; align-items: center; justify-content: center; }
     .lc-icon img { width: 15vw; height: 15vw; object-fit: contain; transition: transform .3s ease, filter .3s ease; }
     .lc[data-accent="forge"] .lc-icon img { filter: drop-shadow(0 0 12px #e06010ff) drop-shadow(0 0 30px #e06010cc); }
     .lc[data-accent="packs"] .lc-icon img { filter: drop-shadow(0 0 12px #8040c0ff) drop-shadow(0 0 30px #8040c0cc); }
-    .lc[data-accent="col"]     .lc-icon img { filter: drop-shadow(0 0 12px #20a060ff) drop-shadow(0 0 30px #20a060cc); }
-    .lc[data-accent="profile"] .lc-icon img { filter: drop-shadow(0 0 12px #9060d0ff) drop-shadow(0 0 30px #9060d0cc); }
-    .lc[data-accent="lb"]      .lc-icon img { filter: drop-shadow(0 0 12px #e0a020ff) drop-shadow(0 0 30px #e0a020cc); }
-
+    .lc[data-accent="col"]   .lc-icon img { filter: drop-shadow(0 0 12px #20a060ff) drop-shadow(0 0 30px #20a060cc); }
+    .lc[data-accent="lb"]    .lc-icon img { filter: drop-shadow(0 0 12px #e0a020ff) drop-shadow(0 0 30px #e0a020cc); }
     .lc:hover .lc-icon img { transform: scale(1.18); }
-    .lc[data-accent="forge"]:hover .lc-icon img { filter: drop-shadow(0 0 20px #e06010ff) drop-shadow(0 0 50px #e06010cc) drop-shadow(0 0 80px #e0601077); }
-    .lc[data-accent="packs"]:hover .lc-icon img  { filter: drop-shadow(0 0 20px #8040c0ff) drop-shadow(0 0 50px #8040c0cc) drop-shadow(0 0 80px #8040c077); }
-    .lc[data-accent="col"]:hover     .lc-icon img  { filter: drop-shadow(0 0 20px #20a060ff) drop-shadow(0 0 50px #20a060cc) drop-shadow(0 0 80px #20a06077); }
-    .lc[data-accent="profile"]:hover .lc-icon img { filter: drop-shadow(0 0 20px #9060d0ff) drop-shadow(0 0 50px #9060d0cc) drop-shadow(0 0 80px #9060d077); }
-    .lc[data-accent="lb"]:hover      .lc-icon img  { filter: drop-shadow(0 0 20px #e0a020ff) drop-shadow(0 0 50px #e0a020cc) drop-shadow(0 0 80px #e0a02077); }
-    .lc-text-body {
-      display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center;
-    }
     .lc-title {
       font-family: 'Bloodcrow', serif;
       font-size: clamp(20px, 5vw, 32px); letter-spacing: .12em; color: #e8c060;
       text-shadow: 2px 2px 0 #000;
-      transition: font-size .3s ease, text-shadow .3s ease, color .3s ease;
+      transition: font-size .3s ease, color .3s ease;
     }
     .lc:hover .lc-title { color: #fff0c0; font-size: clamp(24px, 6vw, 42px); }
-    .lc[data-accent="forge"]:hover .lc-title { text-shadow: 0 0 16px #e08030cc, 0 0 40px #e0601088, 2px 2px 0 #000; }
-    .lc[data-accent="packs"]:hover .lc-title  { text-shadow: 0 0 16px #a060e0cc, 0 0 40px #8040c088, 2px 2px 0 #000; }
-    .lc[data-accent="col"]:hover     .lc-title  { text-shadow: 0 0 16px #40c080cc, 0 0 40px #20a06088, 2px 2px 0 #000; }
-    .lc[data-accent="profile"]:hover .lc-title { text-shadow: 0 0 16px #b080f0cc, 0 0 40px #9060d088, 2px 2px 0 #000; }
-    .lc[data-accent="lb"]:hover      .lc-title { text-shadow: 0 0 16px #e0c040cc, 0 0 40px #c0a02088, 2px 2px 0 #000; }
     .lc-desc {
       font-family: 'Bloodcrow', serif;
       font-size: clamp(12px, 3vw, 18px); letter-spacing: .04em;
-      color: #c8a080cc; line-height: 1.5;
-      text-shadow: 1px 1px 0 #000;
+      color: #c8a080cc; line-height: 1.5; text-shadow: 1px 1px 0 #000;
     }
+    .lc.locked { cursor: default; opacity: .5; }
+    .lc.locked:hover .lc-title { font-size: clamp(20px, 5vw, 32px); color: #e8c060; }
+    .lc.locked:hover .lc-icon img { transform: none; }
 
-    /* ── Desktop: rectangles ── */
     @media (min-width: 700px) {
-      body::before, body::after { display: none; }
-      #landing-body { padding: 0; gap: 0; }
-      #landing-hero, #wallet-status-bar { display: none; }
       #landing-cards {
-        flex-direction: row;
-        width: 100vw;
-        max-width: 100vw;
-        height: calc(100vh - 82px);
-        gap: 0;
-        margin-left: calc(-50vw + 50%);
+        flex-direction: row; height: 100vh;
       }
       .lc {
-        flex: 1;
-        border-radius: 0;
-        border: none;
-        border-right: 3px solid #3a2810;
-        min-height: unset;
-        clip-path: none;
-        margin-left: 0;
+        flex: 1; border: none; border-right: 3px solid #3a2810;
         transition: flex .3s ease, filter .2s;
-        align-items: stretch;
       }
       .lc[data-accent="forge"] { border-right-color: #5a2810; }
       .lc[data-accent="packs"] { border-right-color: #3a2060; }
       .lc[data-accent="col"]   { border-right-color: #103830; }
       .lc[data-accent="lb"]    { border-right-color: #503a10; }
       .lc:last-child { border-right: none; }
-      .lc:hover { flex: 1.6; transform: none; filter: brightness(1.1); }
-      .lc-text {
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 4vh 3vw;
-        gap: 1.4vh;
-        width: 100%;
-        height: 100%;
-      }
+      .lc:not(.locked):hover { flex: 1.6; filter: brightness(1.1); }
+      .lc-text { flex-direction: column; padding: 4vh 3vw; gap: 1.4vh; height: 100%; }
       .lc-icon img { width: 18vh; height: 18vh; }
-      .lc[data-accent="forge"] .lc-icon img { filter: drop-shadow(0 0 20px #e06010ff) drop-shadow(0 0 50px #e06010cc) drop-shadow(0 0 80px #e0601077); }
-      .lc[data-accent="packs"] .lc-icon img { filter: drop-shadow(0 0 20px #8040c0ff) drop-shadow(0 0 50px #8040c0cc) drop-shadow(0 0 80px #8040c077); }
-      .lc[data-accent="col"]   .lc-icon img { filter: drop-shadow(0 0 20px #20a060ff) drop-shadow(0 0 50px #20a060cc) drop-shadow(0 0 80px #20a06077); }
-      .lc[data-accent="lb"]    .lc-icon img { filter: drop-shadow(0 0 20px #e0a020ff) drop-shadow(0 0 50px #e0a020cc) drop-shadow(0 0 80px #e0a02077); }
       .lc-title { font-size: clamp(24px, 3.5vw, 52px); }
-      .lc-desc  { font-size: clamp(13px, 1.4vw, 22px); max-width: 26ch; text-align: center; }
-      .lc-badge { font-size: clamp(12px, 1.1vw, 18px); }
-
-      .lc[data-accent="forge"] .lc-bg-overlay { background: #5a1e08dd; }
-      .lc[data-accent="packs"] .lc-bg-overlay { background: #1e0a60dd; }
-      .lc[data-accent="col"]   .lc-bg-overlay { background: #083828dd; }
-      .lc[data-accent="lb"]    .lc-bg-overlay { background: #3a2808dd; }
+      .lc-desc  { font-size: clamp(13px, 1.4vw, 22px); max-width: 26ch; }
     }
-
-    /* Wallet status bar */
-    #wallet-status-bar {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 900px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 18px;
-      border-radius: 10px;
-      border: 1px solid #3a2808;
-      background: #0e0a04cc;
-      font-size: 15px;
-      letter-spacing: .06em;
-    }
-    #wallet-status-dot {
-      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
-      background: #f0d060;
-    }
-    #wallet-status-bar.live #wallet-status-dot { background: #40c060; }
-    #wallet-status-text { color: #906840; }
-    #wallet-status-bar.live #wallet-status-text { color: #70c880; }
-
-    /* Locked cards */
-    .lc.locked { cursor: default; opacity: .6; }
-    .lc.locked:hover { transform: none; box-shadow: none; }
-    .lc-badge {
-      font-family: 'Bloodcrow', serif;
-      font-size: 14px; letter-spacing: .08em;
-      display: flex; align-items: center; gap: 6px;
-      margin-top: 4px;
-      color: #60a070;
-    }
-    .lc-badge svg { width: 16px; height: 16px; flex-shrink: 0; }
-    .lc-badge.demo { color: #c8a050; }
-    .lc-badge.locked-badge { color: #e05040; }
-    .lc-badge.unlocked-badge { color: #40c060; }
 
     @media (max-width: 480px) {
-      #landing-title { font-size: 34px; }
       .lc-icon img { width: 60px; height: 60px; }
       .lc-title { font-size: 22px; }
     }
@@ -278,98 +240,146 @@
 <body>
 
 <script src="https://unpkg.com/@airgap/beacon-dapp@4.8.1/dist/walletbeacon.dapp.min.js"></script>
-<div id="site-header-mount"></div>
+<div id="site-header-mount" style="display:none"></div>
 <script src="site-header.js"></script>
 
-<div id="landing-body">
+<!-- ── SPLASH ── -->
+<div id="splash">
+  <img id="splash-logo" src="logo2.png" alt="Hex & Stitch">
+  <div id="splash-sub">Digital Voodoo Workshop</div>
 
+  <div id="splash-connect">
+    <button class="splash-btn" onclick="splashConnectSol()">
+      <img src="drip.jpeg" alt="Solana"> Connect Solana
+    </button>
+    <div id="splash-or">or</div>
+    <button class="splash-btn" onclick="splashConnectTez()">
+      <img src="objkt.jpeg" alt="Tezos"> Connect Tezos
+    </button>
+  </div>
 
+  <div id="splash-profile">
+    <div id="splash-profile-card">
+      <div id="splash-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#c8a050" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <img id="splash-av-img" src="" alt="">
+      </div>
+      <div id="splash-profile-info">
+        <div id="splash-witch-name">—</div>
+        <div id="splash-wallet-row">
+          <div id="splash-wallet-addr"></div>
+          <div id="splash-connected-badge">Connected</div>
+        </div>
+      </div>
+    </div>
+    <button id="splash-enter" onclick="enterWorkshop()">Enter the Workshop</button>
+  </div>
+</div>
+
+<!-- ── MENU ── -->
+<div id="menu-body">
   <div id="landing-cards">
-
     <a class="lc" href="forge.html" data-accent="forge">
       <div class="lc-bg-overlay"></div>
       <div class="lc-text">
         <div class="lc-icon"><img src="forge_icon.png" alt="Forge"></div>
-        <div class="lc-text-body">
-          <div class="lc-title">Ritual</div>
-          <div class="lc-desc">Dress your effigy. Equip items from your collection and craft your ritual doll.</div>
-          <span class="lc-badge demo" id="badge-forge">Demo available</span>
-
-        </div>
+        <div class="lc-title">Ritual</div>
+        <div class="lc-desc">Dress your effigy. Equip items and craft your ritual doll.</div>
       </div>
     </a>
-
-    <a class="lc" href="pack-room.html" data-accent="packs" id="card-packs">
+    <a class="lc" href="pack-room.html" data-accent="packs">
       <div class="lc-bg-overlay"></div>
       <div class="lc-text">
         <div class="lc-icon"><img src="packs_icon.png" alt="Packs"></div>
-        <div class="lc-text-body">
-          <div class="lc-title">Packs</div>
-          <div class="lc-desc">Open ritual packs to discover new items. Rarer packs drop rarer items.</div>
-          <span class="lc-badge demo" id="badge-packs">Demo available</span>
-        </div>
+        <div class="lc-title">Packs</div>
+        <div class="lc-desc">Open ritual packs to discover new items.</div>
       </div>
     </a>
-
-    <a class="lc" href="collection.html" data-accent="col" id="card-col">
+    <a class="lc" href="collection.html" data-accent="col">
       <div class="lc-bg-overlay"></div>
       <div class="lc-text">
         <div class="lc-icon"><img src="collection_icon.png" alt="Collection"></div>
-        <div class="lc-text-body">
-          <div class="lc-title">Collection</div>
-          <div class="lc-desc">Browse everything you've collected. See what still awaits discovery.</div>
-          <span class="lc-badge unlocked-badge" id="badge-col">Demo available</span>
-        </div>
+        <div class="lc-title">Collection</div>
+        <div class="lc-desc">Browse everything you've collected.</div>
       </div>
     </a>
-
-<a class="lc locked" href="#" data-accent="lb" id="card-lb">
+    <a class="lc locked" href="#" data-accent="lb" id="card-lb">
       <div class="lc-bg-overlay"></div>
       <div class="lc-text">
         <div class="lc-icon"><img src="leaderboard_icon.png" alt="Leaderboard"></div>
-        <div class="lc-text-body">
-          <div class="lc-title">Leaderboard</div>
-          <div class="lc-desc">Compare your effigy power against other ritual practitioners.</div>
-          <span class="lc-badge locked-badge" id="badge-lb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Wallet required</span>
-        </div>
+        <div class="lc-title">Leaderboard</div>
+        <div class="lc-desc">Compare your effigy power against others.</div>
       </div>
     </a>
-
   </div>
-
 </div>
 
 <script>
-function updateLandingWallet(){
-  const key = sessionStorage.getItem('wallet_key');
-  const bar  = document.getElementById('wallet-status-bar');
-  const txt  = document.getElementById('wallet-status-text');
-  const locked = ['card-lb'];
-  const hrefs  = { 'card-lb':'leaderboard.html' };
-  const badges = { 'badge-lb': true };
+const SPLASH_CDN = 'https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main';
 
-  if(key){
-    if(bar) bar.classList.add('live');
-    if(txt) txt.textContent = 'Connected — ' + key.slice(0,4) + '...' + key.slice(-4);
-    locked.forEach(id => {
-      const el = document.getElementById(id);
-      if(el){ el.classList.remove('locked'); el.href = hrefs[id]; }
-    });
-    ['badge-col','badge-lb'].forEach(id => {
-      const el = document.getElementById(id);
-      if(el){ el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><polyline points="8 11 8 7"/><path d="M8 7a4 4 0 0 1 8 0"/><line x1="12" y1="15" x2="12" y2="17"/></svg>Unlocked'; el.className = 'lc-badge unlocked-badge'; }
-    });
-    const bf = document.getElementById('badge-forge');
-    if(bf){ bf.textContent = 'Full access'; bf.className = 'lc-badge unlocked-badge'; }
-  } else {
-    if(bar) bar.classList.remove('live');
-    if(txt) txt.textContent = 'Demo Mode — Connect your wallet to unlock all sections.';
+// ── On load: if already connected, skip splash ──
+window.addEventListener('DOMContentLoaded', () => {
+  const key = sessionStorage.getItem('wallet_key');
+  if (key) {
+    showMenu();
+  }
+});
+
+function showMenu() {
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('site-header-mount').style.display = '';
+  document.getElementById('menu-body').classList.add('visible');
+  const lb = document.getElementById('card-lb');
+  if (sessionStorage.getItem('wallet_key') && lb) {
+    lb.classList.remove('locked');
+    lb.href = 'leaderboard.html';
   }
 }
 
-window.updateLandingWallet = updateLandingWallet;
-updateLandingWallet();
-window.addEventListener('storage', updateLandingWallet);
+function enterWorkshop() {
+  showMenu();
+}
+
+async function showProfile(key, platform) {
+  document.getElementById('splash-connect').classList.add('hidden');
+  document.getElementById('splash-wallet-addr').textContent = key.slice(0,6) + '…' + key.slice(-6);
+  document.getElementById('splash-profile').classList.add('visible');
+
+  // Avatar
+  const idx = localStorage.getItem('profile_avatar_idx');
+  const avImg = document.getElementById('splash-av-img');
+  if (idx !== null) {
+    const pad = String(parseInt(idx)).padStart(2,'0');
+    avImg.src = `avatars/avatar_${pad}.png`;
+    avImg.style.display = 'block';
+    avImg.previousElementSibling.style.display = 'none';
+  }
+
+  // Fetch witch name from Wix
+  try {
+    const res = await fetch('https://www.alperozdil.com/_functions/getOrCreateProfile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ wallet: key, platform })
+    });
+    const data = await res.json();
+    const name = data.witchName || data.witchname || '—';
+    document.getElementById('splash-witch-name').textContent = name;
+    sessionStorage.setItem('witch_name', name);
+
+    // Assign random avatar if first time
+    if (idx === null) {
+      const randIdx = Math.floor(Math.random() * 84);
+      const pad = String(randIdx).padStart(2,'0');
+      avImg.src = `avatars/avatar_${pad}.png`;
+      avImg.style.display = 'block';
+      avImg.previousElementSibling.style.display = 'none';
+      localStorage.setItem('profile_avatar_idx', randIdx);
+    }
+  } catch(e) {
+    document.getElementById('splash-witch-name').textContent = sessionStorage.getItem('witch_name') || '—';
+  }
+}
 
 // ── Wallet functions ──
 function detectSolanaWallets(){
@@ -384,77 +394,41 @@ function detectSolanaWallets(){
   return wallets;
 }
 
-function showWalletPicker(wallets){
-  return new Promise(resolve => {
-    const overlay = document.createElement('div');
-    overlay.style.cssText='position:fixed;inset:0;background:#00000099;z-index:9999;display:flex;align-items:center;justify-content:center;';
-    const box = document.createElement('div');
-    box.style.cssText="background:#1a1208;border:1px solid #7a5520;border-radius:10px;padding:24px;display:flex;flex-direction:column;gap:12px;min-width:220px;";
-    const title = document.createElement('div');
-    title.textContent='Select Wallet';
-    title.style.cssText="font-family:'Bloodcrow',serif;font-size:18px;color:#e8c060;letter-spacing:.1em;text-align:center;margin-bottom:4px;";
-    box.appendChild(title);
-    wallets.forEach(w=>{
-      const btn = document.createElement('button');
-      btn.textContent = w.name;
-      btn.style.cssText="font-family:'Bloodcrow',serif;font-size:15px;padding:10px 20px;background:linear-gradient(135deg,#0e3a0e,#1a5a1a);color:#70e870;border:1px solid #2a8a2a;border-radius:6px;cursor:pointer;letter-spacing:.08em;";
-      btn.onclick=()=>{ document.body.removeChild(overlay); resolve(w.provider); };
-      box.appendChild(btn);
-    });
-    const cancel = document.createElement('button');
-    cancel.textContent='Cancel';
-    cancel.style.cssText="font-family:'Bloodcrow',serif;font-size:13px;padding:8px;background:transparent;color:#7a6040;border:1px solid #3a2810;border-radius:6px;cursor:pointer;";
-    cancel.onclick=()=>{ document.body.removeChild(overlay); resolve(null); };
-    box.appendChild(cancel);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
-  });
-}
-
-async function connectWallet(){
+async function splashConnectSol() {
   const wallets = detectSolanaWallets();
-  if(!wallets.length){ alert('No Solana wallet found. Please install Phantom, Solflare, or Backpack.'); return; }
-  const provider = wallets.length === 1 ? wallets[0].provider : await showWalletPicker(wallets);
-  if(!provider) return;
-  try{
+  if (!wallets.length) { alert('No Solana wallet found. Please install Phantom.'); return; }
+  const provider = wallets[0].provider;
+  try {
     const resp = await provider.connect();
     const pubkey = resp.publicKey.toString();
     window._solanaProvider = provider;
-    if(typeof setHeaderWallet === 'function') setHeaderWallet(pubkey, 'sol');
-  } catch(e){ console.error('Wallet connect error', e); }
-}
-
-function disconnectWallet(){
-  if(window._solanaProvider) window._solanaProvider.disconnect();
-  window._solanaProvider = null;
-  if(typeof setHeaderWallet === 'function') setHeaderWallet(null, null);
+    if (typeof setHeaderWallet === 'function') setHeaderWallet(pubkey, 'sol');
+    await showProfile(pubkey, 'sol');
+  } catch(e) { console.error(e); }
 }
 
 let _beaconClient = null;
 async function getBeaconClient(){
-  if(_beaconClient) return _beaconClient;
+  if (_beaconClient) return _beaconClient;
   _beaconClient = new beacon.DAppClient({ name: 'Hex & Stitch' });
   return _beaconClient;
 }
 
-async function connectTezos(){
-  try{
+async function splashConnectTez() {
+  try {
     const client = await getBeaconClient();
     const acc = await client.requestPermissions();
-    if(typeof setHeaderWallet === 'function') setHeaderWallet(acc.address, 'tez');
-  } catch(e){ console.error('Tezos connect error', e); }
+    if (typeof setHeaderWallet === 'function') setHeaderWallet(acc.address, 'tez');
+    await showProfile(acc.address, 'tez');
+  } catch(e) { console.error(e); }
 }
 
-async function disconnectTezos(){
-  try{ const client = await getBeaconClient(); await client.clearActiveAccount(); } catch(e){}
-  window.tezosAddress = null;
-  if(typeof setHeaderWallet === 'function') setHeaderWallet(null, null);
-}
-
-window.connectWallet    = connectWallet;
-window.disconnectWallet = disconnectWallet;
-window.connectTezos     = connectTezos;
-window.disconnectTezos  = disconnectTezos;
+// Expose for site-header.js
+window.connectWallet    = splashConnectSol;
+window.connectTezos     = splashConnectTez;
+window.disconnectWallet = () => { if(window._solanaProvider) window._solanaProvider.disconnect(); window._solanaProvider = null; if(typeof setHeaderWallet==='function') setHeaderWallet(null,null); };
+window.disconnectTezos  = async () => { try{ const c=await getBeaconClient(); await c.clearActiveAccount(); }catch(e){} if(typeof setHeaderWallet==='function') setHeaderWallet(null,null); };
+window.updateLandingWallet = () => {};
 </script>
 
 </body>

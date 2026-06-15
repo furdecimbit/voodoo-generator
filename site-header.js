@@ -42,7 +42,11 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
 
         <!-- Wallet — icon + dropdown -->
         <div id="site-header-wallet">
-          <span id="wic-demo-label">DEMO MODE — CONNECT TO GET PACKS &amp; ITEMS</span>
+          <span id="wic-witch-name" style="display:none;font-family:Bloodcrow,serif;font-size:13px;letter-spacing:.08em;color:#e8c060;text-transform:uppercase;white-space:nowrap;margin-right:8px;"></span>
+          <a id="wic-avatar" href="profile.html" title="Profile" style="width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid #3a2808;background:#0e0a04;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:border-color .2s;text-decoration:none;position:relative;">
+            <svg id="wic-av-default" viewBox="0 0 24 24" fill="none" stroke="#c8a050" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;flex-shrink:0;"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <img id="wic-av-img" src="" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;">
+          </a>
           <button class="wallet-icon-circle disconnected" id="wic-main" onclick="toggleWalletPanel()" title="Wallet">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
           </button>
@@ -88,13 +92,6 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
       #site-header-logo {
         height:62px; width:auto;
         filter:drop-shadow(0 0 14px #e8c06055);
-      }
-
-      /* Demo label */
-      #wic-demo-label {
-        font-family:'Bloodcrow',serif; font-size:13px; letter-spacing:.07em;
-        color:#7a5828; white-space:nowrap; margin-right:12px;
-        text-transform:uppercase;
       }
 
       /* Wallet area */
@@ -177,7 +174,7 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
         cursor:pointer; flex-shrink:0;
         position:relative; z-index:1;
         transition:border-color .2s, background .2s;
-        font-size:22px; color:#c8a050; line-height:1; padding:0;
+        font-size:32px; color:#c8a050; line-height:0; padding:0; padding-bottom:2px;
       }
       #sidebar-toggle:hover { border-color:#6a4818; background:#1a1006; }
 
@@ -185,7 +182,7 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
       #site-sidebar {
         position:fixed; top:82px; left:0;
         height:calc(100vh - 82px);
-        width:200px;
+        width:220px;
         background:linear-gradient(180deg,#120c04ee,#0e0a04ee);
         border-right:1px solid #3a2808;
         z-index:1001;
@@ -200,38 +197,76 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
         padding:10px 0;
       }
       .ssb-link {
-        display:flex; align-items:center; gap:14px;
-        padding:0 20px; height:50px;
+        display:flex; align-items:center; gap:16px;
+        padding:0 20px; height:58px;
         text-decoration:none; white-space:nowrap;
         color:#6a5030;
-        font-family:'Bloodcrow',serif; font-size:15px; letter-spacing:.08em; text-transform:uppercase;
+        font-family:'Bloodcrow',serif; font-size:18px; letter-spacing:.08em; text-transform:uppercase;
         transition:color .2s, background .2s;
         border-left:2px solid transparent;
       }
       .ssb-link:hover { color:#c8a050; background:rgba(232,192,96,.07); }
       .ssb-link.active { color:#e8c060; background:rgba(232,192,96,.1); border-left-color:#e8c060; }
-      .ssb-icon { width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-      .ssb-icon svg, .ssb-icon i { width:18px; height:18px; }
+      .ssb-icon { width:26px; height:26px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+      .ssb-icon svg, .ssb-icon i { width:22px; height:22px; }
 
       /* Socials */
       #site-sidebar-socials {
-        margin-top: auto;
-        padding: 16px 12px;
-        border-top: 1px solid #2a1a06;
+        padding: 14px 12px;
+        border-bottom: 1px solid #2a1a06;
         display: flex;
-        flex-direction: column;
-        gap: 4px;
+        flex-direction: row;
+        justify-content: center;
+        gap: 8px;
       }
       .ssb-social {
-        display: flex; align-items: center; gap: 12px;
-        padding: 8px 10px; border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        width: 40px; height: 40px; border-radius: 10px;
         text-decoration: none;
         color: #5a4020;
-        font-family: 'Bloodcrow', serif; font-size: 14px; letter-spacing: .08em; text-transform: uppercase;
-        transition: color .2s, background .2s;
+        border: 1px solid #2a1a06;
+        transition: color .2s, background .2s, border-color .2s;
       }
-      .ssb-social:hover { color: #c8a050; background: rgba(232,192,96,.07); }
-      .ssb-social svg { width: 18px; height: 18px; flex-shrink: 0; }
+      .ssb-social:hover { color: #c8a050; background: rgba(232,192,96,.07); border-color: #4a3010; }
+      .ssb-social svg { width: 34px; height: 34px; flex-shrink: 0; }
+      .ssb-social span { display: none; }
+
+      /* ── Footer ── */
+      #site-footer {
+        border-top: 1px solid #1a1006;
+        background: #050302;
+        padding: 28px 20px 20px;
+        display: flex; flex-direction: column; align-items: center; gap: 12px;
+        font-family: 'Bloodcrow', serif;
+      }
+      #site-footer-socials {
+        display: flex; gap: 16px; align-items: center;
+      }
+      .sf-social {
+        width: 38px; height: 38px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        border: 1px solid #2a1a06; color: #4a3010;
+        text-decoration: none; transition: color .2s, border-color .2s;
+      }
+      .sf-social:hover { color: #c8a050; border-color: #4a3010; }
+      .sf-social svg { width: 18px; height: 18px; }
+      #site-footer-copy {
+        font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #2a1a06;
+      }
+      #site-footer-dev {
+        font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #3a2810;
+      }
+      #site-footer-dev a { color: #5a3a10; text-decoration: none; transition: color .2s; }
+      #site-footer-dev a:hover { color: #c8a050; }
+
+      /* Copyright */
+      #ssb-copyright {
+        margin-top: auto;
+        padding: 10px 12px;
+        text-align: center;
+        font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+        color: #2a1a06;
+      }
 
       /* Admin gate */
       #ssb-admin-wrap {
@@ -270,7 +305,6 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
       }
       @media (max-width:640px){
         .wallet-icon-circle { width:36px; height:36px; }
-        #wic-demo-label { display:none; }
       }
     </style>`;
 
@@ -308,18 +342,9 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
     const sidebarEl = document.createElement('div');
     sidebarEl.id = 'site-sidebar';
     sidebarEl.innerHTML = `
-      <div id="site-sidebar-inner">${sidebarItemsHTML}</div>
-      <div id="ssb-admin-wrap">
-        <div id="ssb-admin-gate">
-          <input type="password" id="ssb-admin-input" placeholder="Admin secret…"
-            onkeydown="if(event.key==='Enter') window.ssbAdminLogin()">
-          <button onclick="window.ssbAdminLogin()">⛧</button>
-        </div>
-      </div>
-
       <div id="site-sidebar-socials">
         <a href="https://alper-ozdil-projetcs.gitbook.io/hex-and-stitch" target="_blank" class="ssb-social" title="GitBook">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.802 17.77a.703.703 0 1 1-.002 1.406.703.703 0 0 1 .002-1.406m11.024-4.347a.703.703 0 1 1-.001 1.406.703.703 0 0 1 .001-1.406M4.987 6.965a.703.703 0 1 1-.002 1.406.703.703 0 0 1 .002-1.406m16.386 3.37c-.624-.626-1.492-.795-2.26-.557L16.06 6.73c.265-.76.1-1.638-.523-2.264a1.95 1.95 0 0 0-2.756 0 1.95 1.95 0 0 0 0 2.757c.623.623 1.49.793 2.258.557l3.05 3.05c-.266.76-.1 1.637.523 2.261a1.95 1.95 0 0 0 2.76-2.757zm-9.261 4.662c-.624-.626-1.491-.795-2.26-.557L6.8 11.387c.266-.76.1-1.638-.523-2.264a1.95 1.95 0 0 0-2.756 0 1.95 1.95 0 0 0 0 2.757c.623.623 1.49.793 2.258.557l3.052 3.05c-.266.76-.1 1.638.523 2.262a1.95 1.95 0 0 0 2.76-2.756z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           <span>GitBook</span>
         </a>
         <a href="https://discord.com/invite/V57fUq93xB" target="_blank" class="ssb-social" title="Discord">
@@ -331,6 +356,18 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
           <span>X</span>
         </a>
       </div>
+
+      <div id="site-sidebar-inner">${sidebarItemsHTML}</div>
+
+      <div id="ssb-admin-wrap">
+        <div id="ssb-admin-gate">
+          <input type="password" id="ssb-admin-input" placeholder="Admin secret…"
+            onkeydown="if(event.key==='Enter') window.ssbAdminLogin()">
+          <button onclick="window.ssbAdminLogin()">⛧</button>
+        </div>
+      </div>
+
+      <div id="ssb-copyright">© 2025 Hex &amp; Stitch</div>
     `;
     document.body.appendChild(sidebarEl);
 
@@ -339,6 +376,28 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
     backdropEl.onclick = () => window.toggleNavDrawer();
     document.body.appendChild(backdropEl);
   }
+
+  // Inject footer after full DOM load so it lands at the true bottom
+  window.addEventListener('DOMContentLoaded', () => {
+    const footerEl = document.createElement('footer');
+    footerEl.id = 'site-footer';
+    footerEl.innerHTML = `
+      <div id="site-footer-socials">
+        <a href="https://alper-ozdil-projetcs.gitbook.io/hex-and-stitch" target="_blank" class="sf-social" title="GitBook">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </a>
+        <a href="https://discord.com/invite/V57fUq93xB" target="_blank" class="sf-social" title="Discord">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        </a>
+        <a href="http://x.com/alperozdilart" target="_blank" class="sf-social" title="X">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+      </div>
+      <div id="site-footer-copy">© 2025 Hex &amp; Stitch</div>
+      <div id="site-footer-dev">Developed &amp; Designed by <a href="https://alperozdil.com" target="_blank">Alper Özdil</a></div>
+    `;
+    document.body.appendChild(footerEl);
+  });
 
   // Load Lucide icons
   if(typeof lucide !== 'undefined'){
@@ -427,7 +486,6 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
     const tezAddr  = document.getElementById('wep-tez-addr');
     const solBtn   = document.getElementById('wep-sol-btn');
     const tezBtn   = document.getElementById('wep-tez-btn');
-    const demoLabel = document.getElementById('wic-demo-label');
     const profileLink = document.getElementById('wep-profile-link');
     if(!circle) return;
 
@@ -443,7 +501,6 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
       const short = key.slice(0,4)+'...'+key.slice(-4);
       circle.classList.add('connected');
       circle.title = platform.toUpperCase()+': '+short;
-      if(demoLabel) demoLabel.style.display = 'none';
       if(platform === 'tez'){
         if(tezAddr) tezAddr.textContent = short;
         if(tezBtn){ tezBtn.textContent='Disconnect'; tezBtn.classList.add('disconnect'); tezBtn.onclick=()=>headerDisconnect('tez'); }
@@ -474,28 +531,58 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
     } else {
       circle.classList.add('disconnected');
       circle.title = 'Wallet';
-      if(demoLabel) demoLabel.style.display = '';
       sessionStorage.removeItem('wallet_key');
       sessionStorage.removeItem('wallet_platform');
       sessionStorage.removeItem('witch_name');
       _updateWitchNameUI(null);
     }
+    // Avatar border: green when connected
+    const av = document.getElementById('wic-avatar');
+    if(av) av.style.borderColor = (key && platform) ? '#20cc50' : '#3a2808';
     if(typeof window.updateLandingWallet === 'function') window.updateLandingWallet();
   }
   window.setHeaderWallet = setHeaderWallet;
 
-  function _updateWitchNameUI(name){
-    let el = document.getElementById('wic-witch-name');
-    if(!el){
-      el = document.createElement('span');
-      el.id = 'wic-witch-name';
-      el.style.cssText = 'font-family:Bloodcrow,serif;font-size:13px;letter-spacing:.08em;color:#e8c060;text-transform:uppercase;white-space:nowrap;margin-right:14px;';
-      const wallet = document.getElementById('site-header-wallet');
-      if(wallet) wallet.insertBefore(el, wallet.firstChild);
+  function _ensureHeaderProfile(){
+    const av = document.getElementById('wic-avatar');
+    if(av){
+      av.addEventListener('mouseenter', () => { av.style.borderColor = '#6a4818'; });
+      av.addEventListener('mouseleave', () => { _refreshHeaderAvatar(false); });
     }
-    el.textContent = name || '';
-    el.style.display = name ? '' : 'none';
   }
+
+  function _updateWitchNameUI(name){
+    const el = document.getElementById('wic-witch-name');
+    if(el){ el.textContent = name || ''; el.style.display = name ? '' : 'none'; }
+    _refreshHeaderAvatar(false);
+  }
+
+  function _refreshHeaderAvatar(hover){
+    const av  = document.getElementById('wic-avatar');
+    const img = document.getElementById('wic-av-img');
+    const def = document.getElementById('wic-av-default');
+    if(!av || !img || !def) return;
+    const idx = localStorage.getItem('profile_avatar_idx');
+    const connected = !!sessionStorage.getItem('wallet_key');
+    av.style.borderColor = hover ? '#6a4818' : (connected ? '#20cc50' : '#3a2808');
+    if(idx !== null){
+      const pad = String(parseInt(idx)).padStart(2,'0');
+      img.src = `avatars/avatar_${pad}.png`;
+      img.style.display = 'block';
+      def.style.display = 'none';
+    } else {
+      img.style.display = 'none';
+      def.style.display = '';
+    }
+  }
+
+  // Refresh when avatar picked on profile page (same tab — storage event doesn't fire)
+  window._headerAvatarRefresh = _refreshHeaderAvatar;
+
+  // Refresh avatar when localStorage changes (cross-tab)
+  window.addEventListener('storage', e => {
+    if(e.key === 'profile_avatar_idx') _refreshHeaderAvatar(false);
+  });
 
   function setHeaderSyncing(on){
     const c = document.getElementById('wic-main');
@@ -508,6 +595,8 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
   // Restore from session on page load
   const savedKey      = sessionStorage.getItem('wallet_key');
   const savedPlatform = sessionStorage.getItem('wallet_platform');
+  _ensureHeaderProfile();
+  _refreshHeaderAvatar(false);
   if(savedKey) setHeaderWallet(savedKey, savedPlatform);
 
 })();
