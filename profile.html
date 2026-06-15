@@ -696,10 +696,10 @@ async function fetchSolAssets(wallet) {
 }
 
 // ── Avatar system ──────────────────────────────────────────────
-const AVATAR_COUNT = 84;
+const AVATAR_COUNT = 25;
 const AVATAR_BASE = 'avatars/';
 
-function applyAvatar(idx) {
+function applyAvatar(idx, save = false) {
   const img = document.getElementById('avatar-img');
   const placeholder = document.getElementById('avatar-placeholder');
   img.src = `${AVATAR_BASE}avatar_${String(idx).padStart(2,'0')}.png`;
@@ -707,6 +707,17 @@ function applyAvatar(idx) {
   if(placeholder) placeholder.style.display = 'none';
   localStorage.setItem('profile_avatar_idx', idx);
   if(typeof window._headerAvatarRefresh === 'function') window._headerAvatarRefresh(false);
+  if (save) {
+    const wallet = sessionStorage.getItem('wallet_key');
+    const platform = sessionStorage.getItem('wallet_platform');
+    if (wallet) {
+      fetch('https://www.alperozdil.com/_functions/saveAvatar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wallet, platform, avatarIdx: idx })
+      }).catch(() => {});
+    }
+  }
 }
 
 function buildAvatarGrid() {
@@ -724,7 +735,7 @@ function buildAvatarGrid() {
     div.onclick = () => {
       document.querySelectorAll('.av-thumb').forEach(t => t.classList.remove('selected'));
       div.classList.add('selected');
-      applyAvatar(i);
+      applyAvatar(i, true);
     };
     grid.appendChild(div);
   }

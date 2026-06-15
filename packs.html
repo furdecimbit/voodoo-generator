@@ -234,17 +234,32 @@ body{
   color:#5a4020;padding:14px 16px 6px;border-bottom:1px solid #2a1a08;
 }
 
+/* Session stats */
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #160e04;}
+.stat-label{font-size:18px;letter-spacing:.12em;text-transform:uppercase;color:#7a5520;}
+.stat-val{font-size:20px;}
+.stat-row.total .stat-val{color:#e8d09a;}
+.stat-row.rarity-common .stat-val{color:#c0c0c0;}
+.stat-row.rarity-rare .stat-val{color:#e8c050;}
+.stat-row.rarity-legendary .stat-val{color:#80d0ff;}
+.stat-row.rarity-ultimate .stat-val{color:#ff80c0;}
+
 /* Buy links */
-#buy-links{display:flex;flex-direction:column;gap:8px;padding:12px 14px;}
+#buy-links{display:flex;flex-direction:column;gap:10px;padding:12px 14px;}
 .buy-link-btn{
-  display:flex;align-items:center;gap:12px;padding:12px 16px;
-  background:linear-gradient(135deg,#1a1008,#120c04);
-  border:1px solid #3a2808;border-radius:10px;text-decoration:none;
-  font-family:'Bloodcrow',serif;font-size:16px;letter-spacing:.06em;color:#c8a050;
-  transition:border-color .2s,box-shadow .2s;
+  display:flex;align-items:center;gap:14px;padding:14px 16px;
+  border-radius:10px;text-decoration:none;
+  font-family:'Bloodcrow',serif;
+  transition:border-color .2s,box-shadow .2s,background .2s;
 }
-.buy-link-btn:hover{border-color:#7a5520;box-shadow:0 0 14px #c8a05022;}
-.buy-link-icon{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid #4a3010;flex-shrink:0;}
+.buy-link-btn.sol-btn{border:1px solid #3a3020;background:linear-gradient(135deg,#1a1a08,#121208);color:#c8c870;}
+.buy-link-btn.sol-btn:hover{border-color:#c8c870;box-shadow:0 0 18px #c8c87044;}
+.buy-link-btn.tez-btn{border:1px solid #302840;background:linear-gradient(135deg,#180e28,#120a20);color:#a070e0;}
+.buy-link-btn.tez-btn:hover{border-color:#a070e0;box-shadow:0 0 18px #a070e044;}
+.buy-link-btn img{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.buy-link-label{display:flex;flex-direction:column;gap:2px;}
+.buy-link-title{font-size:16px;letter-spacing:.08em;text-transform:uppercase;}
+.buy-link-sub{font-size:11px;letter-spacing:.05em;opacity:.5;}
 
 /* Drop table */
 #drop-table{padding:10px 14px;display:flex;flex-direction:column;gap:8px;}
@@ -267,11 +282,6 @@ body{
 .dt-contents{font-family:'Crimson Text',serif;font-size:13px;color:#7a6040;line-height:1.5;}
 .dt-bonus{color:#5a4030;font-style:italic;}
 
-#rp-footer{
-  flex-shrink:0;padding:8px 14px;border-top:1px solid #2a1808;
-  font-family:'Bloodcrow',serif;font-size:11px;color:#3a2810;text-align:center;
-}
-#rp-footer a{color:#5a4020;text-decoration:none;}
 
 /* ── PACK PREVIEW POPUP ── */
 #pack-preview-popup{
@@ -465,16 +475,49 @@ body{
   <div id="right-panel">
     <div id="rp-header-img"><img src="equipback.png" alt=""></div>
     <div id="rp-scroll">
-      <div class="rp-section-title">Get Packs</div>
+      <div class="rp-section-title">Session</div>
+      <div id="session-stats" style="padding:4px 14px 12px;">
+        <div class="stat-row total">
+          <span class="stat-label">Opened</span>
+          <span class="stat-val" id="stat-total">0</span>
+        </div>
+        <div class="stat-row rarity-ultimate" id="stat-row-ultimate" style="display:none">
+          <span class="stat-label">Ultimate</span>
+          <span class="stat-val" id="stat-ultimate">0</span>
+        </div>
+        <div class="stat-row rarity-legendary" id="stat-row-legendary" style="display:none">
+          <span class="stat-label">Legendary</span>
+          <span class="stat-val" id="stat-legendary">0</span>
+        </div>
+        <div class="stat-row rarity-rare" id="stat-row-rare" style="display:none">
+          <span class="stat-label">Rare</span>
+          <span class="stat-val" id="stat-rare">0</span>
+        </div>
+        <div class="stat-row rarity-common" id="stat-row-common" style="display:none">
+          <span class="stat-label">Common</span>
+          <span class="stat-val" id="stat-common">0</span>
+        </div>
+      </div>
+
+      <div class="rp-section-title">Buy Mystery Packs</div>
       <div id="buy-links">
-        <a href="#" target="_blank" class="buy-link-btn" id="buy-drip-btn">
-          <img src="drip.jpeg" class="buy-link-icon" alt="Drip">
-          <span>Buy on Drip</span>
+        <a href="#" target="_blank" class="buy-link-btn sol-btn" id="buy-drip-btn">
+          <img src="drip.jpeg" alt="Solana">
+          <div class="buy-link-label">
+            <span class="buy-link-title">Buy on Drip</span>
+            <span class="buy-link-sub">Solana · Drip.haus</span>
+          </div>
         </a>
-        <a href="#" target="_blank" class="buy-link-btn" id="buy-objkt-btn">
-          <img src="objkt.jpeg" class="buy-link-icon" alt="Objkt">
-          <span>Buy on Objkt</span>
-        </a>
+        <div style="position:relative;">
+          <a href="#" class="buy-link-btn tez-btn" id="buy-objkt-btn" style="opacity:.35;pointer-events:none;cursor:not-allowed;">
+            <img src="objkt.jpeg" alt="Tezos">
+            <div class="buy-link-label">
+              <span class="buy-link-title">Buy on Objkt</span>
+              <span class="buy-link-sub">Tezos · objkt.com</span>
+            </div>
+          </a>
+          <span style="position:absolute;top:50%;right:10px;transform:translateY(-50%);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#5a4020;border:1px solid #3a2810;border-radius:4px;padding:2px 6px;">Coming Soon</span>
+        </div>
       </div>
 
       <div class="rp-section-title" style="margin-top:16px;">Pack Contents</div>
@@ -497,7 +540,6 @@ body{
         </div>
       </div>
     </div>
-    <div id="rp-footer">Hex &amp; Stitch &nbsp;·&nbsp; <a href="https://alperozdil.com" target="_blank">alperozdil.com</a></div>
   </div>
 
 </div>
@@ -644,6 +686,17 @@ function itemStats(path){
   return STAT_SEEDS[path];
 }
 
+const sessionCounts = {common:0,rare:0,legendary:0,ultimate:0};
+function updateSessionStats(rarity){
+  sessionCounts[rarity]++;
+  const total = Object.values(sessionCounts).reduce((a,b)=>a+b,0);
+  document.getElementById('stat-total').textContent = total;
+  const el = document.getElementById(`stat-${rarity}`);
+  if(el) el.textContent = sessionCounts[rarity];
+  const row = document.getElementById(`stat-row-${rarity}`);
+  if(row) row.style.display = '';
+}
+
 async function startPackOpen(){
   if(!_previewRarity) return;
   closePackPreview();
@@ -651,6 +704,7 @@ async function startPackOpen(){
 
   packInventory[rarity] = Math.max(0,(packInventory[rarity]||1)-1);
   localStorage.setItem(walletKey('packInventory'), JSON.stringify(packInventory));
+  updateSessionStats(rarity);
   renderPackGrid();
 
   let items = [];

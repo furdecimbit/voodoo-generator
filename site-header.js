@@ -42,9 +42,12 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
 
         <!-- Wallet — icon + dropdown -->
         <div id="site-header-wallet">
-          <span id="wic-witch-name" style="display:none;font-family:Bloodcrow,serif;font-size:13px;letter-spacing:.08em;color:#e8c060;text-transform:uppercase;white-space:nowrap;margin-right:8px;"></span>
-          <a id="wic-avatar" href="profile.html" title="Profile" style="width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid #3a2808;background:#0e0a04;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:border-color .2s;text-decoration:none;position:relative;">
-            <svg id="wic-av-default" viewBox="0 0 24 24" fill="none" stroke="#c8a050" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;flex-shrink:0;"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <div id="wic-profile-info" style="display:none;flex-direction:column;align-items:flex-end;gap:1px;margin-right:10px;">
+            <span id="wic-witch-name" style="font-family:Bloodcrow,serif;font-size:16px;letter-spacing:.08em;color:#e8c060;text-transform:uppercase;white-space:nowrap;"></span>
+            <span id="wic-wallet-sub" style="font-family:Bloodcrow,serif;font-size:12px;letter-spacing:.05em;color:#5a4020;white-space:nowrap;"></span>
+          </div>
+          <a id="wic-avatar" href="profile.html" title="Profile" style="width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid #3a2808;background:#0e0a04;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:border-color .2s;text-decoration:none;position:relative;margin-right:10px;">
+            <svg id="wic-av-default" viewBox="0 0 24 24" fill="none" stroke="#c8a050" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex-shrink:0;"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
             <img id="wic-av-img" src="" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;">
           </a>
           <button class="wallet-icon-circle disconnected" id="wic-main" onclick="toggleWalletPanel()" title="Wallet">
@@ -58,6 +61,7 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
 
   const css = `
     <style id="site-header-styles">
+      html, body { -webkit-overflow-scrolling: touch; }
       @font-face { font-family:'Bloodcrow'; src:url('${CDN_BASE}/bloodcrowc.ttf'); }
 
       #site-header {
@@ -99,6 +103,8 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
         display:flex; align-items:center; gap:0;
         position:relative; z-index:1;
       }
+      #wic-profile-info { display:none; }
+      #wic-avatar { border-color:#3a2808 !important; box-shadow:none !important; }
 
       /* Dropdown panel — appended to body, truly above everything */
       #wallet-expand-panel {
@@ -141,7 +147,7 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
       /* Icon circles */
       #wallet-icons { display:flex; align-items:center; gap:8px; }
       .wallet-icon-circle {
-        width:44px; height:44px; border-radius:50%;
+        width:52px; height:52px; border-radius:50%;
         border:2px solid #3a2808; background:#0e0a04;
         cursor:pointer; overflow:hidden; padding:0;
         display:flex; align-items:center; justify-content:center;
@@ -149,7 +155,7 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
         flex-shrink:0;
       }
       .wallet-icon-circle img { width:100%; height:100%; object-fit:cover; display:block; }
-      .wallet-icon-circle svg { width:22px; height:22px; color:#c8a050; stroke:currentColor; }
+      .wallet-icon-circle svg { width:26px; height:26px; color:#c8a050; stroke:currentColor; }
       .wallet-icon-circle:hover { border-color:#6a4818; transform:scale(1.08); }
       .wallet-icon-circle.connected    { border-color:#20cc50; box-shadow:0 0 10px #20cc5066; }
       .wallet-icon-circle.disconnected { border-color:#cc2020; box-shadow:0 0 10px #cc202066; }
@@ -231,33 +237,6 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
       .ssb-social svg { width: 34px; height: 34px; flex-shrink: 0; }
       .ssb-social span { display: none; }
 
-      /* ── Footer ── */
-      #site-footer {
-        border-top: 1px solid #1a1006;
-        background: #050302;
-        padding: 28px 20px 20px;
-        display: flex; flex-direction: column; align-items: center; gap: 12px;
-        font-family: 'Bloodcrow', serif;
-      }
-      #site-footer-socials {
-        display: flex; gap: 16px; align-items: center;
-      }
-      .sf-social {
-        width: 38px; height: 38px; border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        border: 1px solid #2a1a06; color: #4a3010;
-        text-decoration: none; transition: color .2s, border-color .2s;
-      }
-      .sf-social:hover { color: #c8a050; border-color: #4a3010; }
-      .sf-social svg { width: 18px; height: 18px; }
-      #site-footer-copy {
-        font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #2a1a06;
-      }
-      #site-footer-dev {
-        font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #3a2810;
-      }
-      #site-footer-dev a { color: #5a3a10; text-decoration: none; transition: color .2s; }
-      #site-footer-dev a:hover { color: #c8a050; }
 
       /* Copyright */
       #ssb-copyright {
@@ -268,27 +247,6 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
         color: #2a1a06;
       }
 
-      /* Admin gate */
-      #ssb-admin-wrap {
-        padding: 10px 12px 6px;
-        border-top: 1px solid #2a1a06;
-      }
-      #ssb-admin-gate {
-        display: flex; gap: 6px;
-      }
-      #ssb-admin-input {
-        flex: 1; background: #1a0e04; border: 1px solid #3a2810;
-        border-radius: 6px; padding: 7px 10px;
-        color: #c8a050; font-family: 'Bloodcrow', serif; font-size: 13px;
-        letter-spacing: .06em; outline: none;
-      }
-      #ssb-admin-input::placeholder { color: #5a4020; }
-      #ssb-admin-gate button {
-        background: #2a1a06; border: 1px solid #3a2810; border-radius: 6px;
-        color: #c8a050; font-size: 16px; width: 34px; cursor: pointer;
-        transition: background .2s;
-      }
-      #ssb-admin-gate button:hover { background: #3a2810; }
 
       /* Backdrop */
       #site-sidebar-backdrop {
@@ -359,15 +317,8 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
 
       <div id="site-sidebar-inner">${sidebarItemsHTML}</div>
 
-      <div id="ssb-admin-wrap">
-        <div id="ssb-admin-gate">
-          <input type="password" id="ssb-admin-input" placeholder="Admin secret…"
-            onkeydown="if(event.key==='Enter') window.ssbAdminLogin()">
-          <button onclick="window.ssbAdminLogin()">⛧</button>
-        </div>
-      </div>
 
-      <div id="ssb-copyright">© 2025 Hex &amp; Stitch</div>
+      <div id="ssb-copyright">© 2025 Hex &amp; Stitch<br><a href="https://alperozdil.com" target="_blank" style="color:#4a3010;text-decoration:none;font-size:10px;letter-spacing:.06em;">Designed &amp; Developed by Alper Özdil</a></div>
     `;
     document.body.appendChild(sidebarEl);
 
@@ -377,27 +328,6 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
     document.body.appendChild(backdropEl);
   }
 
-  // Inject footer after full DOM load so it lands at the true bottom
-  window.addEventListener('DOMContentLoaded', () => {
-    const footerEl = document.createElement('footer');
-    footerEl.id = 'site-footer';
-    footerEl.innerHTML = `
-      <div id="site-footer-socials">
-        <a href="https://alper-ozdil-projetcs.gitbook.io/hex-and-stitch" target="_blank" class="sf-social" title="GitBook">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-        </a>
-        <a href="https://discord.com/invite/V57fUq93xB" target="_blank" class="sf-social" title="Discord">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
-        </a>
-        <a href="http://x.com/alperozdilart" target="_blank" class="sf-social" title="X">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-        </a>
-      </div>
-      <div id="site-footer-copy">© 2025 Hex &amp; Stitch</div>
-      <div id="site-footer-dev">Developed &amp; Designed by <a href="https://alperozdil.com" target="_blank">Alper Özdil</a></div>
-    `;
-    document.body.appendChild(footerEl);
-  });
 
   // Load Lucide icons
   if(typeof lucide !== 'undefined'){
@@ -536,9 +466,14 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
       sessionStorage.removeItem('witch_name');
       _updateWitchNameUI(null);
     }
-    // Avatar border: green when connected
-    const av = document.getElementById('wic-avatar');
-    if(av) av.style.borderColor = (key && platform) ? '#20cc50' : '#3a2808';
+    // Profile info row
+    const profileInfo = document.getElementById('wic-profile-info');
+    const walletSub   = document.getElementById('wic-wallet-sub');
+    if(profileInfo) profileInfo.style.display = (key && platform) ? 'flex' : 'none';
+    if(walletSub && key && platform) {
+      const short = key.slice(0,4)+'...'+key.slice(-4);
+      walletSub.textContent = (platform === 'sol' ? 'Solana · ' : 'Tezos · ') + short;
+    }
     if(typeof window.updateLandingWallet === 'function') window.updateLandingWallet();
   }
   window.setHeaderWallet = setHeaderWallet;
@@ -553,7 +488,7 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
 
   function _updateWitchNameUI(name){
     const el = document.getElementById('wic-witch-name');
-    if(el){ el.textContent = name || ''; el.style.display = name ? '' : 'none'; }
+    if(el) el.textContent = name || '';
     _refreshHeaderAvatar(false);
   }
 
@@ -564,7 +499,7 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
     if(!av || !img || !def) return;
     const idx = localStorage.getItem('profile_avatar_idx');
     const connected = !!sessionStorage.getItem('wallet_key');
-    av.style.borderColor = hover ? '#6a4818' : (connected ? '#20cc50' : '#3a2808');
+    av.style.borderColor = hover ? '#6a4818' : '#3a2808';
     if(idx !== null){
       const pad = String(parseInt(idx)).padStart(2,'0');
       img.src = `avatars/avatar_${pad}.png`;

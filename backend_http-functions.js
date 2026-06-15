@@ -13,6 +13,7 @@ export function options_getItems()          { return ok({ headers: CORS }); }
 export function options_getOpenedMints()    { return ok({ headers: CORS }); }
 export function options_openPack()          { return ok({ headers: CORS }); }
 export function options_getOrCreateProfile(){ return ok({ headers: CORS }); }
+export function options_saveAvatar()        { return ok({ headers: CORS }); }
 export function options_adminSearch()       { return ok({ headers: CORS }); }
 export function options_adminSave()         { return ok({ headers: CORS }); }
 export function options_adminDelete()       { return ok({ headers: CORS }); }
@@ -162,6 +163,7 @@ export async function post_getOrCreateProfile(request) {
         solanaWallet: row.solanaWallet || null,
         tezosWallet: row.tezosWallet || null,
         items: Array.isArray(row.items) ? row.items : [],
+        avatarIdx: row.avatarIdx ?? null,
         isNew: false
       }});
     }
@@ -186,6 +188,7 @@ export async function post_getOrCreateProfile(request) {
       solanaWallet: platform === 'sol' ? wallet : null,
       tezosWallet: platform === 'tez' ? wallet : null,
       items: [],
+      avatarIdx: null,
       isNew: true
     }});
   } catch (e) {
@@ -317,6 +320,23 @@ export async function post_saveSlots(request) {
 }
 
 export function options_getLeaderboard() { return ok({ headers: CORS }); }
+export function options_saveAvatar2()    { return ok({ headers: CORS }); }
+
+// POST /saveAvatar  { wallet, platform, avatarIdx }
+export async function post_saveAvatar(request) {
+  try {
+    const { wallet, platform, avatarIdx } = await request.body.json();
+    if (!wallet || avatarIdx === undefined) return badRequest({ headers: CORS, body: { error: 'wallet and avatarIdx required' } });
+    const walletField = platform === 'tez' ? 'tezosWallet' : 'solanaWallet';
+    const result = await wixData.query(COLLECTION).eq(walletField, wallet).find();
+    const row = result.items[0];
+    if (!row) return badRequest({ headers: CORS, body: { error: 'profile not found' } });
+    await wixData.update(COLLECTION, { ...row, avatarIdx }, { suppressAuth: true });
+    return ok({ headers: CORS, body: { success: true } });
+  } catch (e) {
+    return serverError({ headers: CORS, body: { error: e.message } });
+  }
+}
 
 export async function get_getLeaderboard(request) {
   try {

@@ -2408,11 +2408,12 @@
       <button id="btn-disconnect" onclick="disconnectWallet()" style="display:none;">Disconnect</button>
       <span id="wallet-addr" class="platform-addr"></span>
     </div>
-    <div class="wallet-platform-row" id="tez-platform-row">
-      <div class="platform-icon-wrap disconnected" id="tez-icon-wrap" onclick="handleIconClick('tez')"><div class="pi-inner"><img src="objkt.jpeg" class="platform-icon" alt="Objkt"></div></div>
-      <button id="btn-tez-connect" onclick="connectTezos()">Connect</button>
-      <button id="btn-tez-disconnect" onclick="disconnectTezos()" style="display:none;">Disconnect</button>
+    <div class="wallet-platform-row" id="tez-platform-row" style="opacity:.35;pointer-events:none;position:relative;">
+      <div class="platform-icon-wrap disconnected" id="tez-icon-wrap"><div class="pi-inner"><img src="objkt.jpeg" class="platform-icon" alt="Objkt"></div></div>
+      <button id="btn-tez-connect" disabled>Connect</button>
+      <button id="btn-tez-disconnect" style="display:none;">Disconnect</button>
       <span class="platform-addr" id="tez-addr"></span>
+      <span style="position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#5a4020;border:1px solid #3a2810;border-radius:4px;padding:2px 6px;pointer-events:none;">Coming Soon</span>
     </div>
   </div>
 
@@ -2461,10 +2462,13 @@
             <img src="drip.jpeg" class="buy-pack-icon" alt="Drip">
             <span class="buy-pack-btn-pill">Buy Mystery Packs on Drip</span>
           </a>
-          <a href="#" target="_blank" class="buy-pack-btn" id="buy-objkt-btn">
-            <img src="objkt.jpeg" class="buy-pack-icon" alt="Objkt">
-            <span class="buy-pack-btn-pill">Buy Mystery Packs on Objkt</span>
-          </a>
+          <div style="position:relative;">
+            <a href="#" class="buy-pack-btn" id="buy-objkt-btn" style="opacity:.35;pointer-events:none;cursor:not-allowed;">
+              <img src="objkt.jpeg" class="buy-pack-icon" alt="Objkt">
+              <span class="buy-pack-btn-pill">Buy Mystery Packs on Objkt</span>
+            </a>
+            <span style="position:absolute;top:50%;right:10px;transform:translateY(-50%);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#5a4020;border:1px solid #3a2810;border-radius:4px;padding:2px 6px;">Coming Soon</span>
+          </div>
         </div>
       </div>
     </div>
@@ -5299,7 +5303,7 @@ function goToPackRoom(rarity){
     mint,
     platform: window.tezosAddress ? 'tez' : 'sol'
   });
-  location.href = 'pack-room.html?' + p.toString();
+  location.href = 'packs.html?' + p.toString();
 }
 
 function openPack(rarity){

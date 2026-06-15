@@ -3223,6 +3223,7 @@ async function connectWallet(){
     ['sol-icon-wrap','sol-icon-wrap-mob'].forEach(id=>{
       const w=document.getElementById(id); if(w){w.classList.add('connected');w.classList.remove('disconnected','connecting');}
     });
+    if(typeof window.setHeaderWallet === 'function') window.setHeaderWallet(pubkey, 'sol');
     await loadWalletPacks(pubkey);
 
     setSyncing(false);
@@ -3234,6 +3235,7 @@ async function connectWallet(){
 
 function disconnectWallet(){
   if(window._solanaProvider) window._solanaProvider.disconnect();
+  if(typeof window.setHeaderWallet === 'function') window.setHeaderWallet(null, null);
   walletConnected = false; isHolder = false;
   currentWalletKey = null;
   packInventory = {common:0,rare:0,legendary:0,ultimate:0};
@@ -4653,7 +4655,7 @@ function goToPackRoom(rarity){
     mint,
     platform: window.tezosAddress ? 'tez' : 'sol'
   });
-  location.href = 'pack-room.html?' + p.toString();
+  location.href = 'packs.html?' + p.toString();
 }
 
 function openPack(rarity){

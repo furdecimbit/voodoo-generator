@@ -347,6 +347,33 @@
   .stat-row.rarity-legendary .stat-val { color:#80d0ff; }
   .stat-row.rarity-ultimate .stat-val  { color:#ff80c0; }
 
+  /* Buy buttons */
+  #buy-links { display:flex; flex-direction:column; gap:8px; }
+  .buy-pack-btn { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px; text-decoration:none; font-family:'Bloodcrow',serif; transition:border-color .2s, box-shadow .2s; }
+  .buy-pack-btn.sol-btn { border:1px solid #3a3020; background:linear-gradient(135deg,#1a1a08,#121208); color:#c8c870; }
+  .buy-pack-btn.sol-btn:hover { border-color:#c8c870; box-shadow:0 0 14px #c8c87044; }
+  .buy-pack-btn.tez-btn { border:1px solid #302840; background:linear-gradient(135deg,#180e28,#120a20); color:#a070e0; }
+  .buy-pack-btn.tez-btn:hover { border-color:#a070e0; box-shadow:0 0 14px #a070e044; }
+  .buy-pack-btn img { width:26px; height:26px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+  .buy-pack-label { display:flex; flex-direction:column; gap:1px; }
+  .buy-pack-title { font-size:14px; letter-spacing:.07em; text-transform:uppercase; }
+  .buy-pack-sub { font-size:10px; letter-spacing:.04em; opacity:.45; }
+
+  /* Drop table */
+  #drop-table{padding:0;display:flex;flex-direction:column;gap:8px;}
+  .dt-row{padding:10px 12px;border-radius:8px;border:1px solid;background:rgba(0,0,0,.25);}
+  .dt-row.rarity-common{border-color:#4a4a3a;}
+  .dt-row.rarity-rare{border-color:#7a5808;}
+  .dt-row.rarity-legendary{border-color:#2a6a8a;}
+  .dt-row.rarity-ultimate{border-color:#7a2060;}
+  .dt-rarity{font-family:'Bloodcrow',serif;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;}
+  .dt-row.rarity-common .dt-rarity{color:#c8c8a8}
+  .dt-row.rarity-rare .dt-rarity{color:#f0d020}
+  .dt-row.rarity-legendary .dt-rarity{color:#60e0ff}
+  .dt-row.rarity-ultimate .dt-rarity{color:#ff80d8}
+  .dt-contents{font-size:13px;color:#7a6040;line-height:1.5;}
+  .dt-bonus{color:#5a4030;font-style:italic;}
+
   #home-link {
     margin-top:auto; display:block; text-align:center;
     text-decoration:none; padding:10px 14px; border-radius:8px;
@@ -495,6 +522,47 @@
       <div class="stat-row rarity-common" id="stat-row-common" style="display:none">
         <span class="stat-label">Common</span>
         <span class="stat-val" id="stat-common">0</span>
+      </div>
+    </div>
+
+    <div class="panel-title">Buy Mystery Packs</div>
+    <div id="buy-links">
+      <a href="#" target="_blank" class="buy-pack-btn sol-btn" id="buy-drip-btn">
+        <img src="drip.jpeg" alt="Solana">
+        <div class="buy-pack-label">
+          <span class="buy-pack-title">Buy on Drip</span>
+          <span class="buy-pack-sub">Solana · Drip.haus</span>
+        </div>
+      </a>
+      <div style="position:relative;">
+        <a href="#" class="buy-pack-btn tez-btn" id="buy-objkt-btn" style="opacity:.35;pointer-events:none;cursor:not-allowed;">
+          <img src="objkt.jpeg" alt="Tezos">
+          <div class="buy-pack-label">
+            <span class="buy-pack-title">Buy on Objkt</span>
+            <span class="buy-pack-sub">Tezos · objkt.com</span>
+          </div>
+        </a>
+        <span style="position:absolute;top:50%;right:10px;transform:translateY(-50%);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#5a4020;border:1px solid #3a2810;border-radius:4px;padding:2px 6px;">Coming Soon</span>
+      </div>
+    </div>
+
+    <div class="panel-title">Pack Contents</div>
+    <div id="drop-table">
+      <div class="dt-row rarity-common">
+        <div class="dt-rarity">Common</div>
+        <div class="dt-contents">5 items · 5× Common<br><span class="dt-bonus">10% chance: 1 → Rare</span></div>
+      </div>
+      <div class="dt-row rarity-rare">
+        <div class="dt-rarity">Rare</div>
+        <div class="dt-contents">3 items · 2× Rare + 1× Common<br><span class="dt-bonus">10% chance: 1 Rare → Legendary</span></div>
+      </div>
+      <div class="dt-row rarity-legendary">
+        <div class="dt-rarity">Legendary</div>
+        <div class="dt-contents">4 items · 2× Legendary + 1× Rare + 1× Common<br><span class="dt-bonus">10% chance: 1 Legendary → Ultimate</span></div>
+      </div>
+      <div class="dt-row rarity-ultimate">
+        <div class="dt-rarity">Ultimate</div>
+        <div class="dt-contents">5 items · 2× Ultimate + 1× Legendary + 1× Rare + 1× Common<br><span class="dt-bonus">No upgrade — already the peak</span></div>
       </div>
     </div>
 
@@ -877,6 +945,19 @@ async function revealCards(){
   row.innerHTML = '';
 
   const { rarity, mint } = activePack;
+
+  // Decrement + mark mint immediately so skipping Claim Items doesn't allow re-opening
+  packCounts[rarity] = Math.max(0, (packCounts[rarity]||1) - 1);
+  if(window._packMints?.[rarity]?.length) window._packMints[rarity].shift();
+  if(mint && currentWallet){
+    const key = `${currentWallet}_openedMints`;
+    const opened = JSON.parse(localStorage.getItem(key)||'[]');
+    if(!opened.includes(mint)) opened.push(mint);
+    localStorage.setItem(key, JSON.stringify(opened));
+  }
+  logPackOpen(rarity);
+  renderPackList(packCounts, window._packMints);
+
   try{
     const res = await fetch(`${WIX_API}/openPack`, {
       method:'POST',
@@ -945,27 +1026,7 @@ function checkAllFlipped(){
 
 // ── Collect ────────────────────────────────────────────────────
 function collectPack(){
-  const { rarity, mint } = activePack;
-
-  // Save opened mint
-  if(mint && currentWallet){
-    const key = `${currentWallet}_openedMints`;
-    const opened = JSON.parse(localStorage.getItem(key)||'[]');
-    if(!opened.includes(mint)) opened.push(mint);
-    localStorage.setItem(key, JSON.stringify(opened));
-  }
-
-  // Decrement counts + remove mint
-  packCounts[rarity] = Math.max(0, (packCounts[rarity]||1) - 1);
-  if(window._packMints?.[rarity]?.length) window._packMints[rarity].shift();
-
-  // Log session
-  logPackOpen(rarity);
-
-  // Re-render left
-  renderPackList(packCounts, window._packMints);
-
-  // Reset center
+  // Pack already decremented and mint already saved in revealCards — just reset UI
   resetCenter();
 }
 
