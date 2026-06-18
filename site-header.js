@@ -43,8 +43,8 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
         <!-- Wallet — icon + dropdown -->
         <div id="site-header-wallet">
           <div id="wic-profile-info" style="display:none;flex-direction:column;align-items:flex-end;gap:1px;margin-right:10px;">
-            <span id="wic-witch-name" style="font-family:Bloodcrow,serif;font-size:16px;letter-spacing:.08em;color:#e8c060;text-transform:uppercase;white-space:nowrap;"></span>
-            <span id="wic-wallet-sub" style="font-family:Bloodcrow,serif;font-size:12px;letter-spacing:.05em;color:#5a4020;white-space:nowrap;"></span>
+            <span id="wic-witch-name" style="font-family:Bloodcrow,serif;font-size:13px;letter-spacing:.08em;color:#e8c060;text-transform:uppercase;white-space:nowrap;"></span>
+            <span id="wic-wallet-sub" style="font-family:Bloodcrow,serif;font-size:13px;letter-spacing:.05em;color:#5a4020;white-space:nowrap;"></span>
           </div>
           <a id="wic-avatar" href="profile.html" title="Profile" style="width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid #3a2808;background:#0e0a04;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:border-color .2s;text-decoration:none;position:relative;">
             <svg id="wic-av-default" viewBox="0 0 24 24" fill="none" stroke="#c8a050" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex-shrink:0;"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
@@ -263,7 +263,6 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
       }
       @media (max-width:640px){
         .wallet-icon-circle { width:36px; height:36px; }
-        #wic-profile-info { display:none !important; }
         #wic-avatar { width:40px !important; height:40px !important; }
       }
     </style>`;
