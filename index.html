@@ -199,7 +199,7 @@
       text-decoration: none; cursor: pointer;
       display: flex; align-items: stretch;
       border: none; border-bottom: 2px solid #1a1008;
-      flex: 1; transition: filter .2s;
+      flex: 1; min-height: 0; transition: filter .2s;
     }
     .lc:last-child { border-bottom: none; }
     .lc::before {
@@ -270,8 +270,10 @@
     }
 
     @media (max-width: 480px) {
-      .lc-icon img { width: 60px; height: 60px; }
-      .lc-title { font-size: 22px; }
+      .lc-icon img { width: 44px; height: 44px; }
+      .lc-title { font-size: 18px; }
+      .lc-desc { font-size: 11px; }
+      .lc-text { padding: 2vw 4vw; gap: 0.4vh; }
 
       /* Splash butonlar dar ekranda */
       .splash-btn {
