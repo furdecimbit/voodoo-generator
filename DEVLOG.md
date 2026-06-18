@@ -27,11 +27,26 @@
 - **Sorun:** `site-header.js` sessionStorage'dan wallet'ı restore ederken sadece header UI'yı güncelliyor, `window.connectWallet()` çağırmıyor; forge `loadWalletPacks` hiç tetiklenmiyordu
 - **Fix:** `forge.html` `DOMContentLoaded`'da sessionStorage'dan `wallet_key` / `wallet_platform` okuyup `loadWalletPacks` çağırıyor — sayfa ilk açıldığında wallet bağlıymış gibi collection yükleniyor
 
+### Pack kart sayısı kuralları düzeltildi
+- **Sorun:** Wix `packItems.js` `rollPackItems` rastgele 2 veya 3 kart veriyordu
+- **Fix:** Common 5×C, Rare 2×R+1×C, Legendary 2×L+1×R+1×C, Ultimate 2×U+1×L+1×R+1×C
+- Wix editöre manuel yapıştırılması gerekiyor: `/Documents/hex/src/backend/packItems.js`
+
 ### index.html mobil düzeltmeleri
 - Splash butonlar (`width:400px` sabit) → `min(400px, calc(100vw - 32px))` — dar ekranda taşmıyor
 - `#splash-profile` genişliği de aynı formüle geçirildi
 - `@media (max-width:480px)`: font, padding, ikon küçültüldü
 - `#menu-body` `overflow:hidden` eklendi; `#landing-cards` `height:100vh` → `height:100%` — `position:fixed; inset:0` parent'ı kullanıyor, 4 kart tam ekrana sığıyor, scroll yok
+
+### pack-room kart reveal → stacked deck UI
+
+- Kartlar yan yana grid yerine üst üste stacked deck olarak gösteriliyor
+- En öndeki karta basınca flip animasyonu → 900ms sonra sağa uçarak kayboluyor
+- Bir sonraki kart otomatik öne geçiyor, tüm kartlar bitince "Close" butonu görünüyor
+- "Claim Items" → "Close" olarak yeniden adlandırıldı
+- `stackCards[]` global array ile sıra takibi, `positionStack()` her çıkarma sonrası offset yeniden hesaplar
+
+---
 
 ### `packs.html` linkleri `pack-room.html` olarak düzeltildi
 - `index.html` splash "Buy Mystery Packs" linki: `packs.html` → `pack-room.html`

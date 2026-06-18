@@ -234,30 +234,39 @@
 
   /* Reveal area */
   #center-reveal {
-    display:none; flex-direction:column; align-items:center; gap:20px; width:100%;
+    display:none; flex-direction:column; align-items:center; gap:28px; width:100%;
   }
   #tap-hint {
     font-size:16px; letter-spacing:.1em; text-transform:uppercase;
     color:#5a4020; animation:hintPulse 2s ease-in-out infinite;
   }
-  #cards-row {
-    display:flex; flex-wrap:wrap; gap:14px; justify-content:center; width:100%;
+
+  /* Card stack */
+  #card-stack {
+    position:relative;
+    width:240px; height:336px; /* 240 * 1.4 */
+    margin:0 auto;
   }
 
-  /* Card flip */
-  .reveal-card {
-    width:240px; perspective:900px;
-    opacity:0; transform:translateY(30px);
-    transition:opacity .4s, transform .4s;
+  .stack-card {
+    position:absolute; width:240px; top:0; left:0;
+    transition:transform .35s ease, opacity .35s ease;
+    will-change:transform;
   }
-  .reveal-card.appeared { opacity:1; transform:translateY(0); }
-  .reveal-card-inner {
+  .stack-card-inner {
     position:relative; width:100%; padding-top:140%;
     transform-style:preserve-3d;
+    -webkit-transform-style:preserve-3d;
     transition:transform .7s cubic-bezier(.4,0,.2,1);
     cursor:pointer;
   }
-  .reveal-card.flipped .reveal-card-inner { transform:rotateY(180deg); cursor:default; }
+  .stack-card.flipped .stack-card-inner { transform:rotateY(180deg); cursor:default; }
+  .stack-card.exit {
+    transform:translateX(140%) rotate(18deg) !important;
+    opacity:0 !important;
+    pointer-events:none;
+  }
+
   .card-face {
     position:absolute; inset:0;
     border-radius:12px; overflow:hidden;
@@ -273,10 +282,10 @@
   .card-back svg { width:56px; height:56px; opacity:.5; }
 
   /* rarity glow on card back */
-  .reveal-card.rarity-common  .card-back { box-shadow:0 0 18px #ffffff55; border-color:#6a6a6a; }
-  .reveal-card.rarity-rare    .card-back { box-shadow:0 0 22px #e8c05077; border-color:#8a6820; }
-  .reveal-card.rarity-legendary .card-back { box-shadow:0 0 26px #60b0ff88; border-color:#3060a0; }
-  .reveal-card.rarity-ultimate  .card-back { box-shadow:0 0 30px #ff80c099; border-color:#902060; }
+  .stack-card.rarity-common  .card-back { box-shadow:0 0 18px #ffffff55; border-color:#6a6a6a; }
+  .stack-card.rarity-rare    .card-back { box-shadow:0 0 22px #e8c05077; border-color:#8a6820; }
+  .stack-card.rarity-legendary .card-back { box-shadow:0 0 26px #60b0ff88; border-color:#3060a0; }
+  .stack-card.rarity-ultimate  .card-back { box-shadow:0 0 30px #ff80c099; border-color:#902060; }
 
   .card-front {
     transform:rotateY(180deg);
@@ -490,9 +499,9 @@
     </div>
 
     <div id="center-reveal">
-      <div id="tap-hint">Tap each card to reveal</div>
-      <div id="cards-row"></div>
-      <button id="collect-btn" onclick="collectPack()">Claim Items</button>
+      <div id="tap-hint">Tap to reveal</div>
+      <div id="card-stack"></div>
+      <button id="collect-btn" onclick="collectPack()">Close</button>
     </div>
 
   </div>
@@ -604,6 +613,7 @@ let currentPlatform = null;
 let activePack      = null;
 let packCounts      = { common:0, rare:0, legendary:0, ultimate:0 };
 let rolledItems     = [];
+let stackCards      = [];
 const sessionCounts = { common:0, rare:0, legendary:0, ultimate:0 };
 
 // ── Init ───────────────────────────────────────────────────────
@@ -887,7 +897,7 @@ function selectPack(rarity, mint){
   document.getElementById('center-idle').style.display   = 'none';
   document.getElementById('center-reveal').style.display = 'none';
   document.getElementById('collect-btn').style.display   = 'none';
-  document.getElementById('cards-row').innerHTML = '';
+  document.getElementById('card-stack').innerHTML = '';
   document.getElementById('tap-hint').style.display = '';
 
   const cp = document.getElementById('center-pack');
@@ -983,11 +993,19 @@ async function revealCards(){
     localStorage.setItem(lsKey, JSON.stringify(saved));
   }
 
-  rolledItems.forEach((item, i) => {
-    const card = buildCard(item);
-    row.appendChild(card);
-    setTimeout(() => card.classList.add('appeared'), 200 + i*180);
-  });
+  stackCards = [];
+
+  // render back-to-front so front card is last child (highest natural z)
+  const stackEl = document.getElementById('card-stack');
+  stackEl.innerHTML = '';
+  // render back-to-front so front card is last child (highest natural z)
+  for(let i = rolledItems.length - 1; i >= 0; i--){
+    const card = buildCard(rolledItems[i]);
+    stackEl.appendChild(card);
+    stackCards.unshift(card); // stackCards[0] = front = last appended
+  }
+  positionStack(stackCards);
+  if(stackCards.length) stackCards[0].style.cursor = 'pointer';
 }
 
 function buildCard(item){
@@ -996,9 +1014,9 @@ function buildCard(item){
   const stats = itemStats(item.path);
   const imgSrc = CDN + '/' + item.path;
   const card = document.createElement('div');
-  card.className = `reveal-card rarity-${item.rarity||'common'}`;
+  card.className = `stack-card rarity-${item.rarity||'common'}`;
   card.innerHTML = `
-    <div class="reveal-card-inner" onclick="flipCard(this)">
+    <div class="stack-card-inner">
       <div class="card-face card-back">
         <svg viewBox="0 0 24 24" fill="none" stroke="#c8a060" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -1015,23 +1033,40 @@ function buildCard(item){
         </div>
       </div>
     </div>`;
+  card.onclick = () => tapTopCard(card);
   return card;
 }
 
-function flipCard(inner){
-  const card = inner.parentElement;
-  if(card.classList.contains('flipped')) return;
-  card.classList.add('flipped');
-  checkAllFlipped();
+function positionStack(cards){
+  cards.forEach((card, i) => {
+    const depth = cards.length - 1 - i; // 0=front, max=back
+    card.style.transform = `translate(${depth*4}px, ${depth*5}px)`;
+    card.style.zIndex = cards.length - depth;
+    card.style.opacity = '1';
+  });
 }
 
-function checkAllFlipped(){
-  const cards   = document.querySelectorAll('.reveal-card');
-  const flipped = document.querySelectorAll('.reveal-card.flipped');
-  if(cards.length > 0 && cards.length === flipped.length){
-    document.getElementById('tap-hint').style.display = 'none';
-    document.getElementById('collect-btn').style.display = 'block';
-  }
+function tapTopCard(card){
+  // Only allow tapping the front card (stackCards[0])
+  if(!stackCards || card !== stackCards[0]) return;
+  if(card.classList.contains('flipped')) return;
+  card.classList.add('flipped');
+  card.style.cursor = 'default';
+  // After flip animation, slide out
+  setTimeout(() => {
+    card.classList.add('exit');
+    setTimeout(() => {
+      card.remove();
+      stackCards.shift();
+      positionStack(stackCards);
+      if(stackCards.length === 0){
+        document.getElementById('tap-hint').style.display = 'none';
+        document.getElementById('collect-btn').style.display = 'block';
+      } else {
+        stackCards[0].style.cursor = 'pointer';
+      }
+    }, 380);
+  }, 900);
 }
 
 // ── Collect ────────────────────────────────────────────────────
@@ -1044,7 +1079,7 @@ function resetCenter(){
   activePack = null;
   document.getElementById('center-reveal').style.display = 'none';
   document.getElementById('center-pack').style.display   = 'none';
-  document.getElementById('cards-row').innerHTML = '';
+  document.getElementById('card-stack').innerHTML = '';
   document.getElementById('collect-btn').style.display = 'none';
   document.getElementById('tap-hint').style.display = '';
   document.querySelectorAll('.pack-entry').forEach(e => e.classList.remove('active'));
