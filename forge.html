@@ -1326,7 +1326,7 @@
     body[data-mob-tab="build"][data-mob-ritual="ambiance"] #pins-section-body-wrap,
     body[data-mob-tab="build"][data-mob-ritual="ambiance"] #bg-section-body-wrap,
     body[data-mob-tab="build"][data-mob-ritual="ambiance"] #name-section-body-wrap {
-      display:block !important; max-height:none !important; overflow:visible !important; padding:0 !important;
+      display:block !important; max-height:9999px !important; overflow:visible !important; padding:12px 14px !important;
     }
     body[data-mob-tab="build"][data-mob-ritual="ambiance"] #inner-inventory-label,
     body[data-mob-tab="build"][data-mob-ritual="ambiance"] #inner-inventory-body-wrap { display:none !important; }
@@ -1952,7 +1952,8 @@
     flex-direction: column;
   }
   #bg-section-label,
-  #name-section-label {
+  #name-section-label,
+  #pins-section-label {
     background: linear-gradient(90deg, #1a0d2e, #130a22) !important;
     border-top: 1px solid #3a2060 !important;
     border-bottom: 1px solid #3a2060 !important;
@@ -1960,7 +1961,8 @@
     cursor: default !important;
   }
   #bg-section-body-wrap,
-  #name-section-body-wrap {
+  #name-section-body-wrap,
+  #pins-section-body-wrap {
     background: #110920 !important;
     border-bottom: 1px solid #2a1848 !important;
   }
@@ -2555,7 +2557,7 @@
         <span>Eyes</span>
       </button>
       <button class="mob-cat-btn" data-cat="mouth" onclick="setMobCat('mouth')">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+        <i data-lucide="eye-closed" style="width:22px;height:22px;"></i>
         <span>Mouth</span>
       </button>
     </nav>
@@ -2602,8 +2604,12 @@
         <div class="section-header" onclick="toggleSection('sec-mouth')">Mouth <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
         <div class="section-body"><div class="section-hint">Cosmetic only — no stats. The expression is the last thing a ritual seals.</div><div class="thumb-grid" id="grid-mouth"></div></div>
       </div>
-    <!-- PINS (under Effigy) -->
-    <div class="section" id="sec-pins">
+    </div><!-- /inner-inventory-body-wrap -->
+
+    <!-- BACKGROUND + NAME + PINS stacked vertically -->
+    <div id="forge-ambiance-sections">
+
+    <div class="section open" id="sec-pins">
       <div class="section-header" id="pins-section-label" onclick="toggleSection('sec-pins')">Pins <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
       <div class="section-body" id="pins-section-body-wrap">
         <div id="pin-counter">Placed: <span id="pin-placed-count">0</span> / 5</div>
@@ -2612,10 +2618,6 @@
         <button id="pin-clear" onclick="clearPins()">✕ Clear All Pins</button>
       </div>
     </div>
-    </div><!-- /inner-inventory-body-wrap -->
-
-    <!-- BACKGROUND + NAME stacked vertically -->
-    <div id="forge-ambiance-sections">
 
     <div class="sidebar-section-label inner-section-label" id="bg-section-label">
       Background
@@ -3363,7 +3365,7 @@ function buildPinGrid(files){
   if(!grid) return;
   grid.innerHTML='';
   // List all pins from /img/pins/ — if server doesn't send, use numbered fallback
-  const pinList = files.length ? files : Array.from({length:35},(_,i)=>`${i+1}.png`);
+  const pinList = files.length ? files : ['aqua.png','blue.png','brown.png','green.png','pink.png','purple.png','red.png','yellow.png'];
   pinList.forEach(fname=>{
     const img=document.createElement('img');
     img.className='pin-drag-thumb';
@@ -5650,6 +5652,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
       .observe(mainCount, {childList:true,characterData:true,subtree:true});
   }
 });
+
+// Re-run lucide so eye-closed mouth icon renders
+setTimeout(() => { if(typeof lucide !== 'undefined') lucide.createIcons(); }, 300);
 
 // Expose wallet functions globally for site-header.js
 window.connectWallet    = connectWallet;
