@@ -27,6 +27,12 @@
 - **Sorun:** `site-header.js` sessionStorage'dan wallet'ı restore ederken sadece header UI'yı güncelliyor, `window.connectWallet()` çağırmıyor; forge `loadWalletPacks` hiç tetiklenmiyordu
 - **Fix:** `forge.html` `DOMContentLoaded`'da sessionStorage'dan `wallet_key` / `wallet_platform` okuyup `loadWalletPacks` çağırıyor — sayfa ilk açıldığında wallet bağlıymış gibi collection yükleniyor
 
+### index.html mobil düzeltmeleri
+- Splash butonlar (`width:400px` sabit) → `min(400px, calc(100vw - 32px))` — dar ekranda taşmıyor
+- `#splash-profile` genişliği de aynı formüle geçirildi
+- `@media (max-width:480px)`: font, padding, ikon küçültüldü
+- `#menu-body` `overflow:hidden` eklendi; `#landing-cards` `height:100vh` → `height:100%` — `position:fixed; inset:0` parent'ı kullanıyor, 4 kart tam ekrana sığıyor, scroll yok
+
 ### `packs.html` linkleri `pack-room.html` olarak düzeltildi
 - `index.html` splash "Buy Mystery Packs" linki: `packs.html` → `pack-room.html`
 - `index.html` menü Packs kartı: `packs.html` → `pack-room.html`
