@@ -1037,9 +1037,9 @@ function buildCard(item){
 
 function positionStack(cards){
   cards.forEach((card, i) => {
-    const depth = cards.length - 1 - i; // 0=front, max=back
-    card.style.transform = `translate(${depth*4}px, ${depth*5}px)`;
-    card.style.zIndex = cards.length - depth;
+    // i=0 is front: no offset, highest z-index
+    card.style.transform = `translate(${i*4}px, ${i*5}px)`;
+    card.style.zIndex = cards.length - i;
     card.style.opacity = '1';
   });
 }
