@@ -3538,6 +3538,13 @@ function syncBewitchWidth(){
   const box=document.getElementById('bewitch-box');
   const img=document.getElementById('preview-img');
   if(!box||!img||box.style.display==='none') return;
+  // Mobilde JS width override'ı yapma — CSS tam genişlik hallediyor
+  if(window.innerWidth <= 768){
+    box.style.width='';
+    box.style.maxWidth='';
+    initBewitchGlow(box);
+    return;
+  }
   const w=img.offsetWidth;
   if(w>0){ box.style.width=w+'px'; box.style.maxWidth=w+'px'; }
   initBewitchGlow(box);
