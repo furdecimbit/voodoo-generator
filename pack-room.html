@@ -973,6 +973,16 @@ async function revealCards(){
 
   if(!rolledItems.length){ rolledItems = rollPackItems(rarity); }
 
+  // localStorage'a kaydet — forge + collection fallback olarak okur (wallet_KEY_collection formatı)
+  if(currentWallet){
+    const lsKey = `wallet_${currentWallet}_collection`;
+    const saved = JSON.parse(localStorage.getItem(lsKey)||'[]');
+    rolledItems.forEach(item => {
+      if(!saved.some(s => s.path === item.path)) saved.push(item);
+    });
+    localStorage.setItem(lsKey, JSON.stringify(saved));
+  }
+
   rolledItems.forEach((item, i) => {
     const card = buildCard(item);
     row.appendChild(card);

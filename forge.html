@@ -5303,7 +5303,7 @@ function goToPackRoom(rarity){
     mint,
     platform: window.tezosAddress ? 'tez' : 'sol'
   });
-  location.href = 'packs.html?' + p.toString();
+  location.href = 'pack-room.html?' + p.toString();
 }
 
 function openPack(rarity){
@@ -5582,6 +5582,21 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.body.classList.add('forge-ready');
   renderPacks();
   buildMouthGrid();
+
+  // Auto-restore wallet from sessionStorage (set by site-header.js across pages)
+  const _savedKey      = sessionStorage.getItem('wallet_key');
+  const _savedPlatform = sessionStorage.getItem('wallet_platform');
+  if(_savedKey && !walletConnected){
+    if(_savedPlatform === 'tez'){
+      window.tezosAddress = _savedKey;
+      walletConnected = true;
+      loadWalletPacks(_savedKey);
+    } else {
+      walletConnected = true;
+      loadWalletPacks(_savedKey);
+    }
+  }
+
   if(!walletConnected) buildDemoGrids();
   // Sync forge-pins-wrap grid with main pin grid
   const mainGrid = document.getElementById('grid-pins');
