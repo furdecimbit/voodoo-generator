@@ -2271,16 +2271,46 @@
     /* Action bar slim + full width */
     #forge-action-bar { padding: 8px 12px !important; width: 100% !important; box-sizing: border-box !important; }
 
-    /* Bewitch box: full width, no extra margin fighting preview padding */
+    /* Bewitch box — iOS WebView safe */
     #bewitch-box {
       width: calc(100% - 24px) !important;
       margin: 8px 12px 4px !important;
       box-sizing: border-box !important;
     }
-    #bewitch-inner { padding: 10px 12px !important; gap: 10px !important; min-height: 0 !important; }
-    #bw-icon { width: 54px !important; height: 54px !important; }
-    #bw-name { font-size: clamp(13px, 4.5vw, 19px) !important; }
-    #bw-action { font-size: clamp(16px, 5vw, 22px) !important; padding: 0 4px !important; }
+    #bewitch-inner {
+      display: -webkit-flex !important;
+      display: flex !important;
+      -webkit-flex-direction: row !important;
+      flex-direction: row !important;
+      -webkit-align-items: center !important;
+      align-items: center !important;
+      -webkit-flex-wrap: nowrap !important;
+      flex-wrap: nowrap !important;
+      padding: 10px 12px !important;
+      gap: 10px !important;
+      min-height: 0 !important;
+    }
+    #bw-icon {
+      width: 54px !important; height: 54px !important;
+      -webkit-flex-shrink: 0 !important; flex-shrink: 0 !important;
+    }
+    #bw-info {
+      -webkit-flex: 1 !important; flex: 1 !important;
+      min-width: 0 !important; overflow: hidden !important;
+    }
+    #bw-name {
+      font-size: 16px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      max-width: 100% !important;
+    }
+    #bw-stats { display: -webkit-flex !important; display: flex !important; -webkit-flex-wrap: wrap !important; flex-wrap: wrap !important; gap: 4px !important; }
+    #bw-action {
+      font-size: 20px !important;
+      -webkit-flex-shrink: 0 !important; flex-shrink: 0 !important;
+      padding: 0 4px !important;
+    }
 
     /* Equipped panel stats */
     #rp-scroll { width: 100% !important; box-sizing: border-box !important; }

@@ -184,10 +184,16 @@
 
     /* Menu — hidden initially */
     #menu-body {
-      position: fixed; inset: 0; z-index: 5;
+      position: fixed; left: 0; right: 0; bottom: 0;
+      top: 82px; /* desktop header height */
+      z-index: 5;
       display: none; overflow: hidden;
     }
     #menu-body.visible { display: flex; }
+
+    @media (max-width: 900px) {
+      #menu-body { top: 70px; } /* mobile header height */
+    }
 
     /* Cards */
     #landing-cards {
@@ -269,11 +275,27 @@
       .lc-desc  { font-size: clamp(13px, 1.4vw, 22px); max-width: 26ch; }
     }
 
-    @media (max-width: 480px) {
-      .lc-icon img { width: 44px; height: 44px; }
-      .lc-title { font-size: 18px; }
-      .lc-desc { font-size: 11px; }
-      .lc-text { padding: 2vw 4vw; gap: 0.4vh; }
+    @media (max-width: 699px) {
+      #menu-body { overflow: hidden; }
+      #landing-cards { height: 100%; }
+      .lc {
+        flex: 1;
+        min-height: 0;
+        flex-direction: row;
+        align-items: center;
+      }
+      .lc-text {
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 0 20px; gap: 16px; width: 100%;
+        text-align: left;
+      }
+      .lc-icon { flex-shrink: 0; }
+      .lc-icon img { width: 130px; height: 130px; }
+      .lc-info { display: flex; flex-direction: column; gap: 4px; }
+      .lc-title { font-size: 36px; letter-spacing: .1em; }
+      .lc-desc { display: block; font-size: 18px; color: #c8a080cc; }
 
       /* Splash butonlar dar ekranda */
       .splash-btn {
@@ -339,32 +361,40 @@
       <div class="lc-bg-overlay"></div>
       <div class="lc-text">
         <div class="lc-icon"><img src="forge_icon.png" alt="Forge"></div>
-        <div class="lc-title">Ritual</div>
-        <div class="lc-desc">Dress your effigy. Equip items and craft your ritual doll.</div>
+        <div class="lc-info">
+          <div class="lc-title">Ritual</div>
+          <div class="lc-desc">Dress your effigy. Equip items and craft your ritual doll.</div>
+        </div>
       </div>
     </a>
     <a class="lc" href="pack-room.html" data-accent="packs">
       <div class="lc-bg-overlay"></div>
       <div class="lc-text">
         <div class="lc-icon"><img src="packs_icon.png" alt="Packs"></div>
-        <div class="lc-title">Packs</div>
-        <div class="lc-desc">Open ritual packs to discover new items.</div>
+        <div class="lc-info">
+          <div class="lc-title">Packs</div>
+          <div class="lc-desc">Open ritual packs to discover new items.</div>
+        </div>
       </div>
     </a>
     <a class="lc" href="collection.html" data-accent="col">
       <div class="lc-bg-overlay"></div>
       <div class="lc-text">
         <div class="lc-icon"><img src="collection_icon.png" alt="Collection"></div>
-        <div class="lc-title">Collection</div>
-        <div class="lc-desc">Browse everything you've collected.</div>
+        <div class="lc-info">
+          <div class="lc-title">Collection</div>
+          <div class="lc-desc">Browse everything you've collected.</div>
+        </div>
       </div>
     </a>
     <a class="lc locked" href="#" data-accent="lb" id="card-lb">
       <div class="lc-bg-overlay"></div>
       <div class="lc-text">
         <div class="lc-icon"><img src="leaderboard_icon.png" alt="Leaderboard"></div>
-        <div class="lc-title">Leaderboard</div>
-        <div class="lc-desc">Compare your effigy power against others.</div>
+        <div class="lc-info">
+          <div class="lc-title">Leaderboard</div>
+          <div class="lc-desc">Compare your effigy power against others.</div>
+        </div>
       </div>
     </a>
   </div>
