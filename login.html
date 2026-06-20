@@ -152,15 +152,15 @@
     box-shadow: 0 0 24px #6030a044;
   }
   .pl-btn.secondary {
-    background: linear-gradient(135deg, #1a1006, #0e0804);
-    border: 1px solid #4a3010; color: #c8a050;
-    box-shadow: 0 0 12px #00000044;
+    background: linear-gradient(135deg, #6030a0, #3a1060);
+    border: 1px solid #8040c0; color: #e8d0ff;
+    box-shadow: 0 0 24px #6030a044;
   }
   .pl-btn:hover { transform: scale(1.02); }
   #wallet-hint {
     font-size: 14px; color: #c8a050; letter-spacing: .06em;
     text-align: center; text-transform: uppercase; line-height: 1.6;
-    padding: 0 4px;
+    padding: 0 4px; margin-top: 10px;
   }
 
   /* Witch name preview (signup) */
@@ -204,12 +204,12 @@
   </div>
 
   <div id="post-login">
-    <img id="post-avatar" src="" alt="" style="display:none;width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid #e8c06066;box-shadow:0 0 24px #e8c06033;margin:0 auto;">
+    <img id="post-avatar" src="" alt="" style="display:none;width:100px;height:100px;border-radius:16px;object-fit:cover;border:2px solid #e8c060aa;box-shadow:0 0 24px #e8c06044;margin:0 auto;">
     <div id="post-witchname" style="text-align:center;font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:#8a6030;"></div>
     <div id="post-welcome" style="text-align:center;font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:#f0d070;text-shadow:0 0 28px #e8a04088;"></div>
     <a class="pl-btn primary" href="profile.html">Go to Profile</a>
-    <div id="wallet-hint">Connect a wallet in your profile to open packs and access your collection.</div>
     <a class="pl-btn secondary" href="index.html">Enter Voodoo Workshop</a>
+    <div id="wallet-hint">Connect a wallet in your profile to open packs and access your collection.</div>
   </div>
 
 
@@ -278,6 +278,8 @@ async function handleSubmit(){
     }
 
     // Success
+    sessionStorage.removeItem('wallet_key');
+    sessionStorage.removeItem('wallet_platform');
     sessionStorage.setItem('hex_userId',   data.userId);
     sessionStorage.setItem('hex_witchName', data.witchName);
     sessionStorage.setItem('hex_username',  data.username);

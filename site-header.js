@@ -50,9 +50,6 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
             <svg id="wic-av-default" viewBox="0 0 24 24" fill="none" stroke="#c8a050" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex-shrink:0;"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
             <img id="wic-av-img" src="" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;">
           </button>
-          <button class="wallet-icon-circle disconnected" id="wic-main" onclick="toggleWalletPanel()" title="Wallet">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
-          </button>
         </div>
 
       </div>
@@ -104,7 +101,8 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
         position:relative; z-index:1;
       }
       #wic-profile-info { display:none; }
-      #wic-avatar { border-color:#3a2808 !important; box-shadow:none !important; margin-right:0 !important; }
+      #wic-avatar { border-color:#cc2020; box-shadow:0 0 8px #cc202044; margin-right:0 !important; }
+      #wic-avatar.wallet-connected { border-color:#20cc50 !important; box-shadow:0 0 10px #20cc5066 !important; }
 
       /* Dropdown panel — appended to body, truly above everything */
       #wallet-expand-panel {
@@ -274,14 +272,27 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
   // Inject profile dropdown
   const profilePanelEl = document.createElement('div');
   profilePanelEl.id = 'profile-expand-panel';
-  profilePanelEl.style.cssText = 'position:fixed;display:none;flex-direction:column;gap:6px;background:linear-gradient(160deg,#1a1006,#120c04);border:1px solid #3a2808;border-radius:12px;padding:12px;min-width:200px;box-shadow:0 8px 32px #000000cc;z-index:99999;font-family:Bloodcrow,serif;';
+  profilePanelEl.style.cssText = 'position:fixed;display:none;flex-direction:column;gap:8px;background:linear-gradient(160deg,#1a1006,#120c04);border:1px solid #3a2808;border-radius:14px;padding:16px;min-width:260px;box-shadow:0 8px 32px #000000cc;z-index:99999;font-family:Bloodcrow,serif;';
   profilePanelEl.innerHTML = `
     <div style="padding:8px 4px;border-bottom:1px solid #2a1a08;">
-      <div id="pep-witchname" style="font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:#e8c060;white-space:nowrap;"></div>
-      <div id="pep-username" style="font-size:11px;letter-spacing:.06em;color:#5a4020;margin-top:2px;"></div>
+      <div id="pep-witchname" style="font-size:17px;letter-spacing:.1em;text-transform:uppercase;color:#e8c060;white-space:nowrap;"></div>
+      <div id="pep-username" style="font-size:13px;letter-spacing:.06em;color:#5a4020;margin-top:3px;"></div>
     </div>
-    <a href="profile.html" style="display:block;padding:8px 4px;font-family:Bloodcrow,serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#c8a050;text-decoration:none;border-bottom:1px solid #2a1a08;">Go to Profile</a>
-    <button onclick="window.hexLogout&&window.hexLogout();window.location.href='login.html';" style="font-family:Bloodcrow,serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#e05030;background:none;border:none;cursor:pointer;padding:8px 4px;text-align:left;">Sign Out</button>
+    <div style="padding:8px 4px;border-bottom:1px solid #2a1a08;display:flex;flex-direction:column;gap:6px;">
+      <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#4a3010;margin-bottom:4px;">Wallet</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="drip.jpeg" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:1px solid #3a2010;flex-shrink:0;">
+        <span id="pep-sol-addr" style="font-size:13px;color:#5a4020;letter-spacing:.04em;flex:1;">Not connected</span>
+        <button id="pep-sol-btn" onclick="window._pepToggleSol()" style="font-family:Bloodcrow,serif;font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:#c8a050;background:#0e0804;border:1px solid #3a2810;padding:5px 14px;border-radius:10px;cursor:pointer;">Connect</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="objkt.jpeg" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:1px solid #3a2010;flex-shrink:0;">
+        <span id="pep-tez-addr" style="font-size:13px;color:#5a4020;letter-spacing:.04em;flex:1;">Not connected</span>
+        <button id="pep-tez-btn" onclick="window._pepToggleTez()" style="font-family:Bloodcrow,serif;font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:#c8a050;background:#0e0804;border:1px solid #3a2810;padding:5px 14px;border-radius:10px;cursor:pointer;">Connect</button>
+      </div>
+    </div>
+    <a href="profile.html" style="display:block;padding:10px 4px;font-family:Bloodcrow,serif;font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:#c8a050;text-decoration:none;border-bottom:1px solid #2a1a08;">Go to Profile</a>
+    <button onclick="window.hexLogout&&window.hexLogout();window.location.href='login.html';" style="font-family:Bloodcrow,serif;font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:#e05030;background:none;border:none;cursor:pointer;padding:10px 4px;text-align:left;">Sign Out</button>
   `;
   document.body.appendChild(profilePanelEl);
 
@@ -304,6 +315,47 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
     panel.style.display = isOpen ? 'none' : 'flex';
   }
   window.toggleProfilePanel = toggleProfilePanel;
+
+  // Fallback connect — used when page doesn't define its own
+  async function _fallbackConnectSol(){
+    const p = window.phantom?.solana || (window.solana?.isPhantom ? window.solana : null) || window.solana;
+    if(!p){ alert('No Solana wallet found. Please install Phantom.'); return; }
+    try {
+      const resp = await p.connect();
+      const pubkey = resp.publicKey.toString();
+      window._solanaProvider = p;
+      setHeaderWallet(pubkey, 'sol');
+    } catch(e){ console.error('Sol connect error', e); }
+  }
+  async function _fallbackDisconnectSol(){
+    try{ if(window._solanaProvider) await window._solanaProvider.disconnect(); }catch(e){}
+    try{ if(window.phantom?.solana) await window.phantom.solana.disconnect(); }catch(e){}
+    window._solanaProvider = null;
+    setHeaderWallet(null, null);
+  }
+
+  window._pepToggleSol = function(){
+    const key = sessionStorage.getItem('wallet_key');
+    const platform = sessionStorage.getItem('wallet_platform');
+    const connected = key && platform !== 'tez';
+    if(connected){
+      const fn = typeof window.disconnectWallet === 'function' ? window.disconnectWallet : _fallbackDisconnectSol;
+      fn();
+    } else {
+      const fn = typeof window.connectWallet === 'function' ? window.connectWallet : _fallbackConnectSol;
+      fn();
+    }
+  };
+  window._pepToggleTez = function(){
+    const key = sessionStorage.getItem('wallet_key');
+    const platform = sessionStorage.getItem('wallet_platform');
+    const connected = key && platform === 'tez';
+    if(connected){
+      if(typeof window.disconnectTezos === 'function') window.disconnectTezos();
+    } else {
+      if(typeof window.connectTezos === 'function') window.connectTezos();
+    }
+  };
 
   // Close profile panel when clicking outside
   document.addEventListener('click', e => {
@@ -456,33 +508,7 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
 
   // ── Wallet UI state ──
   function setHeaderWallet(key, platform){
-    const circle   = document.getElementById('wic-main');
-    const solAddr  = document.getElementById('wep-sol-addr');
-    const tezAddr  = document.getElementById('wep-tez-addr');
-    const solBtn   = document.getElementById('wep-sol-btn');
-    const tezBtn   = document.getElementById('wep-tez-btn');
-    const profileLink = document.getElementById('wep-profile-link');
-    if(!circle) return;
-
-    circle.classList.remove('connected','disconnected','syncing','active');
-    if(solAddr) solAddr.textContent = '';
-    if(tezAddr) tezAddr.textContent = '';
-    if(solBtn){ solBtn.textContent='Connect'; solBtn.classList.remove('disconnect'); solBtn.onclick=headerConnectSol; }
-    if(tezBtn){ tezBtn.textContent='Connect'; tezBtn.classList.remove('disconnect'); tezBtn.onclick=headerConnectTez; }
-
-    if(profileLink) profileLink.style.display = (key && platform) ? '' : 'none';
-
     if(key && platform){
-      const short = key.slice(0,4)+'...'+key.slice(-4);
-      circle.classList.add('connected');
-      circle.title = platform.toUpperCase()+': '+short;
-      if(platform === 'tez'){
-        if(tezAddr) tezAddr.textContent = short;
-        if(tezBtn){ tezBtn.textContent='Disconnect'; tezBtn.classList.add('disconnect'); tezBtn.onclick=()=>headerDisconnect('tez'); }
-      } else {
-        if(solAddr) solAddr.textContent = short;
-        if(solBtn){ solBtn.textContent='Disconnect'; solBtn.classList.add('disconnect'); solBtn.onclick=()=>headerDisconnect('sol'); }
-      }
       sessionStorage.setItem('wallet_key', key);
       sessionStorage.setItem('wallet_platform', platform);
       // Link wallet to hex account if logged in
@@ -505,8 +531,6 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
         _updateWitchNameUI(sessionStorage.getItem('witch_name'));
       }
     } else {
-      circle.classList.add('disconnected');
-      circle.title = 'Wallet';
       sessionStorage.removeItem('wallet_key');
       sessionStorage.removeItem('wallet_platform');
       sessionStorage.removeItem('witch_name');
@@ -520,7 +544,30 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
       const short = key.slice(0,4)+'...'+key.slice(-4);
       walletSub.textContent = (platform === 'sol' ? 'Solana · ' : 'Tezos · ') + short;
     }
+    const avEl = document.getElementById('wic-avatar');
+    if(avEl) avEl.classList.toggle('wallet-connected', !!(key && platform));
     if(typeof window.updateLandingWallet === 'function') window.updateLandingWallet();
+    // Update profile panel wallet rows
+    const pepSolAddr = document.getElementById('pep-sol-addr');
+    const pepTezAddr = document.getElementById('pep-tez-addr');
+    const pepSolBtn  = document.getElementById('pep-sol-btn');
+    const pepTezBtn  = document.getElementById('pep-tez-btn');
+    if(key && platform === 'sol'){
+      if(pepSolAddr) pepSolAddr.textContent = key.slice(0,4)+'...'+key.slice(-4);
+      if(pepSolBtn)  pepSolBtn.textContent  = 'Disconnect';
+      if(pepTezAddr) pepTezAddr.textContent = 'Not connected';
+      if(pepTezBtn)  pepTezBtn.textContent  = 'Connect';
+    } else if(key && platform === 'tez'){
+      if(pepTezAddr) pepTezAddr.textContent = key.slice(0,4)+'...'+key.slice(-4);
+      if(pepTezBtn)  pepTezBtn.textContent  = 'Disconnect';
+      if(pepSolAddr) pepSolAddr.textContent = 'Not connected';
+      if(pepSolBtn)  pepSolBtn.textContent  = 'Connect';
+    } else {
+      if(pepSolAddr) pepSolAddr.textContent = 'Not connected';
+      if(pepTezAddr) pepTezAddr.textContent = 'Not connected';
+      if(pepSolBtn)  pepSolBtn.textContent  = 'Connect';
+      if(pepTezBtn)  pepTezBtn.textContent  = 'Connect';
+    }
   }
   window.setHeaderWallet = setHeaderWallet;
 

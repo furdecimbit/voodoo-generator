@@ -132,7 +132,7 @@
     background:linear-gradient(135deg,#2a1060ee,#1a0840ee);
     transition:border-color .2s, background .2s, box-shadow .2s;
   }
-  .pack-entry img    { width:80px; height:80px; object-fit:contain; flex-shrink:0; }
+  .pack-entry img    { width:110px; height:110px; object-fit:contain; flex-shrink:0; }
   .pack-entry-info   { flex:1; min-width:0; }
   .pack-entry-name {
     font-size:18px; letter-spacing:.08em; text-transform:uppercase;
@@ -284,8 +284,8 @@
   .card-back svg { width:56px; height:56px; opacity:.5; }
 
   /* rarity glow on card back */
-  .stack-card.rarity-common  .card-back { box-shadow:0 0 18px #ffffff55; border-color:#6a6a6a; }
-  .stack-card.rarity-rare    .card-back { box-shadow:0 0 22px #e8c05077; border-color:#8a6820; }
+  .stack-card.rarity-common    .card-back { box-shadow:0 0 18px #ffffff55; border-color:#6a6a6a; }
+  .stack-card.rarity-rare      .card-back { box-shadow:0 0 22px #e8c05077; border-color:#8a6820; }
   .stack-card.rarity-legendary .card-back { box-shadow:0 0 26px #60b0ff88; border-color:#3060a0; }
   .stack-card.rarity-ultimate  .card-back { box-shadow:0 0 30px #ff80c099; border-color:#902060; }
 
@@ -611,8 +611,8 @@ const PACK_COLLECTION = 'EvoqHMeGs3VxtoLLycVaQ3CjuVTkJsUa6mcUCUcTDcm4';
 const HELIUS_URL = 'https://mainnet.helius-rpc.com/?api-key=d9dba9ac-f923-4ed6-9a90-f389a71e9bcc';
 
 const PACK_IMGS = {
-  common:'common_pack.png', rare:'rare_pack.png',
-  legendary:'legendary_pack.png', ultimate:'ultimate_pack.png'
+  common:'cardcovers/common.png', rare:'cardcovers/rare.png',
+  legendary:'cardcovers/legendary.png', ultimate:'cardcovers/ultimate.png'
 };
 const GLOW_COLORS = {
   common:'#ffffff44', rare:'#e8c05066', legendary:'#60b0ff88', ultimate:'#ff80c099'
@@ -740,7 +740,10 @@ async function connectSol(){
 }
 
 function doDisconnect(){
-  if(window._solanaProvider) try{ window._solanaProvider.disconnect(); }catch(e){}
+  try { if(window._solanaProvider) window._solanaProvider.disconnect(); } catch(e){}
+  try { if(window.phantom?.solana) window.phantom.solana.disconnect(); } catch(e){}
+  try { if(window.solana) window.solana.disconnect(); } catch(e){}
+  window._solanaProvider = null;
   if(window._beaconClient)   try{ window._beaconClient.clearActiveAccount(); }catch(e){}
   currentWallet = null; currentPlatform = null;
   packCounts = { common:0, rare:0, legendary:0, ultimate:0 };

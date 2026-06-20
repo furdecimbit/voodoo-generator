@@ -716,8 +716,35 @@ setTimeout(async function autoConnect(){
 }, 0);
 
 // ── site-header.js bridge ──────────────────────────────────────
-window.connectWallet = async function(){};
-window.connectTezos  = async function(){};
+window.connectWallet = async function(){
+  const p = window.phantom?.solana || window.solana;
+  if(!p){ alert('No Solana wallet found. Please install Phantom.'); return; }
+  try {
+    const resp = await p.connect();
+    const pubkey = resp.publicKey.toString();
+    window._solanaProvider = p;
+    if(typeof setHeaderWallet === 'function') setHeaderWallet(pubkey, 'sol');
+  } catch(e){ console.error(e); }
+};
+window.connectTezos = async function(){
+  if(!window._beaconClient){
+    window._beaconClient = new (window.beacon?.DAppClient || window.BeaconWallet)({ name:'Hex & Stitch' });
+  }
+  try {
+    const acc = await window._beaconClient.requestPermissions();
+    if(typeof setHeaderWallet === 'function') setHeaderWallet(acc.address, 'tez');
+  } catch(e){ console.error(e); }
+};
+window.disconnectWallet = function(){
+  try{ if(window._solanaProvider) window._solanaProvider.disconnect(); }catch(e){}
+  try{ if(window.phantom?.solana) window.phantom.solana.disconnect(); }catch(e){}
+  window._solanaProvider = null;
+  if(typeof setHeaderWallet === 'function') setHeaderWallet(null, null);
+};
+window.disconnectTezos = async function(){
+  try{ if(window._beaconClient) await window._beaconClient.clearActiveAccount(); }catch(e){}
+  if(typeof setHeaderWallet === 'function') setHeaderWallet(null, null);
+};
 window.onWalletConnected = async function(key, platform){
   if(currentWallet === key) return;
   currentWallet = key;

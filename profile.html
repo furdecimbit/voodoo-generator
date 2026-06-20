@@ -194,11 +194,14 @@
   .wallet-row.connected .wallet-row-platform { color:#c8a060; }
   .wallet-row.connected .wallet-row-addr { color:#70c880; }
   .wallet-row-badge {
+    font-family:'Bloodcrow',serif; cursor:pointer;
+    background:#0e0804; color:#c8a050;
     font-size:12px; letter-spacing:.1em; text-transform:uppercase;
     padding:4px 10px; border-radius:20px;
     border:1px solid #2a1a06; color:#4a3010;
   }
-  .wallet-row.connected .wallet-row-badge { border-color:#20cc5044; color:#70c880; }
+  .wallet-row.connected .wallet-row-badge { border-color:#cc202044; color:#e05030; }
+  .wallet-row-badge:hover { opacity:.8; }
 
   /* ── Right panel stats ── */
   .stat-row {
@@ -364,7 +367,7 @@
             <div class="wallet-row-platform">Solana</div>
             <div class="wallet-row-addr" id="wr-sol-addr">Not linked</div>
           </div>
-          <div class="wallet-row-badge" id="wr-sol-badge">Disconnected</div>
+          <button class="wallet-row-badge" id="wr-sol-badge" onclick="toggleSolWallet()">Connect</button>
         </div>
         <div class="wallet-row" id="wr-tez">
           <img src="objkt.jpeg" alt="Tezos">
@@ -372,7 +375,7 @@
             <div class="wallet-row-platform">Tezos</div>
             <div class="wallet-row-addr" id="wr-tez-addr">Not linked</div>
           </div>
-          <div class="wallet-row-badge" id="wr-tez-badge">Disconnected</div>
+          <button class="wallet-row-badge" id="wr-tez-badge" onclick="toggleTezWallet()">Connect</button>
         </div>
       </div>
 
@@ -505,19 +508,40 @@ function showWalletStatus(key, platform){
 }
 
 function showLinkedWallets(sol, tez){
-  const solRow = document.getElementById('wr-sol');
-  const tezRow = document.getElementById('wr-tez');
+  const solRow  = document.getElementById('wr-sol');
+  const tezRow  = document.getElementById('wr-tez');
+  const solBadge = document.getElementById('wr-sol-badge');
+  const tezBadge = document.getElementById('wr-tez-badge');
 
   if(sol){
     solRow.classList.add('connected');
     document.getElementById('wr-sol-addr').textContent = sol.slice(0,6)+'...'+sol.slice(-6);
-    document.getElementById('wr-sol-badge').textContent = 'Connected';
+    solBadge.textContent = 'Disconnect';
+  } else {
+    solRow.classList.remove('connected');
+    document.getElementById('wr-sol-addr').textContent = 'Not linked';
+    solBadge.textContent = 'Connect';
   }
   if(tez){
     tezRow.classList.add('connected');
     document.getElementById('wr-tez-addr').textContent = tez.slice(0,6)+'...'+tez.slice(-6);
-    document.getElementById('wr-tez-badge').textContent = 'Connected';
+    tezBadge.textContent = 'Disconnect';
+  } else {
+    tezRow.classList.remove('connected');
+    document.getElementById('wr-tez-addr').textContent = 'Not linked';
+    tezBadge.textContent = 'Connect';
   }
+}
+
+function toggleSolWallet(){
+  const connected = document.getElementById('wr-sol').classList.contains('connected');
+  if(connected){ window.disconnectWallet && window.disconnectWallet(); }
+  else { window.connectWallet && window.connectWallet(); }
+}
+function toggleTezWallet(){
+  const connected = document.getElementById('wr-tez').classList.contains('connected');
+  if(connected){ window.disconnectTezos && window.disconnectTezos(); }
+  else { window.connectTezos && window.connectTezos(); }
 }
 
 function updateStats(ownedPaths){
@@ -561,7 +585,10 @@ async function connectWallet(){
 }
 
 async function disconnectWallet(){
-  if(window._solanaProvider) window._solanaProvider.disconnect();
+  try { if(window._solanaProvider) await window._solanaProvider.disconnect(); } catch(e){}
+  try { if(window.phantom?.solana) await window.phantom.solana.disconnect(); } catch(e){}
+  try { if(window.solana) await window.solana.disconnect(); } catch(e){}
+  window._solanaProvider = null;
   if(typeof setHeaderWallet === 'function') setHeaderWallet(null, null);
 }
 
