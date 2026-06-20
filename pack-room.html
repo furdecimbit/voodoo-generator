@@ -226,11 +226,13 @@
   #video-overlay.active { display:flex; }
   #pack-video  { width:100%; max-width:480px; height:auto; }
   #skip-btn {
-    color:#5a4020; font-family:'Bloodcrow',serif; font-size:13px;
-    letter-spacing:.1em; text-transform:uppercase;
-    background:none; border:none; cursor:pointer; transition:color .2s;
+    color:#8a6030; font-family:'Bloodcrow',serif; font-size:26px;
+    letter-spacing:.14em; text-transform:uppercase;
+    background:none; border:1px solid #3a2010; border-radius:12px;
+    padding:12px 40px; cursor:pointer; transition:color .2s, border-color .2s;
+    margin-top:8px;
   }
-  #skip-btn:hover { color:#c8a050; }
+  #skip-btn:hover { color:#e8c050; border-color:#8a5020; }
 
   /* Reveal area */
   #center-reveal {
@@ -412,6 +414,8 @@
       overflow-y: auto;
       background: #070402f0;
       padding-top: 8px;
+      justify-content: flex-start;
+      min-height: unset;
     }
 
     /* Back button (injected by JS) */
@@ -442,6 +446,15 @@
 
     /* Video overlay full width */
     #pack-video { max-width: 100%; }
+
+    /* Card stack on mobile */
+    #center-reveal { padding: 0 16px 40px; }
+    #card-stack {
+      width: min(240px, 72vw);
+      height: calc(min(240px, 72vw) * 1.4);
+      overflow: visible;
+    }
+    .stack-card { width: min(240px, 72vw); }
   }
 </style>
 </head>
@@ -937,7 +950,7 @@ function startOpen(){
   document.getElementById('center-pack').style.display = 'none';
   const overlay = document.getElementById('video-overlay');
   const vid     = document.getElementById('pack-video');
-  vid.src = 'openpack.mp4';
+  vid.src = `${activePack.rarity}.MP4`;
   vid.currentTime = 0;
   overlay.classList.add('active');
   vid.play().catch(() => skipVideo());
