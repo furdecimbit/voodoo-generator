@@ -535,4 +535,16 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
   _refreshHeaderAvatar(false);
   if(savedKey) setHeaderWallet(savedKey, savedPlatform);
 
+  // Hex account (username/password login) — show witchName if logged in
+  const hexWitchName = sessionStorage.getItem('hex_witchName');
+  if(hexWitchName) _updateWitchNameUI(hexWitchName);
+
+  // Expose logout for other pages
+  window.hexLogout = function(){
+    sessionStorage.removeItem('hex_userId');
+    sessionStorage.removeItem('hex_witchName');
+    sessionStorage.removeItem('hex_username');
+    _updateWitchNameUI(null);
+  };
+
 })();

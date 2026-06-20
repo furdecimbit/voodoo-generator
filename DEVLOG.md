@@ -31,6 +31,24 @@
 
 ### Skip butonu videonun altına taşındı ve büyütüldü
 
+### Kullanıcı auth sistemi — TAMAMLANDI
+
+**Backend (http-functions.js — Wix'e yapıştırılacak):**
+- `POST /signup` — username (min 3) + password (min 6) → SHA-256 hash → HexUsers CMS'e kayıt → witchName otomatik üretilir
+- `POST /login` — username + hash karşılaştır → userId + witchName döner
+- witchName prefixes: DarkRitual, ShadowWitch, VoidCaster, CursedSage, BoneWeaver, HexBinder, GrimSoul, BloodMoon, NightShade, AshWalker, RuneKeeper, SoulBinder, VexedSpirit, CryptWarden, DuskRite + #1000-9999
+
+**Frontend:**
+- `login.html` — Sign In / Create Account tab toggle, hata mesajları, Enter ile submit
+- Başarılı girişte sessionStorage: `hex_userId`, `hex_witchName`, `hex_username` → index.html'e yönlendir
+- Zaten giriş yapılmışsa direkt index.html'e yönlendir
+
+**site-header.js:**
+- Sayfa yüklenince `hex_witchName` sessionStorage'dan okuyup header'a yazar
+- `window.hexLogout()` ile çıkış yapılabilir
+
+**HexUsers CMS collection gerekli:** username, passwordHash, witchName, userId field'ları
+
 ### Kullanıcı auth sistemi — PLANLANДИ, henüz yapılmadı
 - Karar: Wix Members yok, kendi custom login sistemi
 - Wallet bağımsız profil: username + şifre
