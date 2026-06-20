@@ -19,6 +19,24 @@
 
 ## 2026-06-16
 
+### Pack duplicate-open güvenlik fix
+
+**Backend (hex/src/backend/http-functions.js — Wix'e manuel yapıştırılacak):**
+- `mintAddress` artık zorunlu parametre — eksikse `badRequest` döner
+- Duplicate kontrol her zaman çalışır (`if (existing && mintAddress)` → `if (existing)`)
+
+**Frontend (pack-room.html):**
+- `startOpen()`: mint ID yoksa açmayı engeller, kullanıcıya mesaj verir
+- `openPack` yanıtı kontrol edilir: `already opened` → reset + uyarı; diğer server hatalarında local roll yapılmaz
+- Network hatasında (Wix'e ulaşılamıyor) local roll fallback korunur
+
+---
+
+### forge.html — pins grid sırası düzeltildi
+- Grid önce, "Placed: X/5" ve açıklama metni grid'in altına taşındı
+
+---
+
 ### Pack açınca itemler forge'a yansımıyordu — düzeltildi
 - **Sorun:** pack-room'da Wix `openPack` başarılı olsa da olmasa da rolled items localStorage'a kaydedilmiyordu; forge localStorage fallback'e düşünce boş geliyordu
 - **Fix:** `revealCards()` içinde itemler hem Wix'e hem `wallet_${currentWallet}_collection` key'li localStorage'a yazılıyor (forge'daki `walletKey('collection')` formatıyla eşleştirildi)

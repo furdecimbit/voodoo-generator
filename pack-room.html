@@ -583,8 +583,8 @@
 
 <!-- Video overlay -->
 <div id="video-overlay">
-  <video id="pack-video" playsinline></video>
   <button id="skip-btn" onclick="skipVideo()">Skip</button>
+  <video id="pack-video" playsinline></video>
 </div>
 
 <script src="https://unpkg.com/@airgap/beacon-dapp@4.8.1/dist/walletbeacon.dapp.min.js"></script>
@@ -930,6 +930,10 @@ function selectPack(rarity, mint){
 
 // ── Open flow ──────────────────────────────────────────────────
 function startOpen(){
+  if (!activePack?.mint) {
+    alert('Pack could not be verified. Please refresh the page and try again.');
+    return;
+  }
   document.getElementById('center-pack').style.display = 'none';
   const overlay = document.getElementById('video-overlay');
   const vid     = document.getElementById('pack-video');
@@ -973,9 +977,21 @@ async function revealCards(){
       body:JSON.stringify({ wallet:currentWallet, rarity, mintAddress:mint })
     });
     const data = await res.json();
+    if(!res.ok){
+      if(data.error === 'pack already opened'){
+        resetCenter();
+        alert('This pack has already been opened.');
+        return;
+      }
+      // Other server errors — do not roll locally, abort
+      resetCenter();
+      alert('Failed to open pack. Please try again.');
+      return;
+    }
     rolledItems = data.items || [];
   } catch(e){
-    console.warn('openPack failed, rolling locally');
+    // Network error — roll locally as fallback only when server is unreachable
+    console.warn('openPack network error, rolling locally', e);
     rolledItems = rollPackItems(rarity);
   }
 
