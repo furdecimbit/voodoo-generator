@@ -110,6 +110,22 @@
 
 ---
 
+### HexMain tek koleksiyon migrasyonu — TAMAMLANDI
+
+- **Backend (http-functions.js):** Import2 + HexUsers koleksiyonları → tek `HexMain` koleksiyonu
+- `userId` primary key; `solanaWallet`, `tezosWallet` ayrı field; `items`, `openedMints`, `slots` JSON string
+- Yeni endpoint'ler: `/signup`, `/login`, `/linkWallet`, `/getItems?userId=`, `/getOpenedMints?userId=`, `/openPack` (body: userId), `/getSlots?userId=`, `/saveSlots` (body: userId)
+- **Frontend güncellemeleri:**
+  - `pack-room.html`: `getOpenedMints` ve `openPack` artık `userId` kullanıyor
+  - `forge.html`: tüm Wix çağrıları `userId` kullanıyor
+  - `collection.html`: `getItems` artık `userId` kullanıyor
+  - `site-header.js`: wallet bağlanınca `hex_userId` varsa `POST /linkWallet` çağırıyor (getOrCreateProfile kaldırıldı)
+- `login.html`: Sign In / Create Account tabları, sessionStorage: `hex_userId`, `hex_witchName`, `hex_username`
+- Tüm sayfalara login guard eklendi (`hex_userId` yoksa `login.html`)
+- `HexMain.csv` Wix import için `/voodoo` klasöründe
+
+---
+
 ### `packs.html` linkleri `pack-room.html` olarak düzeltildi
 - `index.html` splash "Buy Mystery Packs" linki: `packs.html` → `pack-room.html`
 - `index.html` menü Packs kartı: `packs.html` → `pack-room.html`

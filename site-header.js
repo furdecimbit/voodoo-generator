@@ -441,21 +441,17 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
       }
       sessionStorage.setItem('wallet_key', key);
       sessionStorage.setItem('wallet_platform', platform);
-      // Fetch or create profile — witch name
-      if(!sessionStorage.getItem('witch_name')){
-        fetch(`${WIX_API}/getOrCreateProfile`, {
+      // Link wallet to hex account if logged in
+      const hexUserId = sessionStorage.getItem('hex_userId');
+      if(hexUserId){
+        fetch(`${WIX_API}/linkWallet`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ wallet: key, platform })
-        })
-        .then(r => r.json())
-        .then(d => {
-          if(d.witchName){
-            sessionStorage.setItem('witch_name', d.witchName);
-            _updateWitchNameUI(d.witchName);
-          }
-        })
-        .catch(() => {});
+          body: JSON.stringify({ userId: hexUserId, wallet: key, platform: platform === 'tez' ? 'tez' : 'sol' })
+        }).catch(() => {});
+        _updateWitchNameUI(sessionStorage.getItem('hex_witchName'));
+      } else if(!sessionStorage.getItem('witch_name')){
+        _updateWitchNameUI(null);
       } else {
         _updateWitchNameUI(sessionStorage.getItem('witch_name'));
       }

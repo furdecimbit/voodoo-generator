@@ -559,7 +559,8 @@ function showWalletConnected(key, platform){
 async function loadCollection(pubkey){
   showSyncing();
   try {
-    const res = await fetch(`${WIX_API}/getItems?wallet=${encodeURIComponent(pubkey)}`);
+    const userId = sessionStorage.getItem('hex_userId');
+    const res = await fetch(`${WIX_API}/getItems?userId=${encodeURIComponent(userId || pubkey)}`);
     if(!res.ok) throw new Error('fetch failed');
     const data = await res.json();
     const items = Array.isArray(data.items) ? data.items : [];
