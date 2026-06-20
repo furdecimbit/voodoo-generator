@@ -19,6 +19,26 @@
 
 ## 2026-06-16
 
+### getOrCreateProfile endpoint eklendi (http-functions.js)
+- Wallet bağlanınca Wix'te satır yoksa otomatik oluşturuyor
+- Varsa `witchname` field'ını döndürüyor
+- witchName üretme henüz YOK — null dönüyor (auth sistemi ile gelecek)
+- **Wix wallet field sorunu:** eski kayıtlar `SolanaWallet` dolu `wallet` boş — `wallet` field'ı manuel doldurulmalı
+
+### Paket açılış videoları rarity'e göre ayrıldı
+- `common.MP4`, `rare.MP4`, `legendary.MP4`, `ultimate.MP4` klasöre eklendi
+- `startOpen()` artık `${activePack.rarity}.MP4` oynuyor
+
+### Skip butonu videonun altına taşındı ve büyütüldü
+
+### Kullanıcı auth sistemi — PLANLANДИ, henüz yapılmadı
+- Karar: Wix Members yok, kendi custom login sistemi
+- Wallet bağımsız profil: username + şifre
+- Wix'te "HexUsers" koleksiyonu gerekiyor (username, passwordHash, witchName, userId)
+- Devam için: önce Wix'te HexUsers koleksiyonu oluştur, sonra "kullanıcı sistemi yapalım" de
+
+---
+
 ### Pack duplicate-open güvenlik fix
 
 **Backend (hex/src/backend/http-functions.js — Wix'e manuel yapıştırılacak):**
