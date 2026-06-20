@@ -31,6 +31,12 @@
 
 ### Skip butonu videonun altına taşındı ve büyütüldü
 
+### Login zorunluluğu — tüm sayfalara eklendi
+- index.html, forge.html, pack-room.html, collection.html, profile.html → `hex_userId` yoksa `login.html`'e yönlendir
+- profile.html: wallet bağlı olmasa da profil kartı gösterilir, wallet bağlama hint'i görünür
+- Wallet bağlanınca hint gizlenir
+- witchName: `hex_witchName` (username login) veya `witch_name` (wallet login) okunur
+
 ### Kullanıcı auth sistemi — TAMAMLANDI
 
 **Backend (http-functions.js — Wix'e yapıştırılacak):**

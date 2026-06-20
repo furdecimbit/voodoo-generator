@@ -699,6 +699,11 @@ document.getElementById('search-input').addEventListener('input', e => {
   renderGrid();
 });
 
+// ── Login guard ───────────────────────────────────────────────
+if(!sessionStorage.getItem('hex_userId')){
+  window.location.href = 'login.html';
+}
+
 // ── Auto-connect from sessionStorage ──────────────────────────
 setTimeout(async function autoConnect(){
   const key      = sessionStorage.getItem('wallet_key');

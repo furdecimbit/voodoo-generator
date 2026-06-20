@@ -1183,6 +1183,11 @@ window.connectTezos     = connectTez;
 window.disconnectWallet = doDisconnect;
 window.disconnectTezos  = doDisconnect;
 
+// ── Login + wallet guard ───────────────────────────────────────
+if(!sessionStorage.getItem('hex_userId')){
+  window.location.href = 'login.html';
+}
+
 // ── Auto-connect from sessionStorage ──────────────────────────
 setTimeout(async function autoConnect(){
 

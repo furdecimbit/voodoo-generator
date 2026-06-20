@@ -403,8 +403,13 @@
 <script>
 const SPLASH_CDN = 'https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main';
 
-// ── On load: if already connected, skip splash ──
+// ── On load: require hex login, skip splash if wallet connected ──
 window.addEventListener('DOMContentLoaded', () => {
+  // Redirect to login if not logged in
+  if (!sessionStorage.getItem('hex_userId')) {
+    window.location.href = 'login.html';
+    return;
+  }
   const key = sessionStorage.getItem('wallet_key');
   if (key) {
     showMenu();

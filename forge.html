@@ -5618,6 +5618,12 @@ function buildDemoGrids(){
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
+  // Login guard
+  if(!sessionStorage.getItem('hex_userId')){
+    window.location.href = 'login.html';
+    return;
+  }
+
   document.body.classList.add('forge-ready');
   renderPacks();
   buildMouthGrid();

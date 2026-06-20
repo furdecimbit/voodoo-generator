@@ -354,6 +354,10 @@
       <!-- Wallets -->
       <div id="wallets-block">
         <div class="block-title">Linked Wallets</div>
+        <div id="wallet-connect-hint" style="font-size:14px;color:#6a5030;letter-spacing:.06em;line-height:1.6;padding:10px 0 14px;border-bottom:1px solid #2a1a06;margin-bottom:14px;">
+          Connect a wallet to open packs and build your item collection.<br>
+          <span style="color:#4a3020;">Packs are purchased as NFTs on Solana (Drip) or Tezos (Objkt).</span>
+        </div>
         <div class="wallet-row" id="wr-sol">
           <img src="drip.jpeg" alt="Solana">
           <div class="wallet-row-info">
@@ -424,20 +428,28 @@ const TOTAL_ALL = Object.values(MASTER_TOTAL).reduce((a,b)=>a+b,0);
 
 // ── Init ──────────────────────────────────────────────────────
 // Run after site-header.js restores wallet from sessionStorage
-document.addEventListener('DOMContentLoaded', function(){ setTimeout(init, 50); });
+document.addEventListener('DOMContentLoaded', function(){
+  // Redirect to login if not logged in
+  if(!sessionStorage.getItem('hex_userId')){
+    window.location.href = 'login.html';
+    return;
+  }
+  setTimeout(init, 50);
+});
+
 async function init(){
   const key      = sessionStorage.getItem('wallet_key');
   const platform = sessionStorage.getItem('wallet_platform');
-  const witchName = sessionStorage.getItem('witch_name');
+  const witchName = sessionStorage.getItem('hex_witchName') || sessionStorage.getItem('witch_name');
 
-  if(!key){
-    document.getElementById('no-wallet-msg').style.display = '';
-    document.getElementById('profile-card').style.display = 'none';
-    return;
+  // Show profile card always (wallet hint visible even without wallet)
+  document.getElementById('no-wallet-msg').style.display = 'none';
+  document.getElementById('profile-card').style.display = '';
+
+  if(key){
+    showWalletStatus(key, platform);
+    document.getElementById('wallet-connect-hint').style.display = 'none';
   }
-
-  // Wallet status UI
-  showWalletStatus(key, platform);
 
   // Witch name
   if(witchName) document.getElementById('witch-name-value').textContent = witchName;
