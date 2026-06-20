@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en" data-page="collection">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hex Collection</title>
+<style>
+  @font-face {
+    font-family: 'Bloodcrow';
+    src: url('https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/bloodcrowc.ttf') format('truetype');
+  }
+  @font-face {
+    font-family: 'BloodcrowOtf';
+    src: url('https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/Bloodcrow.otf') format('opentype');
+  }
+
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+  body {
+    background:#030201; color:#c8a060;
+    font-family:'Bloodcrow', serif;
+    min-height:100vh;
+  }
+
+  /* ── Layout ── */
+  #layout {
+    display:grid;
+    grid-template-columns: 320px 1fr 380px;
+    min-height: calc(100vh - 48px);
+    margin-top: 48px;
+  }
+
+  .panel {
+    padding: 28px 20px;
+    overflow-y: auto;
+  }
+
+  #panel-left {
+    border-right: 1px solid #2a1a06;
+    background-image: linear-gradient(180deg,#0e0904f0 0%,#080603f0 100%), url('verticalback.png');
+    background-size: cover; background-position: center;
+  }
+  #panel-right {
+    border-left: 1px solid #2a1a06;
+    background-image: linear-gradient(180deg,#1a1208cc 0%,#141008cc 100%), url('verticalback.png');
+    background-size: cover; background-position: center;
+  }
+  #panel-main {
+    background: #050302;
+    padding: 28px 24px;
+    overflow-y: auto;
+    max-height: calc(100vh - 48px);
+    position: sticky;
+    top: 48px;
+  }
+
+  /* ── Left panel ── */
+  #page-title {
+    font-size: 38px; letter-spacing: .14em; text-transform: uppercase;
+    color: #e8c87a; margin-bottom: 24px; line-height:1.1;
+    text-shadow: 0 0 18px #e8a02066, 0 2px 4px #000;
+  }
+
+  .panel-title {
+    font-size: 26px; letter-spacing: .18em; text-transform: uppercase;
+    color: #7a5520; margin-bottom: 10px;
+  }
+
+  /* Wallet status */
+  #wallet-status-row { display:flex; flex-direction:column; gap:8px; margin-bottom:24px; }
+  .wallet-platform-status {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border-radius:8px;
+    border:1px solid #2a1a06; background:rgba(255,255,255,0.02);
+  }
+  .wallet-platform-status img {
+    width:32px; height:32px; border-radius:50%; object-fit:cover;
+    border:2px solid #cc2020; flex-shrink:0;
+    box-shadow:0 0 8px #cc202044;
+  }
+  .wallet-platform-status.connected img { border-color:#20cc50; box-shadow:0 0 10px #20cc5066; }
+  .wallet-platform-status span { font-size:22px; color:#5a4020; letter-spacing:.06em; text-transform:uppercase; }
+  .wallet-platform-status.connected span { color:#70c880; }
+
+  #wallet-syncing {
+    font-size:22px; color:#70c060; letter-spacing:.1em; display:none;
+    animation: hintPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes hintPulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+  /* ── Custom Dropdowns ── */
+  .filter-group { margin-bottom: 16px; }
+  .filter-label {
+    font-size:14px; letter-spacing:.15em; text-transform:uppercase;
+    color:#5a3a10; margin-bottom:6px;
+  }
+  .custom-select { position:relative; user-select:none; }
+  .cs-trigger {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 14px; border-radius:8px; cursor:pointer;
+    border:1px solid #2a1a06; background:#0d0803;
+    font-family:'Bloodcrow', serif; font-size:18px; letter-spacing:.08em;
+    text-transform:uppercase; color:#c8a060;
+    transition:border-color .2s;
+  }
+  .cs-trigger:hover { border-color:#5a3010; }
+  .custom-select.open .cs-trigger { border-color:#8a5020; border-bottom-color:transparent; border-radius:8px 8px 0 0; }
+  .cs-arrow {
+    width:10px; height:10px; flex-shrink:0;
+    border-right:2px solid #7a5520; border-bottom:2px solid #7a5520;
+    transform:rotate(45deg); margin-top:-4px;
+    transition:transform .2s;
+  }
+  .custom-select.open .cs-arrow { transform:rotate(-135deg); margin-top:4px; }
+  .cs-dropdown {
+    display:none; position:absolute; left:0; right:0; z-index:100;
+    border:1px solid #8a5020; border-top:none;
+    border-radius:0 0 8px 8px;
+    background:#0d0803;
+    overflow:hidden;
+  }
+  .custom-select.open .cs-dropdown { display:block; }
+  .cs-option {
+    padding:10px 14px; cursor:pointer;
+    font-family:'Bloodcrow', serif; font-size:17px; letter-spacing:.08em;
+    text-transform:uppercase; color:#7a5a30;
+    transition:background .15s, color .15s;
+    border-top:1px solid #1e1008;
+  }
+  .cs-option:hover   { background:#1a0e04; color:#c8a060; }
+  .cs-option.selected { color:#e8c87a; background:rgba(200,160,60,0.07); }
+  /* rarity option colors */
+  .cs-option[data-value="common"]    { }
+  .cs-option[data-value="common"].selected    { color:#c0c0c0; }
+  .cs-option[data-value="rare"].selected      { color:#e8c050; }
+  .cs-option[data-value="legendary"].selected { color:#80d0ff; }
+  .cs-option[data-value="ultimate"].selected  { color:#ff80c0; }
+
+  /* ── Right panel stats ── */
+  .stat-row {
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:10px 0; border-bottom:1px solid #1a1006;
+  }
+  .stat-label { font-size:22px; letter-spacing:.12em; text-transform:uppercase; color:#7a5520; }
+  .stat-val   { font-size:34px; }
+  .stat-row.total .stat-val         { color:#e8d09a; }
+  .stat-row.rarity-common .stat-val    { color:#c0c0c0; }
+  .stat-row.rarity-rare .stat-val      { color:#e8c050; }
+  .stat-row.rarity-legendary .stat-val { color:#80d0ff; }
+  .stat-row.rarity-ultimate .stat-val  { color:#ff80c0; }
+
+  .stat-fraction { font-size:34px; color:#5a4020; margin-left:4px; }
+
+  /* ── Item grid ── */
+  #collection-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap:14px;
+  }
+
+  .item-card {
+    border-radius:12px; border:1px solid #2a1a06;
+    background:rgba(10,6,2,0.7);
+    display:flex; flex-direction:column; align-items:center;
+    padding:12px 8px 10px;
+    transition:transform .15s, box-shadow .2s;
+    position:relative; overflow:hidden;
+  }
+  .item-card:hover { transform:translateY(-2px); }
+
+  /* owned glow */
+  .item-card.owned.rarity-common    { border-color:#555;   box-shadow:0 0 14px #ffffff22; }
+  .item-card.owned.rarity-rare      { border-color:#8a6820; box-shadow:0 0 18px #e8c05055; }
+  .item-card.owned.rarity-legendary { border-color:#3060a0; box-shadow:0 0 22px #60b0ff66; }
+  .item-card.owned.rarity-ultimate  { border-color:#801050; box-shadow:0 0 28px #ff80c077; }
+
+  /* unowned */
+  .item-card.unowned { opacity:0.35; filter:grayscale(0.85); }
+  .item-card.unowned:hover { opacity:0.5; }
+
+  .item-card img {
+    width:120px; height:120px; object-fit:contain;
+    margin-bottom:8px;
+  }
+  .item-name {
+    font-size:13px; letter-spacing:.06em; text-transform:uppercase;
+    color:#c8a060; text-align:center; line-height:1.3;
+    margin-bottom:4px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .item-cat {
+    font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+    color:#5a4020; margin-bottom:6px;
+  }
+  .item-rarity-badge {
+    font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+    padding:2px 8px; border-radius:20px;
+  }
+  .rarity-common    .item-rarity-badge { color:#aaa;    border:1px solid #444; }
+  .rarity-rare      .item-rarity-badge { color:#e8c050; border:1px solid #8a6820; }
+  .rarity-legendary .item-rarity-badge { color:#80d0ff; border:1px solid #3060a0; }
+  .rarity-ultimate  .item-rarity-badge { color:#ff80c0; border:1px solid #801050; }
+
+  /* ── Detail box ── */
+  #item-detail {
+    display:none;
+    margin-top:24px;
+    border-radius:14px; border:1px solid #3a2010;
+    background:rgba(10,6,2,0.85);
+    padding:16px 14px;
+    flex-direction:column; align-items:center; gap:10px;
+    position:relative; overflow:hidden;
+  }
+  #item-detail.visible { display:flex; }
+  #item-detail.rarity-common    { border-color:#555;   box-shadow:0 0 18px #ffffff22; }
+  #item-detail.rarity-rare      { border-color:#8a6820; box-shadow:0 0 22px #e8c05066; }
+  #item-detail.rarity-legendary { border-color:#3060a0; box-shadow:0 0 26px #60b0ff77; }
+  #item-detail.rarity-ultimate  { border-color:#801050; box-shadow:0 0 30px #ff80c088; }
+  #item-detail img {
+    width:160px; height:160px; object-fit:contain;
+  }
+  #item-detail .d-name {
+    font-size:18px; letter-spacing:.08em; text-transform:uppercase;
+    color:#e8c87a; text-align:center; line-height:1.3;
+  }
+  #item-detail .d-cat {
+    font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:#7a5520;
+  }
+  #item-detail .d-badge {
+    font-size:13px; letter-spacing:.1em; text-transform:uppercase;
+    padding:3px 10px; border-radius:20px;
+  }
+  #item-detail.rarity-common    .d-badge { color:#aaa;    border:1px solid #444; }
+  #item-detail.rarity-rare      .d-badge { color:#e8c050; border:1px solid #8a6820; }
+  #item-detail.rarity-legendary .d-badge { color:#80d0ff; border:1px solid #3060a0; }
+  #item-detail.rarity-ultimate  .d-badge { color:#ff80c0; border:1px solid #801050; }
+  #item-detail .d-stats {
+    display:flex; gap:18px; margin-top:4px;
+  }
+  #item-detail .d-stat {
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    font-size:13px; letter-spacing:.08em; text-transform:uppercase;
+  }
+  #item-detail .d-sv { font-size:28px; }
+  #item-detail .d-stat.curse .d-sv { color:#e05050; }
+  #item-detail .d-stat.doom  .d-sv { color:#9060e0; }
+  #item-detail .d-stat.hex   .d-sv { color:#50b0e0; }
+  #item-detail .d-sl { font-size:12px; color:#5a4020; }
+  #item-detail .d-unowned-note {
+    font-size:14px; letter-spacing:.1em; text-transform:uppercase;
+    color:#5a4020; margin-top:4px;
+  }
+
+  /* empty / loading states */
+  #grid-message {
+    grid-column:1/-1; text-align:center;
+    font-size:20px; letter-spacing:.12em; text-transform:uppercase;
+    color:#5a3a10; padding:60px 0;
+  }
+
+  /* search */
+  #search-wrap { margin-bottom:20px; }
+  #search-input {
+    width:100%; padding:10px 14px; border-radius:8px;
+    border:1px solid #3a2010; background:rgba(255,255,255,0.03);
+    font-family:'Bloodcrow', serif; font-size:17px;
+    color:#c8a060; letter-spacing:.06em; outline:none;
+  }
+  #search-input::placeholder { color:#4a3010; }
+  #search-input:focus { border-color:#8a5020; }
+</style>
+</head>
+<body>
+
+<div id="site-header-mount"></div>
+
+<div id="layout">
+
+  <!-- ════════════════ LEFT PANEL ════════════════ -->
+  <div class="panel" id="panel-left">
+    <div id="page-title">Hex Collection</div>
+
+    <div class="panel-title">Wallet</div>
+    <div id="wallet-status-row">
+      <div class="wallet-platform-status" id="wps-sol">
+        <img src="drip.jpeg" alt="Solana">
+        <span id="wps-sol-addr">Not connected</span>
+      </div>
+      <div class="wallet-platform-status" id="wps-tez" style="display:none">
+        <img src="objkt.jpeg" alt="Tezos">
+        <span id="wps-tez-addr">Not connected</span>
+      </div>
+    </div>
+    <div id="wallet-syncing">Loading collection…</div>
+
+    <div class="filter-group" style="margin-top:8px">
+      <div class="filter-label">Rarity</div>
+      <div class="custom-select" id="dd-rarity">
+        <div class="cs-trigger"><span class="cs-value">All</span><span class="cs-arrow"></span></div>
+        <div class="cs-dropdown">
+          <div class="cs-option selected" data-value="all">All</div>
+          <div class="cs-option" data-value="common">Common</div>
+          <div class="cs-option" data-value="rare">Rare</div>
+          <div class="cs-option" data-value="legendary">Legendary</div>
+          <div class="cs-option" data-value="ultimate">Ultimate</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-label">Category</div>
+      <div class="custom-select" id="dd-cat">
+        <div class="cs-trigger"><span class="cs-value">All</span><span class="cs-arrow"></span></div>
+        <div class="cs-dropdown">
+          <div class="cs-option selected" data-value="all">All</div>
+          <div class="cs-option" data-value="body">Body</div>
+          <div class="cs-option" data-value="knife">Knife</div>
+          <div class="cs-option" data-value="offhand">Offhand</div>
+          <div class="cs-option" data-value="necklace">Necklace</div>
+          <div class="cs-option" data-value="eyes">Eyes</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-label">Show</div>
+      <div class="custom-select" id="dd-owned">
+        <div class="cs-trigger"><span class="cs-value">All Items</span><span class="cs-arrow"></span></div>
+        <div class="cs-dropdown">
+          <div class="cs-option selected" data-value="all">All Items</div>
+          <div class="cs-option" data-value="owned">Owned Only</div>
+          <div class="cs-option" data-value="unowned">Unowned Only</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ MAIN PANEL ════════════════ -->
+  <div id="panel-main">
+    <div id="search-wrap">
+      <input id="search-input" type="text" placeholder="Search items…">
+    </div>
+    <div id="collection-grid">
+      <div id="grid-message">Connect wallet to view collection</div>
+    </div>
+  </div>
+
+  <!-- ════════════════ RIGHT PANEL ════════════════ -->
+  <div class="panel" id="panel-right">
+    <div class="panel-title">Collection</div>
+    <div class="stat-row total">
+      <span class="stat-label">Total</span>
+      <span class="stat-val" id="stat-total">—<span class="stat-fraction"></span></span>
+    </div>
+    <div class="stat-row rarity-common">
+      <span class="stat-label">Common</span>
+      <span class="stat-val" id="stat-common">—</span>
+    </div>
+    <div class="stat-row rarity-rare">
+      <span class="stat-label">Rare</span>
+      <span class="stat-val" id="stat-rare">—</span>
+    </div>
+    <div class="stat-row rarity-legendary">
+      <span class="stat-label">Legendary</span>
+      <span class="stat-val" id="stat-legendary">—</span>
+    </div>
+    <div class="stat-row rarity-ultimate">
+      <span class="stat-label">Ultimate</span>
+      <span class="stat-val" id="stat-ultimate">—</span>
+    </div>
+
+    <div id="item-detail">
+      <img id="d-img" src="" alt="">
+      <div class="d-name" id="d-name"></div>
+      <div class="d-cat"  id="d-cat"></div>
+      <div class="d-badge" id="d-badge"></div>
+      <div class="d-stats">
+        <div class="d-stat curse"><span class="d-sv" id="d-curse">—</span><span class="d-sl">Curse</span></div>
+        <div class="d-stat doom"> <span class="d-sv" id="d-doom">—</span> <span class="d-sl">Doom</span></div>
+        <div class="d-stat hex">  <span class="d-sv" id="d-hex">—</span>  <span class="d-sl">Hex</span></div>
+      </div>
+      <div class="d-unowned-note" id="d-unowned-note" style="display:none">Not in collection</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="site-header.js"></script>
+<script>
+// WIX_API defined in site-header.js
+const CDN = 'https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main';
+
+// ── Stats helpers ─────────────────────────────────────────────
+const RARITY_TOTALS = { common:15, rare:40, legendary:90, ultimate:180 };
+function hashStr(s){
+  let h=5381;
+  for(let i=0;i<s.length;i++) h=((h<<5)+h+s.charCodeAt(i))|0;
+  return Math.abs(h);
+}
+function itemStats(path){
+  const filename = path.split('/').pop();
+  const rarity   = path.split('/')[1]||'common';
+  const h = hashStr(filename);
+  const total = RARITY_TOTALS[rarity]||15;
+  const a=1+(h%7), b=1+((h>>>4)%7), sum=a+b+(1+((h>>>8)%7));
+  const curse=Math.round(total*a/sum), doom=Math.round(total*b/sum);
+  return { curse, doom, hex:Math.max(1,total-curse-doom) };
+}
+
+// ── Full master item list ──────────────────────────────────────
+const PACK_ITEMS = {"common":{"body":["body/common/burlap.PNG","body/common/corduroy.PNG","body/common/cracked_leather.PNG","body/common/jean.PNG","body/common/tartan.PNG","body/common/wool.PNG"],"knife":["knife/common/antler_bead_dagger.png","knife/common/antler_dagger.png","knife/common/beast_claw_blade.png","knife/common/bone_fetish_dagger.png","knife/common/bone_skull_dagger.png","knife/common/bone_triskele_dagger.png","knife/common/chakra_rope_knife.png","knife/common/constellation_dagger.png","knife/common/crystal_bone_dagger.png","knife/common/damascus_knife.png","knife/common/flint_twine_blade.png","knife/common/ivory_tusk_blade.png","knife/common/jagged_iron_blade.png","knife/common/obsidian_tribal_knife.png","knife/common/serpent_curved_blade.png","knife/common/snakeskin_knife.png","knife/common/talon_grip_blade.png","knife/common/verdant_curved_blade.png","knife/common/wrapped_serrated_blade.png"],"offhand":["offhand/common/bone_idol_mask.png","offhand/common/butterfly_trapped_in_jar.png","offhand/common/cursed_voodoo_doll.png","offhand/common/dark art.png","offhand/common/drink my brain.png","offhand/common/fractured_stone_tablet.png","offhand/common/good plant.png","offhand/common/grave_dirt_bottle.png","offhand/common/king.png","offhand/common/mushroom.png","offhand/common/ordinary_map.png","offhand/common/roots & stuff.png","offhand/common/skeletal_pocket_watch.png","offhand/common/the box of dark art.png","offhand/common/the hand.png","offhand/common/tile.png","offhand/common/totem of animal.png","offhand/common/toy marble from 80's.png","offhand/common/tribal_feather_mask.png","offhand/common/velvet_coin_purse.png"],"necklace":["necklace/common/adventurers_compass.png","necklace/common/amethyst_wire_pendant.png","necklace/common/aquamarine_wire_pendant.png","necklace/common/bone_and_bead_necklace.png","necklace/common/bone_and_crystal_talisman.png","necklace/common/bone_parts.png","necklace/common/bones.png","necklace/common/broken_clock.png","necklace/common/brown_mushroom.png","necklace/common/carnelian_wire_pendant.png","necklace/common/chain.png","necklace/common/colored_rocks.png","necklace/common/common_mirror.png","necklace/common/dark_rope.png","necklace/common/empty_cork_vial.png","necklace/common/iron_thimble.png","necklace/common/jade_orb_pendant.png","necklace/common/jade_spiral_medallion.png","necklace/common/jade_wire_pendant.png","necklace/common/leopard_pearl_brooch.png","necklace/common/marbles.png","necklace/common/midnight_charm_bracelet.png","necklace/common/moonstone_pendant.png","necklace/common/obsidian_skull_pendant.png","necklace/common/rick_with_hole.png","necklace/common/rock.png","necklace/common/rope.png","necklace/common/rune_rock.png","necklace/common/rune_stones.png","necklace/common/runic_bead_wreath.png","necklace/common/seashell.png","necklace/common/shadow_bat.png","necklace/common/shamanic_feather_and_fang_bracelet.png","necklace/common/skull_and_spider_rosary.png","necklace/common/snail_shell.png","necklace/common/sponge.png","necklace/common/talavera_tile_pendant.png","necklace/common/tangled_button_cluster.png","necklace/common/teeth.png","necklace/common/three_keys.png","necklace/common/vegvisir_stone_tablet.png","necklace/common/whelk_shell.png"],"eyes":["eyes/common/abyss_button.png","eyes/common/amethyst_cross.png","eyes/common/aqua_cross.png","eyes/common/blush_cross.png","eyes/common/bone_cross.png","eyes/common/cobalt_cross.png","eyes/common/coin.png","eyes/common/ember_cross.png","eyes/common/ghost_button.png","eyes/common/grave_moss.png","eyes/common/hex_cross.png","eyes/common/iron_laurel_seal_v2.png","eyes/common/jade_hex_nut.png","eyes/common/marsh_button.png","eyes/common/pale_specter.png","eyes/common/swamp_button.png","eyes/common/venom_cross.png"]},"rare":{"body":["body/rare/copper.PNG","body/rare/cracked_stone.PNG","body/rare/glassy.PNG","body/rare/wooden.PNG"],"knife":["knife/rare/abyssal_dagger.png","knife/rare/astral_dagger.png","knife/rare/ice_crystal_blade.png","knife/rare/jade_carved_blade.png","knife/rare/jade_crystal_dagger.png","knife/rare/lunar_copper_dagger.png","knife/rare/nautilus_blade.png","knife/rare/ruby_bone_dagger.png","knife/rare/rune_gold_dagger.png","knife/rare/shadow_crystal_dagger.png","knife/rare/sigil_black_dagger.png","knife/rare/skeleton_claw_grip.png","knife/rare/skull_animal_dagger.png","knife/rare/tribal_totem_blade.png","knife/rare/void_star_dagger.png"],"offhand":["offhand/rare/ancient_rune_scroll.png","offhand/rare/black mirror.png","offhand/rare/blue_king.png","offhand/rare/bone_chalice.png","offhand/rare/dragons handbook.png","offhand/rare/golden_entwined_palm_tree_idol.png","offhand/rare/ice_shard.png","offhand/rare/mummy_hand_with_rings.png","offhand/rare/prismatic_crystal_shard.png","offhand/rare/something potion.png","offhand/rare/sphere of war.png","offhand/rare/the sun card.png","offhand/rare/tiky tonky.png","offhand/rare/totem of people.png","offhand/rare/tsss.png"],"necklace":["necklace/rare/all_seeing_eye_brooch.png","necklace/rare/aquamarine_gemstone_brooch.png","necklace/rare/blue_evil_eye_brooch.png","necklace/rare/blue_pearl_rosette_brooch.png","necklace/rare/brown_cameo_brooch.png","necklace/rare/carved_blossom_medallion.png","necklace/rare/carved_rose_medallion.png","necklace/rare/crystal_crown_reliquary.png","necklace/rare/diamond_eye_of_providence.png","necklace/rare/emerald_ornate_brooch.png","necklace/rare/eye_of_horus_pin.png","necklace/rare/golden_filigree_rosette.png","necklace/rare/golden_heart_locket.png","necklace/rare/golden_heart_tome.png","necklace/rare/golden_keyhole_locket.png","necklace/rare/golden_laurel_medallion.png","necklace/rare/golden_sun.png","necklace/rare/green_agate_bone_rune.png","necklace/rare/grey_cameo_brooch.png","necklace/rare/jeweled_keyplate.png","necklace/rare/portrait_locket.png","necklace/rare/purple_gem_locket.png","necklace/rare/red_sun.png","necklace/rare/rose_gemstone_brooch.png","necklace/rare/ruby_ornate_brooch.png","necklace/rare/runed_frame.png","necklace/rare/sepia_portrait_cameo.png","necklace/rare/silver_celtic_knot.png","necklace/rare/silver_filigree_rosette.png","necklace/rare/silver_pearl_rosette_brooch.png","necklace/rare/smoky_quartz_claw_pendant.png","necklace/rare/teal_lotus_hairpin.png","necklace/rare/teal_star_hairpin.png","necklace/rare/tribal_face_coin.png","necklace/rare/wild_rose_medallion.png"],"eyes":["eyes/rare/blush_star_button.png","eyes/rare/bone_rune_button.png","eyes/rare/celtic_jade_button.png","eyes/rare/celtic_teal_button.png","eyes/rare/cobalt_mandala.png","eyes/rare/cobalt_sun_button.png","eyes/rare/crimson_mandala.png","eyes/rare/crimson_sun_button.png","eyes/rare/gold_sigil_coin.png","eyes/rare/ivory_floral_button.png","eyes/rare/rose_petal_button.png","eyes/rare/serpent_amber_slit.png","eyes/rare/terracotta_mandala.png"]},"legendary":{"body":["body/legendary/cosmic.PNG","body/legendary/fractured.PNG","body/legendary/marble.PNG","body/legendary/mummy.PNG"],"knife":["knife/legendary/amger gem dagger.png","knife/legendary/ancient eye dagger.png","knife/legendary/crimson vein blade.png","knife/legendary/crystal hand blade.png","knife/legendary/dark justice blade.png","knife/legendary/drawgon.png","knife/legendary/jungle serpent blade.png","knife/legendary/ocean serpent knife.png","knife/legendary/silver scorpion dagger.png","knife/legendary/skull tower dagger.png","knife/legendary/sun & moon dagger.png","knife/legendary/totem ritual dagger.png"],"offhand":["offhand/legendary/124.png","offhand/legendary/book of enchant.png","offhand/legendary/cerberus skull.png","offhand/legendary/enchanted cat.png","offhand/legendary/obsidian_scrying_stone.png","offhand/legendary/prismatic_crystal_cluster.png","offhand/legendary/the death card.png","offhand/legendary/totem of the shaman.png"],"necklace":["necklace/legendary/black_cat.png","necklace/legendary/celestial_stone_talisman.png","necklace/legendary/crimson_phoenix_crest.png","necklace/legendary/dark_sun_sigil.png","necklace/legendary/frost_crystal_root.png","necklace/legendary/golden_winged_emblem.png","necklace/legendary/mask_of_dark_magic.png","necklace/legendary/purple_rune_sphere.png","necklace/legendary/runic_vortex_stone.png","necklace/legendary/sapphire_eye_brooch.png","necklace/legendary/sapphire_star_medallion.png","necklace/legendary/void_spiral_pendant.png","necklace/legendary/winged_blood_heart.png"],"eyes":["eyes/legendary/amber_spiral.png","eyes/legendary/emerald_marble.png","eyes/legendary/frost_cracked_orb.png","eyes/legendary/sapphire_marble.png","eyes/legendary/serpent_eye_orb.png"]},"ultimate":{"body":["body/ultimate/infernal_bone_wraith.PNG","body/ultimate/prismatic dragon scale.PNG","body/ultimate/rune_iron_golem.PNG","body/ultimate/void_portal_golem.PNG"],"knife":["knife/ultimate/cosmic eye blade.png","knife/ultimate/cosmic void blade.png","knife/ultimate/cracked lava blade.png","knife/ultimate/death shroud blade.png","knife/ultimate/drawon scale knife.png","knife/ultimate/eternal dagger.png","knife/ultimate/frost skeleton blade.png","knife/ultimate/hellfire blade.png","knife/ultimate/nebula cutter.png","knife/ultimate/starlight knife.png"],"offhand":["offhand/ultimate/ancient_rune_stone_tablet.png","offhand/ultimate/cosmos navigator.png","offhand/ultimate/cosmos stone.png","offhand/ultimate/lava stone.png"],"necklace":["necklace/ultimate/cosmic_void_orb.png","necklace/ultimate/eyes.png","necklace/ultimate/gilded_demon_bell.png","necklace/ultimate/jeweled_scarab_amulet.png","necklace/ultimate/runic_sigil_ring.png","necklace/ultimate/silver_skull_mask.png"],"eyes":["eyes/ultimate/amber_dragon_eye_medallion.png","eyes/ultimate/amber_slit_eye.png","eyes/ultimate/cosmic_nebula_orb.png","eyes/ultimate/illuminati_eye_charm.png","eyes/ultimate/jade_serpent_eye.png","eyes/ultimate/skull_orb_black.png","eyes/ultimate/venom_vortex.png","eyes/ultimate/void_cosmos_orb.png"]}};
+
+const RARITIES = ['ultimate','legendary','rare','common'];
+const CATS = ['body','knife','offhand','necklace','eyes'];
+
+// Build flat master list: [{path, cat, rarity}]
+const MASTER = [];
+for(const rarity of RARITIES){
+  for(const cat of CATS){
+    const paths = PACK_ITEMS[rarity]?.[cat] || [];
+    for(const path of paths) MASTER.push({path, cat, rarity});
+  }
+}
+
+// ── State ──────────────────────────────────────────────────────
+let ownedPaths = new Set();
+let currentWallet = null;
+let activeRarity = 'all';
+let activeCat    = 'all';
+let activeOwned  = 'all';
+let searchQuery  = '';
+
+// ── Wallet UI helpers ──────────────────────────────────────────
+function showSyncing(){
+  document.getElementById('wallet-syncing').style.display = '';
+}
+function hideSyncing(){
+  document.getElementById('wallet-syncing').style.display = 'none';
+}
+
+function showWalletConnected(key, platform){
+  const short = key.length > 10 ? key.slice(0,4)+'…'+key.slice(-4) : key;
+  const solRow = document.getElementById('wps-sol');
+  const tezRow = document.getElementById('wps-tez');
+  if(platform === 'tez'){
+    tezRow.classList.add('connected');
+    document.getElementById('wps-tez-addr').textContent = short;
+    tezRow.style.display = '';
+    solRow.style.display = 'none';
+  } else {
+    solRow.classList.add('connected');
+    document.getElementById('wps-sol-addr').textContent = short;
+  }
+}
+
+// ── Load collection from Wix ───────────────────────────────────
+async function loadCollection(pubkey){
+  showSyncing();
+  try {
+    const res = await fetch(`${WIX_API}/getItems?wallet=${encodeURIComponent(pubkey)}`);
+    if(!res.ok) throw new Error('fetch failed');
+    const data = await res.json();
+    const items = Array.isArray(data.items) ? data.items : [];
+    ownedPaths = new Set(items);
+    updateStats();
+    renderGrid();
+  } catch(e){
+    console.error('loadCollection error', e);
+    renderGrid();
+  } finally {
+    hideSyncing();
+  }
+}
+
+// ── Stats ──────────────────────────────────────────────────────
+function updateStats(){
+  const totals  = {common:0,rare:0,legendary:0,ultimate:0};
+  const owned   = {common:0,rare:0,legendary:0,ultimate:0};
+  for(const item of MASTER){
+    totals[item.rarity]++;
+    if(ownedPaths.has(item.path)) owned[item.rarity]++;
+  }
+  const totalAll = MASTER.length;
+  const ownedAll = ownedPaths.size;
+  document.getElementById('stat-total').innerHTML =
+    `${ownedAll}<span class="stat-fraction">/${totalAll}</span>`;
+  for(const r of RARITIES){
+    document.getElementById(`stat-${r}`).innerHTML =
+      `${owned[r]}<span class="stat-fraction">/${totals[r]}</span>`;
+  }
+}
+
+// ── Grid render ────────────────────────────────────────────────
+function renderGrid(){
+  const grid = document.getElementById('collection-grid');
+  const q = searchQuery.toLowerCase();
+
+  const filtered = MASTER.filter(item => {
+    if(activeRarity !== 'all' && item.rarity !== activeRarity) return false;
+    if(activeCat    !== 'all' && item.cat    !== activeCat)    return false;
+    const isOwned = ownedPaths.has(item.path);
+    if(activeOwned === 'owned'   && !isOwned) return false;
+    if(activeOwned === 'unowned' &&  isOwned) return false;
+    if(q){
+      const name = item.path.split('/').pop().replace(/\.(png|PNG|jpg|JPG)$/,'').replace(/_/g,' ').toLowerCase();
+      if(!name.includes(q) && !item.cat.includes(q) && !item.rarity.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if(!filtered.length){
+    grid.innerHTML = '<div id="grid-message">No items found</div>';
+    return;
+  }
+
+  grid.innerHTML = '';
+  for(const item of filtered){
+    grid.appendChild(buildCard(item));
+  }
+}
+
+function buildCard(item){
+  const isOwned = ownedPaths.has(item.path);
+  const name = item.path.split('/').pop()
+    .replace(/\.(png|PNG|jpg|JPG)$/,'').replace(/_/g,' ');
+  const card = document.createElement('div');
+  card.className = `item-card rarity-${item.rarity} ${isOwned ? 'owned' : 'unowned'}`;
+  card.title = isOwned ? name : '???';
+  card.innerHTML = `
+    <img src="${CDN}/${item.path}" alt="${name}" loading="lazy" onerror="this.style.opacity='.2'">
+    <div class="item-name">${isOwned ? name : '???'}</div>
+    <div class="item-cat">${item.cat}</div>
+    <div class="item-rarity-badge">${item.rarity}</div>`;
+  card.addEventListener('click', () => showDetail(item, isOwned, name));
+  return card;
+}
+
+function showDetail(item, isOwned, name){
+  const box = document.getElementById('item-detail');
+  box.className = `item-detail visible rarity-${item.rarity}`;
+  box.id = 'item-detail';
+
+  document.getElementById('d-img').src = `${CDN}/${item.path}`;
+  document.getElementById('d-img').style.filter = isOwned ? '' : 'grayscale(0.85)';
+  document.getElementById('d-img').style.opacity = isOwned ? '1' : '0.4';
+  document.getElementById('d-name').textContent = isOwned ? name : '???';
+  document.getElementById('d-cat').textContent  = item.cat;
+  document.getElementById('d-badge').textContent = item.rarity;
+
+  const stats = itemStats(item.path);
+  document.getElementById('d-curse').textContent = stats.curse;
+  document.getElementById('d-doom').textContent  = stats.doom;
+  document.getElementById('d-hex').textContent   = stats.hex;
+
+  const note = document.getElementById('d-unowned-note');
+  note.style.display = isOwned ? 'none' : '';
+
+  box.classList.add('visible');
+  box.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+// ── Filters ────────────────────────────────────────────────────
+// ── Custom dropdowns ──────────────────────────────────────────
+function initDropdown(id, onChange){
+  const dd = document.getElementById(id);
+  const trigger = dd.querySelector('.cs-trigger');
+  const valueEl = dd.querySelector('.cs-value');
+  const options = dd.querySelectorAll('.cs-option');
+
+  trigger.addEventListener('click', e => {
+    e.stopPropagation();
+    document.querySelectorAll('.custom-select.open').forEach(el => { if(el !== dd) el.classList.remove('open'); });
+    dd.classList.toggle('open');
+  });
+
+  options.forEach(opt => {
+    opt.addEventListener('click', () => {
+      options.forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      valueEl.textContent = opt.textContent;
+      dd.classList.remove('open');
+      onChange(opt.dataset.value);
+    });
+  });
+}
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.custom-select.open').forEach(el => el.classList.remove('open'));
+});
+
+initDropdown('dd-rarity', v => { activeRarity = v; renderGrid(); });
+initDropdown('dd-cat',    v => { activeCat    = v; renderGrid(); });
+initDropdown('dd-owned',  v => { activeOwned  = v; renderGrid(); });
+
+document.getElementById('search-input').addEventListener('input', e => {
+  searchQuery = e.target.value.trim();
+  renderGrid();
+});
+
+// ── Auto-connect from sessionStorage ──────────────────────────
+setTimeout(async function autoConnect(){
+  const key      = sessionStorage.getItem('wallet_key');
+  const platform = sessionStorage.getItem('wallet_platform');
+  if(!key) return;
+  currentWallet = key;
+  showWalletConnected(key, platform);
+  await loadCollection(key);
+}, 0);
+
+// ── site-header.js bridge ──────────────────────────────────────
+window.connectWallet = async function(){};
+window.connectTezos  = async function(){};
+window.onWalletConnected = async function(key, platform){
+  if(currentWallet === key) return;
+  currentWallet = key;
+  showWalletConnected(key, platform);
+  await loadCollection(key);
+};
+window.onWalletDisconnected = function(){
+  currentWallet = null;
+  ownedPaths = new Set();
+  const solRow = document.getElementById('wps-sol');
+  const tezRow = document.getElementById('wps-tez');
+  solRow.classList.remove('connected');
+  document.getElementById('wps-sol-addr').textContent = 'Not connected';
+  tezRow.classList.remove('connected');
+  tezRow.style.display = 'none';
+  updateStats();
+  document.getElementById('collection-grid').innerHTML =
+    '<div id="grid-message">Connect wallet to view collection</div>';
+};
+</script>
+</body>
+</html>

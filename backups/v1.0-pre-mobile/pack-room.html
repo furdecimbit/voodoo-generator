@@ -226,49 +226,38 @@
   #video-overlay.active { display:flex; }
   #pack-video  { width:100%; max-width:480px; height:auto; }
   #skip-btn {
-    color:#8a6030; font-family:'Bloodcrow',serif; font-size:26px;
-    letter-spacing:.14em; text-transform:uppercase;
-    background:none; border:1px solid #3a2010; border-radius:12px;
-    padding:12px 40px; cursor:pointer; transition:color .2s, border-color .2s;
-    margin-top:8px;
+    color:#5a4020; font-family:'Bloodcrow',serif; font-size:13px;
+    letter-spacing:.1em; text-transform:uppercase;
+    background:none; border:none; cursor:pointer; transition:color .2s;
   }
-  #skip-btn:hover { color:#e8c050; border-color:#8a5020; }
+  #skip-btn:hover { color:#c8a050; }
 
   /* Reveal area */
   #center-reveal {
-    display:none; flex-direction:column; align-items:center; gap:28px; width:100%;
+    display:none; flex-direction:column; align-items:center; gap:20px; width:100%;
   }
   #tap-hint {
     font-size:16px; letter-spacing:.1em; text-transform:uppercase;
     color:#5a4020; animation:hintPulse 2s ease-in-out infinite;
   }
-
-  /* Card stack */
-  #card-stack {
-    position:relative;
-    width:240px; height:336px; /* 240 * 1.4 */
-    margin:0 auto;
+  #cards-row {
+    display:flex; flex-wrap:wrap; gap:14px; justify-content:center; width:100%;
   }
 
-  .stack-card {
-    position:absolute; width:240px; top:0; left:0;
-    transition:transform .35s ease, opacity .35s ease;
-    will-change:transform;
+  /* Card flip */
+  .reveal-card {
+    width:240px; perspective:900px;
+    opacity:0; transform:translateY(30px);
+    transition:opacity .4s, transform .4s;
   }
-  .stack-card-inner {
+  .reveal-card.appeared { opacity:1; transform:translateY(0); }
+  .reveal-card-inner {
     position:relative; width:100%; padding-top:140%;
     transform-style:preserve-3d;
-    -webkit-transform-style:preserve-3d;
     transition:transform .7s cubic-bezier(.4,0,.2,1);
     cursor:pointer;
   }
-  .stack-card.flipped .stack-card-inner { transform:rotateY(180deg); cursor:default; }
-  .stack-card.exit {
-    transform:translateX(140%) rotate(18deg) !important;
-    opacity:0 !important;
-    pointer-events:none;
-  }
-
+  .reveal-card.flipped .reveal-card-inner { transform:rotateY(180deg); cursor:default; }
   .card-face {
     position:absolute; inset:0;
     border-radius:12px; overflow:hidden;
@@ -284,10 +273,10 @@
   .card-back svg { width:56px; height:56px; opacity:.5; }
 
   /* rarity glow on card back */
-  .stack-card.rarity-common  .card-back { box-shadow:0 0 18px #ffffff55; border-color:#6a6a6a; }
-  .stack-card.rarity-rare    .card-back { box-shadow:0 0 22px #e8c05077; border-color:#8a6820; }
-  .stack-card.rarity-legendary .card-back { box-shadow:0 0 26px #60b0ff88; border-color:#3060a0; }
-  .stack-card.rarity-ultimate  .card-back { box-shadow:0 0 30px #ff80c099; border-color:#902060; }
+  .reveal-card.rarity-common  .card-back { box-shadow:0 0 18px #ffffff55; border-color:#6a6a6a; }
+  .reveal-card.rarity-rare    .card-back { box-shadow:0 0 22px #e8c05077; border-color:#8a6820; }
+  .reveal-card.rarity-legendary .card-back { box-shadow:0 0 26px #60b0ff88; border-color:#3060a0; }
+  .reveal-card.rarity-ultimate  .card-back { box-shadow:0 0 30px #ff80c099; border-color:#902060; }
 
   .card-front {
     transform:rotateY(180deg);
@@ -358,33 +347,6 @@
   .stat-row.rarity-legendary .stat-val { color:#80d0ff; }
   .stat-row.rarity-ultimate .stat-val  { color:#ff80c0; }
 
-  /* Buy buttons */
-  #buy-links { display:flex; flex-direction:column; gap:8px; }
-  .buy-pack-btn { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px; text-decoration:none; font-family:'Bloodcrow',serif; transition:border-color .2s, box-shadow .2s; }
-  .buy-pack-btn.sol-btn { border:1px solid #3a3020; background:linear-gradient(135deg,#1a1a08,#121208); color:#c8c870; }
-  .buy-pack-btn.sol-btn:hover { border-color:#c8c870; box-shadow:0 0 14px #c8c87044; }
-  .buy-pack-btn.tez-btn { border:1px solid #302840; background:linear-gradient(135deg,#180e28,#120a20); color:#a070e0; }
-  .buy-pack-btn.tez-btn:hover { border-color:#a070e0; box-shadow:0 0 14px #a070e044; }
-  .buy-pack-btn img { width:26px; height:26px; border-radius:50%; object-fit:cover; flex-shrink:0; }
-  .buy-pack-label { display:flex; flex-direction:column; gap:1px; }
-  .buy-pack-title { font-size:14px; letter-spacing:.07em; text-transform:uppercase; }
-  .buy-pack-sub { font-size:10px; letter-spacing:.04em; opacity:.45; }
-
-  /* Drop table */
-  #drop-table{padding:0;display:flex;flex-direction:column;gap:8px;}
-  .dt-row{padding:10px 12px;border-radius:8px;border:1px solid;background:rgba(0,0,0,.25);}
-  .dt-row.rarity-common{border-color:#4a4a3a;}
-  .dt-row.rarity-rare{border-color:#7a5808;}
-  .dt-row.rarity-legendary{border-color:#2a6a8a;}
-  .dt-row.rarity-ultimate{border-color:#7a2060;}
-  .dt-rarity{font-family:'Bloodcrow',serif;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;}
-  .dt-row.rarity-common .dt-rarity{color:#c8c8a8}
-  .dt-row.rarity-rare .dt-rarity{color:#f0d020}
-  .dt-row.rarity-legendary .dt-rarity{color:#60e0ff}
-  .dt-row.rarity-ultimate .dt-rarity{color:#ff80d8}
-  .dt-contents{font-size:13px;color:#7a6040;line-height:1.5;}
-  .dt-bonus{color:#5a4030;font-style:italic;}
-
   #home-link {
     margin-top:auto; display:block; text-align:center;
     text-decoration:none; padding:10px 14px; border-radius:8px;
@@ -396,65 +358,17 @@
 
   /* ── Mobile ── */
   @media (max-width: 800px) {
-
     #room {
       grid-template-columns: 1fr;
       grid-template-rows: auto;
     }
-
-    /* Panels stack, center hidden by default (shown as overlay when pack selected) */
-    #panel-left  { order:1; border-right:none; border-bottom:1px solid #2e2010; background: linear-gradient(180deg,#2a1e0eee 0%,#1e1408ee 100%), url('verticalback.png'); background-size:cover; }
-    #panel-right { order:2; border-left:none; border-top:1px solid #2e2010; background: linear-gradient(180deg,#221a0eee 0%,#1a1208ee 100%), url('verticalback.png'); background-size:cover; }
-    #panel-center { display:none; }
-
-    /* Center as fullscreen overlay when pack selected */
-    #panel-center.mob-open {
-      display: flex !important;
-      position: fixed; inset: 0; z-index: 300;
-      overflow-y: auto;
-      background: #070402f0;
-      padding-top: 8px;
-      justify-content: flex-start;
-      min-height: unset;
-    }
-
-    /* Back button (injected by JS) */
-    #mob-back-btn {
-      position: sticky; top: 8px; align-self: flex-start;
-      z-index: 10; margin: 0 0 8px 12px;
-      background: #0e0804; border: 1px solid #3a2010;
-      border-radius: 8px; padding: 8px 18px;
-      font-family: 'Bloodcrow', serif; font-size: 14px;
-      letter-spacing: .1em; text-transform: uppercase;
-      color: #7a5520; cursor: pointer;
-      transition: color .2s, border-color .2s;
-    }
-    #mob-back-btn:hover { color: #e8c060; border-color: #8a5020; }
-
-    /* Pack entry: bigger tap target */
-    .pack-entry { padding: 12px; }
-    .pack-entry img { width: 60px; height: 60px; }
-    .pack-entry-name { font-size: 15px; }
-    .pack-entry-badge { min-width: 28px; height: 28px; font-size: 16px; }
-
-    /* Text */
-    .wallet-platform-status span { font-size: 16px; }
-    .panel-title  { font-size: 18px; }
-    #page-title   { font-size: 26px; margin-bottom: 10px; }
-    .stat-label   { font-size: 18px; }
-    .stat-val     { font-size: 22px; }
-
-    /* Video overlay full width */
-    #pack-video { max-width: 100%; }
-
-    /* Card stack on mobile */
-    #center-reveal { padding: 0 16px 40px; }
-    #card-stack {
-      width: min(240px, 72vw);
-      height: calc(min(240px, 72vw) * 1.4);
-      overflow: visible;
-    }
-    .stack-card { width: min(240px, 72vw); }
+    #panel-left  { border-right:none; border-bottom:1px solid #1e1208; }
+    #panel-right { border-left:none;  border-top:1px solid #1e1208; order:3; }
+    #panel-center { min-height: 60vh; }
+    .reveal-card { width:100px; }
+    .card-item-img { width:60px; height:60px; }
+    #pack-img { width:160px; }
+    #rarity-title { font-size:20px; }
   }
 </style>
 </head>
@@ -512,9 +426,9 @@
     </div>
 
     <div id="center-reveal">
-      <div id="tap-hint">Tap to reveal</div>
-      <div id="card-stack"></div>
-      <button id="collect-btn" onclick="collectPack()">Close</button>
+      <div id="tap-hint">Tap each card to reveal</div>
+      <div id="cards-row"></div>
+      <button id="collect-btn" onclick="collectPack()">Claim Items</button>
     </div>
 
   </div>
@@ -547,47 +461,6 @@
       </div>
     </div>
 
-    <div class="panel-title">Buy Mystery Packs</div>
-    <div id="buy-links">
-      <a href="#" target="_blank" class="buy-pack-btn sol-btn" id="buy-drip-btn">
-        <img src="drip.jpeg" alt="Solana">
-        <div class="buy-pack-label">
-          <span class="buy-pack-title">Buy on Drip</span>
-          <span class="buy-pack-sub">Solana · Drip.haus</span>
-        </div>
-      </a>
-      <div style="position:relative;">
-        <a href="#" class="buy-pack-btn tez-btn" id="buy-objkt-btn" style="opacity:.35;pointer-events:none;cursor:not-allowed;">
-          <img src="objkt.jpeg" alt="Tezos">
-          <div class="buy-pack-label">
-            <span class="buy-pack-title">Buy on Objkt</span>
-            <span class="buy-pack-sub">Tezos · objkt.com</span>
-          </div>
-        </a>
-        <span style="position:absolute;top:50%;right:10px;transform:translateY(-50%);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#5a4020;border:1px solid #3a2810;border-radius:4px;padding:2px 6px;">Coming Soon</span>
-      </div>
-    </div>
-
-    <div class="panel-title">Pack Contents</div>
-    <div id="drop-table">
-      <div class="dt-row rarity-common">
-        <div class="dt-rarity">Common</div>
-        <div class="dt-contents">5 items · 5× Common<br><span class="dt-bonus">10% chance: 1 → Rare</span></div>
-      </div>
-      <div class="dt-row rarity-rare">
-        <div class="dt-rarity">Rare</div>
-        <div class="dt-contents">3 items · 2× Rare + 1× Common<br><span class="dt-bonus">10% chance: 1 Rare → Legendary</span></div>
-      </div>
-      <div class="dt-row rarity-legendary">
-        <div class="dt-rarity">Legendary</div>
-        <div class="dt-contents">4 items · 2× Legendary + 1× Rare + 1× Common<br><span class="dt-bonus">10% chance: 1 Legendary → Ultimate</span></div>
-      </div>
-      <div class="dt-row rarity-ultimate">
-        <div class="dt-rarity">Ultimate</div>
-        <div class="dt-contents">5 items · 2× Ultimate + 1× Legendary + 1× Rare + 1× Common<br><span class="dt-bonus">No upgrade — already the peak</span></div>
-      </div>
-    </div>
-
     <a id="home-link" href="index.html">← Home</a>
 
   </div>
@@ -596,8 +469,8 @@
 
 <!-- Video overlay -->
 <div id="video-overlay">
-  <button id="skip-btn" onclick="skipVideo()">Skip</button>
   <video id="pack-video" playsinline></video>
+  <button id="skip-btn" onclick="skipVideo()">Skip</button>
 </div>
 
 <script src="https://unpkg.com/@airgap/beacon-dapp@4.8.1/dist/walletbeacon.dapp.min.js"></script>
@@ -626,7 +499,6 @@ let currentPlatform = null;
 let activePack      = null;
 let packCounts      = { common:0, rare:0, legendary:0, ultimate:0 };
 let rolledItems     = [];
-let stackCards      = [];
 const sessionCounts = { common:0, rare:0, legendary:0, ultimate:0 };
 
 // ── Init ───────────────────────────────────────────────────────
@@ -825,8 +697,7 @@ async function loadWalletPacks(pubkey){
     const assets = await fetchAllAssets(pubkey);
     let openedMints = [];
     try{
-      const userId = sessionStorage.getItem('hex_userId');
-      const omRes = await fetch(`${WIX_API}/getOpenedMints?userId=${encodeURIComponent(userId)}`);
+      const omRes = await fetch(`${WIX_API}/getOpenedMints?wallet=${encodeURIComponent(pubkey)}`);
       if(omRes.ok){ const d = await omRes.json(); openedMints = d.mints||[]; }
       localStorage.setItem(`${pubkey}_openedMints`, JSON.stringify(openedMints));
     } catch(e){
@@ -911,7 +782,7 @@ function selectPack(rarity, mint){
   document.getElementById('center-idle').style.display   = 'none';
   document.getElementById('center-reveal').style.display = 'none';
   document.getElementById('collect-btn').style.display   = 'none';
-  document.getElementById('card-stack').innerHTML = '';
+  document.getElementById('cards-row').innerHTML = '';
   document.getElementById('tap-hint').style.display = '';
 
   const cp = document.getElementById('center-pack');
@@ -926,32 +797,14 @@ function selectPack(rarity, mint){
   document.documentElement.style.setProperty('--pack-glow', GLOW_COLORS[rarity]);
   setRoomGlow(rarity);
   buildSmoke(rarity);
-
-  // Mobile: open as overlay
-  if(window.innerWidth <= 800){
-    const center = document.getElementById('panel-center');
-    center.classList.add('mob-open');
-    if(!document.getElementById('mob-back-btn')){
-      const btn = document.createElement('button');
-      btn.id = 'mob-back-btn';
-      btn.textContent = '← Back';
-      btn.onclick = function(){ center.classList.remove('mob-open'); };
-      center.insertBefore(btn, center.firstChild);
-    }
-    center.scrollTop = 0;
-  }
 }
 
 // ── Open flow ──────────────────────────────────────────────────
 function startOpen(){
-  if (!activePack?.mint) {
-    alert('Pack could not be verified. Please refresh the page and try again.');
-    return;
-  }
   document.getElementById('center-pack').style.display = 'none';
   const overlay = document.getElementById('video-overlay');
   const vid     = document.getElementById('pack-video');
-  vid.src = `${activePack.rarity}.MP4`;
+  vid.src = 'openpack.mp4';
   vid.currentTime = 0;
   overlay.classList.add('active');
   vid.play().catch(() => skipVideo());
@@ -969,77 +822,30 @@ function skipVideo(){
 // ── Reveal ─────────────────────────────────────────────────────
 async function revealCards(){
   document.getElementById('center-reveal').style.display = 'flex';
+  const row = document.getElementById('cards-row');
+  row.innerHTML = '';
 
   const { rarity, mint } = activePack;
-
-  // Decrement + mark mint immediately so skipping Claim Items doesn't allow re-opening
-  packCounts[rarity] = Math.max(0, (packCounts[rarity]||1) - 1);
-  if(window._packMints?.[rarity]?.length) window._packMints[rarity].shift();
-  if(mint && currentWallet){
-    const key = `${currentWallet}_openedMints`;
-    const opened = JSON.parse(localStorage.getItem(key)||'[]');
-    if(!opened.includes(mint)) opened.push(mint);
-    localStorage.setItem(key, JSON.stringify(opened));
-  }
-  logPackOpen(rarity);
-  renderPackList(packCounts, window._packMints);
-
   try{
     const res = await fetch(`${WIX_API}/openPack`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        userId: sessionStorage.getItem('hex_userId'),
-        wallet: currentWallet,
-        platform: currentPlatform,
-        rarity,
-        mintAddress: mint
-      })
+      body:JSON.stringify({ wallet:currentWallet, rarity, mintAddress:mint })
     });
     const data = await res.json();
-    if(!res.ok){
-      if(data.error === 'pack already opened'){
-        resetCenter();
-        alert('This pack has already been opened.');
-        return;
-      }
-      // Other server errors — do not roll locally, abort
-      resetCenter();
-      alert('Failed to open pack. Please try again.');
-      return;
-    }
     rolledItems = data.items || [];
   } catch(e){
-    // Network error — roll locally as fallback only when server is unreachable
-    console.warn('openPack network error, rolling locally', e);
+    console.warn('openPack failed, rolling locally');
     rolledItems = rollPackItems(rarity);
   }
 
   if(!rolledItems.length){ rolledItems = rollPackItems(rarity); }
 
-  // localStorage'a kaydet — forge + collection fallback olarak okur (wallet_KEY_collection formatı)
-  if(currentWallet){
-    const lsKey = `wallet_${currentWallet}_collection`;
-    const saved = JSON.parse(localStorage.getItem(lsKey)||'[]');
-    rolledItems.forEach(item => {
-      if(!saved.some(s => s.path === item.path)) saved.push(item);
-    });
-    localStorage.setItem(lsKey, JSON.stringify(saved));
-  }
-
-  stackCards = [];
-
-  // render back-to-front so front card is last child (highest natural z)
-  const stackEl = document.getElementById('card-stack');
-  stackEl.innerHTML = '';
-  // render back-to-front so front card is last child (highest natural z)
-  for(let i = rolledItems.length - 1; i >= 0; i--){
-    const card = buildCard(rolledItems[i]);
-    stackEl.appendChild(card);
-    stackCards.unshift(card); // stackCards[0] = front = last appended
-  }
-  positionStack(stackCards);
-  if(stackCards.length) stackCards[0].style.cursor = 'pointer';
+  rolledItems.forEach((item, i) => {
+    const card = buildCard(item);
+    row.appendChild(card);
+    setTimeout(() => card.classList.add('appeared'), 200 + i*180);
+  });
 }
 
 function buildCard(item){
@@ -1048,9 +854,9 @@ function buildCard(item){
   const stats = itemStats(item.path);
   const imgSrc = CDN + '/' + item.path;
   const card = document.createElement('div');
-  card.className = `stack-card rarity-${item.rarity||'common'}`;
+  card.className = `reveal-card rarity-${item.rarity||'common'}`;
   card.innerHTML = `
-    <div class="stack-card-inner">
+    <div class="reveal-card-inner" onclick="flipCard(this)">
       <div class="card-face card-back">
         <svg viewBox="0 0 24 24" fill="none" stroke="#c8a060" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -1067,45 +873,48 @@ function buildCard(item){
         </div>
       </div>
     </div>`;
-  card.onclick = () => tapTopCard(card);
   return card;
 }
 
-function positionStack(cards){
-  cards.forEach((card, i) => {
-    // i=0 is front: no offset, highest z-index
-    card.style.transform = `translate(${i*4}px, ${i*5}px)`;
-    card.style.zIndex = cards.length - i;
-    card.style.opacity = '1';
-  });
-}
-
-function tapTopCard(card){
-  // Only allow tapping the front card (stackCards[0])
-  if(!stackCards || card !== stackCards[0]) return;
+function flipCard(inner){
+  const card = inner.parentElement;
   if(card.classList.contains('flipped')) return;
   card.classList.add('flipped');
-  card.style.cursor = 'default';
-  // After flip animation, slide out
-  setTimeout(() => {
-    card.classList.add('exit');
-    setTimeout(() => {
-      card.remove();
-      stackCards.shift();
-      positionStack(stackCards);
-      if(stackCards.length === 0){
-        document.getElementById('tap-hint').style.display = 'none';
-        document.getElementById('collect-btn').style.display = 'block';
-      } else {
-        stackCards[0].style.cursor = 'pointer';
-      }
-    }, 380);
-  }, 900);
+  checkAllFlipped();
+}
+
+function checkAllFlipped(){
+  const cards   = document.querySelectorAll('.reveal-card');
+  const flipped = document.querySelectorAll('.reveal-card.flipped');
+  if(cards.length > 0 && cards.length === flipped.length){
+    document.getElementById('tap-hint').style.display = 'none';
+    document.getElementById('collect-btn').style.display = 'block';
+  }
 }
 
 // ── Collect ────────────────────────────────────────────────────
 function collectPack(){
-  // Pack already decremented and mint already saved in revealCards — just reset UI
+  const { rarity, mint } = activePack;
+
+  // Save opened mint
+  if(mint && currentWallet){
+    const key = `${currentWallet}_openedMints`;
+    const opened = JSON.parse(localStorage.getItem(key)||'[]');
+    if(!opened.includes(mint)) opened.push(mint);
+    localStorage.setItem(key, JSON.stringify(opened));
+  }
+
+  // Decrement counts + remove mint
+  packCounts[rarity] = Math.max(0, (packCounts[rarity]||1) - 1);
+  if(window._packMints?.[rarity]?.length) window._packMints[rarity].shift();
+
+  // Log session
+  logPackOpen(rarity);
+
+  // Re-render left
+  renderPackList(packCounts, window._packMints);
+
+  // Reset center
   resetCenter();
 }
 
@@ -1113,12 +922,10 @@ function resetCenter(){
   activePack = null;
   document.getElementById('center-reveal').style.display = 'none';
   document.getElementById('center-pack').style.display   = 'none';
-  document.getElementById('card-stack').innerHTML = '';
+  document.getElementById('cards-row').innerHTML = '';
   document.getElementById('collect-btn').style.display = 'none';
   document.getElementById('tap-hint').style.display = '';
   document.querySelectorAll('.pack-entry').forEach(e => e.classList.remove('active'));
-  // Mobile: close overlay
-  document.getElementById('panel-center').classList.remove('mob-open');
 
   const allEmpty = RARITIES.every(r => !packCounts[r]);
   const idleEl = document.getElementById('center-idle');
@@ -1190,11 +997,6 @@ window.connectTezos     = connectTez;
 window.disconnectWallet = doDisconnect;
 window.disconnectTezos  = doDisconnect;
 
-// ── Login + wallet guard ───────────────────────────────────────
-if(!sessionStorage.getItem('hex_userId')){
-  window.location.href = 'login.html';
-}
-
 // ── Auto-connect from sessionStorage ──────────────────────────
 setTimeout(async function autoConnect(){
 
@@ -1222,7 +1024,6 @@ function devLoadPacks(){
   hideSyncing();
   renderPackList(packCounts,window._packMints);
 }
-
 
 </script>
 </body>

@@ -1326,7 +1326,7 @@
     body[data-mob-tab="build"][data-mob-ritual="ambiance"] #pins-section-body-wrap,
     body[data-mob-tab="build"][data-mob-ritual="ambiance"] #bg-section-body-wrap,
     body[data-mob-tab="build"][data-mob-ritual="ambiance"] #name-section-body-wrap {
-      display:block !important; max-height:9999px !important; overflow:visible !important; padding:12px 14px !important;
+      display:block !important; max-height:none !important; overflow:visible !important; padding:0 !important;
     }
     body[data-mob-tab="build"][data-mob-ritual="ambiance"] #inner-inventory-label,
     body[data-mob-tab="build"][data-mob-ritual="ambiance"] #inner-inventory-body-wrap { display:none !important; }
@@ -1952,8 +1952,7 @@
     flex-direction: column;
   }
   #bg-section-label,
-  #name-section-label,
-  #pins-section-label {
+  #name-section-label {
     background: linear-gradient(90deg, #1a0d2e, #130a22) !important;
     border-top: 1px solid #3a2060 !important;
     border-bottom: 1px solid #3a2060 !important;
@@ -1961,40 +1960,10 @@
     cursor: default !important;
   }
   #bg-section-body-wrap,
-  #name-section-body-wrap,
-  #pins-section-body-wrap {
+  #name-section-body-wrap {
     background: #110920 !important;
     border-bottom: 1px solid #2a1848 !important;
   }
-
-  /* ── Ritual sub-tab bar (Customize / Ambiance) ── */
-  #ritual-tab-bar {
-    display: flex;
-    background: linear-gradient(90deg, #181008, #120c04);
-    border-bottom: 2px solid #3a2808;
-  }
-  .ritual-tab {
-    flex: 1;
-    padding: 11px 8px 10px;
-    display: flex; align-items: center; justify-content: center; gap: 7px;
-    background: none; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px;
-    font-family: 'Bloodcrow', serif; font-size: 15px; letter-spacing: .07em; text-transform: uppercase;
-    color: #6a5030; cursor: pointer;
-    transition: color .18s, border-color .18s, background .18s;
-  }
-  .ritual-tab svg { stroke: #5a4028; transition: stroke .18s; flex-shrink: 0; }
-  .ritual-tab.active { color: #f0c84a; border-bottom-color: #e8b830; background: rgba(232,184,48,.08); }
-  .ritual-tab.active svg { stroke: #f0c84a; }
-
-  /* Content visibility by active ritual tab */
-  #inventory-section-body[data-ritual="ambiance"] #inner-inventory-label,
-  #inventory-section-body[data-ritual="ambiance"] #inner-inventory-body-wrap,
-  #inventory-section-body[data-ritual="ambiance"] #mob-cat-bar { display: none !important; }
-
-  #inventory-section-body[data-ritual="customize"] #forge-ambiance-sections { display: none !important; }
-
-  /* hide old ritual-pill-switch */
-  #ritual-pill-switch { display: none !important; }
 
   /* Forge section dividers */
   .forge-section-title {
@@ -2166,224 +2135,6 @@
   }
   #save-slots { display: flex; justify-content: center; padding: 8px 12px 12px; }
   #slot-wrap-0 { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-
-  /* ── Mobile (≤768px): preview → customize (with cat bar) → equipped ── */
-  @media (max-width: 768px) {
-
-    /* hide packs section entirely on mobile */
-    #packs-section-label, #packs-section-body-wrap,
-    #pack-inventory, #no-wallet-msg, #buy-packs-section { display: none !important; }
-
-    /* forge-body: flex column, full height scroll */
-    body.forge-ready #forge-body {
-      display: flex !important;
-      flex-direction: column !important;
-      height: auto !important;
-      overflow: visible !important;
-    }
-
-    /* Page title: centered */
-    #forge-page-title {
-      display: block !important;
-      text-align: center !important;
-      font-size: 26px !important;
-      padding: 12px 16px 10px !important;
-      letter-spacing: .12em !important;
-    }
-
-    /* preview col: order 1 (top) */
-    #preview-col-wrap {
-      display: block !important;
-      width: 100% !important;
-      order: 1;
-    }
-    #preview-col-inner {
-      display: flex !important;
-      flex-direction: column !important;
-      width: 100% !important;
-      overflow: visible !important;
-      height: auto !important;
-    }
-    #preview-area {
-      width: 100% !important;
-      flex: none !important;
-      overflow: visible !important;
-      padding: 10px 12px 6px !important;
-      min-height: 0 !important;
-    }
-    #preview-wrap {
-      width: 100% !important;
-      max-width: min(440px, 92vw) !important;
-      margin: 0 auto !important;
-    }
-    canvas { width: 100% !important; height: auto !important; }
-
-    /* sidebar: order 2 (middle) — customize section */
-    #sidebar {
-      order: 2 !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
-      border-right: none !important;
-      border-top: 1px solid #2a1a08;
-      overflow-y: visible !important;
-    }
-
-    /* right panel: order 3 (bottom) — equipped items */
-    #right-panel {
-      order: 3 !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
-      border-left: none !important;
-      border-top: 1px solid #2a1a08;
-      overflow-y: visible !important;
-      flex-direction: column !important;
-      display: flex !important;
-    }
-    #rp-header { display: none !important; }
-
-    /* Equipped toggle header */
-    #rp-equipped-toggle {
-      display: flex !important;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 16px;
-      cursor: pointer;
-      background: linear-gradient(90deg,#1e1408,#161008);
-      border-bottom: 1px solid #2a1a08;
-      user-select: none;
-    }
-    #rp-equipped-toggle-label {
-      font-family: 'Bloodcrow', serif;
-      font-size: 15px;
-      letter-spacing: .07em;
-      color: #c8a050;
-      flex: 1;
-    }
-    #rp-equipped-arrow-svg {
-      transition: transform .25s;
-      flex-shrink: 0;
-    }
-    /* collapsed state */
-    #rp-scroll { display: none !important; }
-    #right-panel.rp-open #rp-scroll { display: flex !important; flex: none !important; overflow-y: visible !important; min-height: 0 !important; }
-    #right-panel.rp-open #rp-equipped-arrow-svg { transform: rotate(180deg); }
-
-    /* Action bar slim + full width */
-    #forge-action-bar { padding: 8px 12px !important; width: 100% !important; box-sizing: border-box !important; }
-
-    /* Bewitch box — iOS WebView safe */
-    #bewitch-box {
-      width: calc(100% - 24px) !important;
-      margin: 8px 12px 4px !important;
-      box-sizing: border-box !important;
-    }
-    #bewitch-inner {
-      display: -webkit-flex !important;
-      display: flex !important;
-      -webkit-flex-direction: row !important;
-      flex-direction: row !important;
-      -webkit-align-items: center !important;
-      align-items: center !important;
-      -webkit-flex-wrap: nowrap !important;
-      flex-wrap: nowrap !important;
-      padding: 10px 12px !important;
-      gap: 10px !important;
-      min-height: 0 !important;
-    }
-    #bw-icon {
-      width: 54px !important; height: 54px !important;
-      -webkit-flex-shrink: 0 !important; flex-shrink: 0 !important;
-    }
-    #bw-info {
-      -webkit-flex: 1 !important; flex: 1 !important;
-      min-width: 0 !important; overflow: hidden !important;
-    }
-    #bw-name {
-      font-size: 16px !important;
-      white-space: nowrap !important;
-      overflow: hidden !important;
-      text-overflow: ellipsis !important;
-      max-width: 100% !important;
-    }
-    #bw-stats { display: -webkit-flex !important; display: flex !important; -webkit-flex-wrap: wrap !important; flex-wrap: wrap !important; gap: 4px !important; }
-    #bw-action {
-      font-size: 20px !important;
-      -webkit-flex-shrink: 0 !important; flex-shrink: 0 !important;
-      padding: 0 4px !important;
-    }
-
-    /* Equipped panel stats */
-    #rp-scroll { width: 100% !important; box-sizing: border-box !important; }
-    #inventory-list { padding: 8px 10px 4px !important; width: 100% !important; box-sizing: border-box !important; }
-    #stat-totals { padding: 8px 6px 12px !important; width: 100% !important; box-sizing: border-box !important; }
-    .stat-tri-row { gap: 0 !important; width: 100% !important; justify-content: space-around !important; }
-    .stat-circle { width: 28vw !important; height: 28vw !important; max-width: 110px !important; max-height: 110px !important; background-size: 85% !important; }
-    .stat-circle-val { font-size: clamp(18px, 6vw, 32px) !important; }
-    .stat-circle-lbl { font-size: clamp(9px, 2.5vw, 13px) !important; }
-    #slots-section { margin-top: 0 !important; }
-    #save-slots { padding: 8px 10px 12px !important; }
-    #soul-bind-btn { width: calc(100% - 20px) !important; margin: 0 10px !important; }
-
-    /* Category icon bar — show on mobile only */
-    #mob-cat-bar {
-      display: flex !important;
-      gap: 0;
-      width: 100%;
-      background: linear-gradient(90deg,#181008,#120c04);
-      border-bottom: 2px solid #3a2808;
-      overflow-x: auto;
-      position: sticky;
-      top: 82px;
-      z-index: 100;
-      flex-shrink: 0;
-    }
-    .mob-cat-btn {
-      flex: 1; min-width: 52px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 3px; padding: 8px 4px 7px;
-      background: none; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px;
-      color: #6a5030; cursor: pointer;
-      font-family: 'Bloodcrow', serif; font-size: 11px; letter-spacing: .05em;
-      transition: color .18s, border-color .18s, background .18s;
-    }
-    .mob-cat-btn svg { stroke: #5a4028; transition: stroke .18s; }
-    .mob-cat-btn.active {
-      color: #f0c84a;
-      border-bottom-color: #e8b830;
-      background: rgba(232,184,48,.10);
-    }
-    .mob-cat-btn.active svg { stroke: #f0c84a; }
-
-    /* Category sections: hide all by default on mobile */
-    #inner-inventory-body-wrap .section { display: none !important; }
-
-    /* Show only selected category */
-    body[data-mob-cat="body"]     #sec-body    { display: block !important; }
-    body[data-mob-cat="knife"]    #sec-knife   { display: block !important; }
-    body[data-mob-cat="offhand"]  #sec-offhand { display: block !important; }
-    body[data-mob-cat="necklace"] #sec-necklace{ display: block !important; }
-    body[data-mob-cat="eyes"]     #sec-eyes    { display: block !important; }
-    body[data-mob-cat="mouth"]    #sec-mouth   { display: block !important; }
-
-    /* Within the shown section, open the body immediately */
-    #inner-inventory-body-wrap .section { overflow: visible; }
-    #inner-inventory-body-wrap .section .section-body { display: block !important; max-height: none !important; overflow: visible !important; padding: 8px 10px; }
-    #inner-inventory-body-wrap .section .section-header .toggle-arrow { display: none; }
-
-    /* Keep inventory wrappers open */
-    #inventory-section-body    { display: block !important; max-height: none !important; overflow: visible !important; }
-    #inner-inventory-body-wrap { display: block !important; max-height: none !important; overflow: visible !important; }
-
-    /* Thumb grids: 4 columns */
-    .thumb-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 4px !important; }
-    .thumb-cell { width: 100% !important; height: auto !important; aspect-ratio: 1; }
-    .thumb-cell img { width: 100% !important; height: 100% !important; }
-  }
-
-  /* Category bar hidden on desktop */
-  #mob-cat-bar { display: none; }
 </style>
 <script src="https://unpkg.com/@airgap/beacon-dapp@4.8.1/dist/walletbeacon.dapp.min.js"></script>
 </head>
@@ -2440,12 +2191,11 @@
       <button id="btn-disconnect" onclick="disconnectWallet()" style="display:none;">Disconnect</button>
       <span id="wallet-addr" class="platform-addr"></span>
     </div>
-    <div class="wallet-platform-row" id="tez-platform-row" style="opacity:.35;pointer-events:none;position:relative;">
-      <div class="platform-icon-wrap disconnected" id="tez-icon-wrap"><div class="pi-inner"><img src="objkt.jpeg" class="platform-icon" alt="Objkt"></div></div>
-      <button id="btn-tez-connect" disabled>Connect</button>
-      <button id="btn-tez-disconnect" style="display:none;">Disconnect</button>
+    <div class="wallet-platform-row" id="tez-platform-row">
+      <div class="platform-icon-wrap disconnected" id="tez-icon-wrap" onclick="handleIconClick('tez')"><div class="pi-inner"><img src="objkt.jpeg" class="platform-icon" alt="Objkt"></div></div>
+      <button id="btn-tez-connect" onclick="connectTezos()">Connect</button>
+      <button id="btn-tez-disconnect" onclick="disconnectTezos()" style="display:none;">Disconnect</button>
       <span class="platform-addr" id="tez-addr"></span>
-      <span style="position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#5a4020;border:1px solid #3a2810;border-radius:4px;padding:2px 6px;pointer-events:none;">Coming Soon</span>
     </div>
   </div>
 
@@ -2494,13 +2244,10 @@
             <img src="drip.jpeg" class="buy-pack-icon" alt="Drip">
             <span class="buy-pack-btn-pill">Buy Mystery Packs on Drip</span>
           </a>
-          <div style="position:relative;">
-            <a href="#" class="buy-pack-btn" id="buy-objkt-btn" style="opacity:.35;pointer-events:none;cursor:not-allowed;">
-              <img src="objkt.jpeg" class="buy-pack-icon" alt="Objkt">
-              <span class="buy-pack-btn-pill">Buy Mystery Packs on Objkt</span>
-            </a>
-            <span style="position:absolute;top:50%;right:10px;transform:translateY(-50%);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#5a4020;border:1px solid #3a2810;border-radius:4px;padding:2px 6px;">Coming Soon</span>
-          </div>
+          <a href="#" target="_blank" class="buy-pack-btn" id="buy-objkt-btn">
+            <img src="objkt.jpeg" class="buy-pack-icon" alt="Objkt">
+            <span class="buy-pack-btn-pill">Buy Mystery Packs on Objkt</span>
+          </a>
         </div>
       </div>
     </div>
@@ -2515,13 +2262,14 @@
     <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
   </div>
   <div class="sidebar-section-body" id="inventory-section-body">
-    <!-- Customize / Ambiance sub-tab bar -->
-    <div id="ritual-tab-bar">
-      <button class="ritual-tab active" data-ritual="customize" onclick="switchRitualTab('customize')">
+    <div class="forge-section-title"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 1 8 8c0 3.5-2 6.5-5 7.5V19a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-1.5C6 16.5 4 13.5 4 10a8 8 0 0 1 8-8z"/></svg>Effigy</div>
+    <!-- RITUAL PILL SWITCH (mobile only) -->
+    <div id="ritual-pill-switch">
+      <button class="ritual-pill active" data-ritual="effigy" onclick="switchRitualTab('effigy')">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 1 8 8c0 3.5-2 6.5-5 7.5V19a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-1.5C6 16.5 4 13.5 4 10a8 8 0 0 1 8-8z"/><path d="M9 12h.01"/><path d="M15 12h.01"/></svg>
         Effigy
       </button>
-      <button class="ritual-tab" data-ritual="ambiance" onclick="switchRitualTab('ambiance')">
+      <button class="ritual-pill" data-ritual="ambiance" onclick="switchRitualTab('ambiance')">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
         Ambiance
       </button>
@@ -2534,34 +2282,6 @@
       <button class="hint-btn" data-hint="Select one item from each category to dress your effigy. Hit Bewitch to cast the ritual." onclick="toggleHint(this,event)"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></button>
       <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     </div>
-    <!-- Mobile category bar (hidden on desktop) -->
-    <nav id="mob-cat-bar">
-      <button class="mob-cat-btn active" data-cat="body" onclick="setMobCat('body')">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a8 8 0 0 1 8 8c0 3.5-2 6.5-5 7.5V19a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-1.5C6 16.5 4 13.5 4 10a8 8 0 0 1 8-8z"/><path d="M9 12h.01"/><path d="M15 12h.01"/></svg>
-        <span>Body</span>
-      </button>
-      <button class="mob-cat-btn" data-cat="knife" onclick="setMobCat('knife')">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="m13 19 1-1"/><path d="m19 13-1 1"/><path d="m16 16 4 4"/><path d="m16 16-3-3"/></svg>
-        <span>Blade</span>
-      </button>
-      <button class="mob-cat-btn" data-cat="offhand" onclick="setMobCat('offhand')">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
-        <span>Offhand</span>
-      </button>
-      <button class="mob-cat-btn" data-cat="necklace" onclick="setMobCat('necklace')">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
-        <span>Neck</span>
-      </button>
-      <button class="mob-cat-btn" data-cat="eyes" onclick="setMobCat('eyes')">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-        <span>Eyes</span>
-      </button>
-      <button class="mob-cat-btn" data-cat="mouth" onclick="setMobCat('mouth')">
-        <i data-lucide="eye-closed" style="width:22px;height:22px;"></i>
-        <span>Mouth</span>
-      </button>
-    </nav>
-
     <div class="sidebar-section-body" id="inner-inventory-body-wrap">
       <div id="inventory-no-wallet-msg" style="font-family:'Bloodcrow',serif;font-size:14px;color:#7a6040;letter-spacing:.05em;line-height:1.6;padding:10px 16px;display:none;">Connect your wallet to sync your inventory items.</div>
       <div class="section" id="sec-body">
@@ -2604,20 +2324,21 @@
         <div class="section-header" onclick="toggleSection('sec-mouth')">Mouth <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
         <div class="section-body"><div class="section-hint">Cosmetic only — no stats. The expression is the last thing a ritual seals.</div><div class="thumb-grid" id="grid-mouth"></div></div>
       </div>
-    </div><!-- /inner-inventory-body-wrap -->
-
-    <!-- BACKGROUND + NAME + PINS stacked vertically -->
-    <div id="forge-ambiance-sections">
-
-    <div class="section open" id="sec-pins">
+    <!-- PINS (under Effigy) -->
+    <div class="section" id="sec-pins">
       <div class="section-header" id="pins-section-label" onclick="toggleSection('sec-pins')">Pins <span class="toggle-arrow"><svg viewBox="0 0 12 18" width="10" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 L10 9 L2 17" stroke="#8a6428" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
       <div class="section-body" id="pins-section-body-wrap">
-        <div class="thumb-grid" id="grid-pins"></div>
         <div id="pin-counter">Placed: <span id="pin-placed-count">0</span> / 5</div>
         <div style="font-family:'Bloodcrow',serif;font-size:16px;color:#7a6848;letter-spacing:.04em;margin-bottom:10px;line-height:1.5">Drag a pin onto the preview to place it on the doll. Up to 5 pins. Click a placed pin to remove it. Pin near the edges of the doll for best results.</div>
+        <div class="thumb-grid" id="grid-pins"></div>
         <button id="pin-clear" onclick="clearPins()">✕ Clear All Pins</button>
       </div>
     </div>
+    </div><!-- /inner-inventory-body-wrap -->
+
+    <div class="forge-section-title forge-section-title-ambiance"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>Ambiance</div>
+    <!-- BACKGROUND + NAME stacked vertically -->
+    <div id="forge-ambiance-sections">
 
     <div class="sidebar-section-label inner-section-label" id="bg-section-label">
       Background
@@ -2737,6 +2458,44 @@
 <!-- ── FORGE BODY: preview col + right panel ── -->
 <div id="preview-col-wrap" style="display:contents">
 <div id="preview-col-inner" style="flex:1;display:flex;overflow:hidden">
+
+<!-- ── RIGHT PANEL ── -->
+<div id="right-panel">
+  <div id="rp-header"><img src="equipback.png" alt=""></div>
+  <div id="rp-equipped-toggle" onclick="toggleEquippedPanel()">
+    <svg id="rp-equipped-arrow-svg" viewBox="0 0 20 12" width="18" height="10" fill="none">
+      <path d="M2 10 L10 2 L18 10" stroke="#c8a050" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span id="rp-equipped-toggle-label">Equipped Items</span>
+  </div>
+  <div id="rp-scroll">
+    <div id="inventory-list"></div>
+    <div id="stat-totals">
+    <div id="stat-totals-label">Total Power</div>
+    <div class="stat-tri-row">
+      <div class="stat-circle curse"><span class="stat-circle-val" id="total-curse">0</span><span class="stat-circle-lbl">Curse</span></div>
+      <div class="stat-circle dark"><span class="stat-circle-val" id="total-dark">0</span><span class="stat-circle-lbl">Doom</span></div>
+      <div class="stat-circle hex"><span class="stat-circle-val" id="total-hex">0</span><span class="stat-circle-lbl">Hex</span></div>
+    </div>
+  <div id="slots-section">
+    <div id="soul-bind-wrap">
+      <button id="soul-bind-btn" onclick="saveToSlotIdx(event,0)">Bind Soul</button>
+    </div>
+    <div id="save-slots">
+      <div class="save-slot-wrap" id="slot-wrap-0">
+        <div class="save-slot" id="slot-0">
+          <img class="slot-img" src="" alt="">
+          <div class="slot-empty-label">No build saved</div>
+        </div>
+        <div class="slot-buttons">
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  </div>
+  <div id="app-footer-rp">Hex &amp; Stitch &nbsp;·&nbsp; Designed, developed &amp; created by Alper Özdil <span class="copy-sym">©</span> 2026 &nbsp;·&nbsp; <a href="https://alperozdil.com" target="_blank">alperozdil.com</a></div>
+</div>
 
 <div id="preview-area">
   <img id="bg-video" src="verticalback.png" alt="">
@@ -2937,46 +2696,6 @@
 </div>
 
 </div><!-- /preview-col-inner -->
-</div><!-- /preview-col-wrap -->
-
-<!-- ── RIGHT PANEL ── -->
-<div id="right-panel">
-  <div id="rp-header"><img src="equipback.png" alt=""></div>
-  <div id="rp-equipped-toggle" onclick="toggleEquippedPanel()">
-    <svg id="rp-equipped-arrow-svg" viewBox="0 0 20 12" width="18" height="10" fill="none">
-      <path d="M2 10 L10 2 L18 10" stroke="#c8a050" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <span id="rp-equipped-toggle-label">Equipped Items</span>
-  </div>
-  <div id="rp-scroll">
-    <div id="inventory-list"></div>
-    <div id="stat-totals">
-    <div id="stat-totals-label">Total Power</div>
-    <div class="stat-tri-row">
-      <div class="stat-circle curse"><span class="stat-circle-val" id="total-curse">0</span><span class="stat-circle-lbl">Curse</span></div>
-      <div class="stat-circle dark"><span class="stat-circle-val" id="total-dark">0</span><span class="stat-circle-lbl">Doom</span></div>
-      <div class="stat-circle hex"><span class="stat-circle-val" id="total-hex">0</span><span class="stat-circle-lbl">Hex</span></div>
-    </div>
-  <div id="slots-section">
-    <div id="soul-bind-wrap">
-      <button id="soul-bind-btn" onclick="saveToSlotIdx(event,0)">Bind Soul</button>
-    </div>
-    <div id="save-slots">
-      <div class="save-slot-wrap" id="slot-wrap-0">
-        <div class="save-slot" id="slot-0">
-          <img class="slot-img" src="" alt="">
-          <div class="slot-empty-label">No build saved</div>
-        </div>
-        <div class="slot-buttons">
-        </div>
-      </div>
-    </div>
-  </div>
-  </div>
-  </div>
-  <div id="app-footer-rp">Hex &amp; Stitch &nbsp;·&nbsp; Designed, developed &amp; created by Alper Özdil <span class="copy-sym">©</span> 2026 &nbsp;·&nbsp; <a href="https://alperozdil.com" target="_blank">alperozdil.com</a></div>
-</div><!-- /right-panel -->
-
 </div><!-- /forge-body -->
 
 <!-- leaderboard modal -->
@@ -3365,7 +3084,7 @@ function buildPinGrid(files){
   if(!grid) return;
   grid.innerHTML='';
   // List all pins from /img/pins/ — if server doesn't send, use numbered fallback
-  const pinList = files.length ? files : ['aqua.png','blue.png','brown.png','green.png','pink.png','purple.png','red.png','yellow.png'];
+  const pinList = files.length ? files : Array.from({length:35},(_,i)=>`${i+1}.png`);
   pinList.forEach(fname=>{
     const img=document.createElement('img');
     img.className='pin-drag-thumb';
@@ -3570,13 +3289,6 @@ function syncBewitchWidth(){
   const box=document.getElementById('bewitch-box');
   const img=document.getElementById('preview-img');
   if(!box||!img||box.style.display==='none') return;
-  // Mobilde JS width override'ı yapma — CSS tam genişlik hallediyor
-  if(window.innerWidth <= 768){
-    box.style.width='';
-    box.style.maxWidth='';
-    initBewitchGlow(box);
-    return;
-  }
   const w=img.offsetWidth;
   if(w>0){ box.style.width=w+'px'; box.style.maxWidth=w+'px'; }
   initBewitchGlow(box);
@@ -3801,8 +3513,11 @@ function toggleInnerSection(name){
 function toggleInventorySection(){ toggleSidebarSection('inventory'); }
 
 function toggleEquippedPanel(){
-  const panel = document.getElementById('right-panel');
-  panel.classList.toggle('rp-open');
+  const scroll = document.getElementById('rp-scroll');
+  const toggle = document.getElementById('rp-equipped-toggle');
+  const isOpen = scroll.classList.toggle('open');
+  toggle.classList.toggle('open', isOpen);
+  document.getElementById('rp-equipped-toggle-label').textContent = 'Equipped Items';
 }
 
 function toggleSidebarSection(name){
@@ -3997,23 +3712,11 @@ function switchSoulTab(tab){
   document.getElementById('soul-tab-unbound').classList.toggle('active', tab === 'unbound');
 }
 
-function setMobCat(cat){
-  document.body.dataset.mobCat = cat;
-  document.querySelectorAll('.mob-cat-btn').forEach(btn=>{
-    btn.classList.toggle('active', btn.dataset.cat === cat);
-  });
-}
-
 function switchRitualTab(ritual){
   document.body.dataset.mobRitual = ritual;
-  const inv = document.getElementById('inventory-section-body');
-  if(inv) inv.dataset.ritual = ritual;
-  document.querySelectorAll('.ritual-tab').forEach(btn=>{
+  document.querySelectorAll('.ritual-pill').forEach(btn=>{
     btn.classList.toggle('active', btn.dataset.ritual === ritual);
   });
-  if(ritual === 'customize' && window.innerWidth <= 768){
-    setMobCat(document.body.dataset.mobCat || 'body');
-  }
 }
 
 function updateSettingsToggles(){
@@ -4024,15 +3727,10 @@ function updateSettingsToggles(){
   if(sfxBtn) sfxBtn.classList.toggle('on', typeof sfxEnabled === 'undefined' || sfxEnabled);
 }
 
-// init ritual tab
-(function(){
-  const inv = document.getElementById('inventory-section-body');
-  if(inv) inv.dataset.ritual = 'customize';
-})();
+// init first tab on mobile
 if(window.innerWidth <= 768){
   document.body.dataset.mobTab = 'packs';
-  document.body.dataset.mobRitual = 'customize';
-  document.body.dataset.mobCat = 'body';
+  document.body.dataset.mobRitual = 'effigy';
 }
 
 function setMobSyncLabel(show){
@@ -4235,7 +3933,7 @@ async function saveSlotData(idx, data){
       await fetch(`${WIX_API}/saveSlots`, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ userId: sessionStorage.getItem('hex_userId'), slots: wixSlots })
+        body: JSON.stringify({ wallet: currentWalletKey, slots: wixSlots })
       });
     } catch(e){ console.warn('Wix saveSlots failed', e); }
   }
@@ -4915,7 +4613,7 @@ async function loadWalletPacks(pubkey){
     // Wix'ten açılmış mint'leri al, fallback localStorage
     let openedMints = [];
     try {
-      const omRes = await fetch(`${WIX_API}/getOpenedMints?userId=${encodeURIComponent(sessionStorage.getItem('hex_userId'))}`);
+      const omRes = await fetch(`${WIX_API}/getOpenedMints?wallet=${encodeURIComponent(pubkey)}`);
       if(omRes.ok){ const omData = await omRes.json(); openedMints = omData.mints || []; }
       // Wix'ten gelenleri localStorage'a da yaz (sync)
       localStorage.setItem(walletKey('openedMints'), JSON.stringify(openedMints));
@@ -4967,7 +4665,7 @@ async function loadWalletPacks(pubkey){
   }
   // Load slots from Wix (params only — thumbnails from localStorage)
   try {
-    const sRes = await fetch(`${WIX_API}/getSlots?userId=${encodeURIComponent(sessionStorage.getItem('hex_userId'))}`);
+    const sRes = await fetch(`${WIX_API}/getSlots?wallet=${encodeURIComponent(pubkey)}`);
     if(sRes.ok){
       const sData = await sRes.json();
       const wixSlots = sData.slots || [null];
@@ -5263,7 +4961,7 @@ async function loadCollection(){
   });
   // Wix'ten yükle
   try {
-    const res = await fetch(`${WIX_API}/getItems?userId=${encodeURIComponent(sessionStorage.getItem('hex_userId'))}`);
+    const res = await fetch(`${WIX_API}/getItems?wallet=${encodeURIComponent(currentWalletKey)}`);
     if(res.ok){
       const data = await res.json();
       const wixItems = data.items || [];
@@ -5477,7 +5175,7 @@ async function processDrop(rarity){
     const res = await fetch(`${WIX_API}/openPack`, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ userId: sessionStorage.getItem('hex_userId'), wallet: currentWalletKey, platform: currentPlatform || 'sol', rarity, mintAddress: mint || '' })
+      body: JSON.stringify({ wallet: currentWalletKey, rarity, mintAddress: mint || '' })
     });
     const data = await res.json();
     if(data.items) items = data.items;
@@ -5618,30 +5316,9 @@ function buildDemoGrids(){
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
-  // Login guard
-  if(!sessionStorage.getItem('hex_userId')){
-    window.location.href = 'login.html';
-    return;
-  }
-
   document.body.classList.add('forge-ready');
   renderPacks();
   buildMouthGrid();
-
-  // Auto-restore wallet from sessionStorage (set by site-header.js across pages)
-  const _savedKey      = sessionStorage.getItem('wallet_key');
-  const _savedPlatform = sessionStorage.getItem('wallet_platform');
-  if(_savedKey && !walletConnected){
-    if(_savedPlatform === 'tez'){
-      window.tezosAddress = _savedKey;
-      walletConnected = true;
-      loadWalletPacks(_savedKey);
-    } else {
-      walletConnected = true;
-      loadWalletPacks(_savedKey);
-    }
-  }
-
   if(!walletConnected) buildDemoGrids();
   // Sync forge-pins-wrap grid with main pin grid
   const mainGrid = document.getElementById('grid-pins');
@@ -5658,9 +5335,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
       .observe(mainCount, {childList:true,characterData:true,subtree:true});
   }
 });
-
-// Re-run lucide so eye-closed mouth icon renders
-setTimeout(() => { if(typeof lucide !== 'undefined') lucide.createIcons(); }, 300);
 
 // Expose wallet functions globally for site-header.js
 window.connectWallet    = connectWallet;

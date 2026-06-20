@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en" data-page="profile">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hex Profile</title>
+<style>
+  @font-face {
+    font-family: 'Bloodcrow';
+    src: url('https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/bloodcrowc.ttf') format('truetype');
+  }
+
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+  body {
+    background:#030201; color:#c8a060;
+    font-family:'Bloodcrow', serif;
+    min-height:100vh;
+  }
+
+  #layout {
+    display:grid;
+    grid-template-columns: 320px 1fr 320px;
+    min-height: calc(100vh - 48px);
+    margin-top: 48px;
+  }
+
+  .panel {
+    padding: 28px 20px;
+    overflow-y: auto;
+  }
+
+  #panel-left {
+    border-right: 1px solid #2a1a06;
+    background-image: linear-gradient(180deg,#0e0904f0 0%,#080603f0 100%), url('verticalback.png');
+    background-size: cover; background-position: center;
+  }
+  #panel-right {
+    border-left: 1px solid #2a1a06;
+    background-image: linear-gradient(180deg,#0e0904f0 0%,#080603f0 100%), url('verticalback.png');
+    background-size: cover; background-position: center;
+  }
+  #panel-main {
+    background: #050302;
+    padding: 40px 40px;
+    overflow-y: auto;
+    max-height: calc(100vh - 48px);
+    position: sticky;
+    top: 48px;
+  }
+
+  /* ── Left panel ── */
+  #page-title {
+    font-size: 38px; letter-spacing: .14em; text-transform: uppercase;
+    color: #e8c87a; margin-bottom: 24px; line-height:1.1;
+    text-shadow: 0 0 18px #e8a02066, 0 2px 4px #000;
+  }
+  .panel-title {
+    font-size: 26px; letter-spacing: .18em; text-transform: uppercase;
+    color: #7a5520; margin-bottom: 10px;
+  }
+
+  #wallet-status-row { display:flex; flex-direction:column; gap:8px; margin-bottom:24px; }
+  .wallet-platform-status {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border-radius:8px;
+    border:1px solid #2a1a06; background:rgba(255,255,255,0.02);
+  }
+  .wallet-platform-status img {
+    width:32px; height:32px; border-radius:50%; object-fit:cover;
+    border:2px solid #cc2020; flex-shrink:0; box-shadow:0 0 8px #cc202044;
+  }
+  .wallet-platform-status.connected img { border-color:#20cc50; box-shadow:0 0 10px #20cc5066; }
+  .wallet-platform-status span { font-size:18px; color:#5a4020; letter-spacing:.06em; text-transform:uppercase; }
+  .wallet-platform-status.connected span { color:#70c880; }
+
+  /* ── Main panel ── */
+  #profile-card {
+    display:flex; flex-direction:column; align-items:center;
+    gap:28px; max-width:560px; margin:0 auto;
+  }
+
+  /* Avatar */
+  #avatar-wrap {
+    position:relative; width:220px; height:220px;
+    border-radius:16px; overflow:hidden;
+    border:2px solid #3a2010;
+    box-shadow: 0 0 30px #e8a02033, 0 0 60px #e8a02011;
+    background:#0a0603;
+    flex-shrink:0;
+  }
+  #avatar-img {
+    width:100%; height:100%; object-fit:cover;
+    display:none;
+  }
+  #avatar-placeholder {
+    width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:10px;
+  }
+  #avatar-placeholder svg { opacity:.3; }
+  #avatar-placeholder span {
+    font-size:13px; letter-spacing:.1em; text-transform:uppercase;
+    color:#4a3010; text-align:center; padding:0 16px;
+  }
+  #avatar-forge-link {
+    display:inline-block; margin-top:8px;
+    font-size:14px; letter-spacing:.1em; text-transform:uppercase;
+    color:#7a5520; text-decoration:none;
+    border:1px solid #3a2010; border-radius:8px; padding:6px 16px;
+    transition:color .2s, border-color .2s;
+  }
+  #avatar-forge-link:hover { color:#e8c060; border-color:#7a5020; }
+
+  /* Witch name */
+  #witch-name-display {
+    text-align:center;
+  }
+  #witch-name-label {
+    font-size:13px; letter-spacing:.18em; text-transform:uppercase;
+    color:#5a3a10; margin-bottom:6px;
+  }
+  #witch-name-value {
+    font-size:48px; letter-spacing:.12em; text-transform:uppercase;
+    color:#e8c87a; line-height:1.1;
+    text-shadow: 0 0 24px #e8a02066, 0 2px 6px #000;
+  }
+  #witch-name-sub {
+    font-size:14px; letter-spacing:.1em; color:#4a3010;
+    margin-top:6px; text-transform:uppercase;
+  }
+
+  /* Wallets block */
+  #wallets-block { width:100%; }
+  #wallets-block .block-title {
+    font-size:15px; letter-spacing:.16em; text-transform:uppercase;
+    color:#5a3a10; margin-bottom:12px; border-bottom:1px solid #1a1006; padding-bottom:8px;
+  }
+  .wallet-row {
+    display:flex; align-items:center; gap:14px;
+    padding:14px 16px; border-radius:10px;
+    border:1px solid #1e1208; background:rgba(255,255,255,0.02);
+    margin-bottom:8px;
+  }
+  .wallet-row img { width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid #3a2010; flex-shrink:0; }
+  .wallet-row.connected img { border-color:#20cc50; box-shadow:0 0 8px #20cc5044; }
+  .wallet-row-info { flex:1; min-width:0; }
+  .wallet-row-platform { font-size:16px; letter-spacing:.1em; text-transform:uppercase; color:#7a5520; margin-bottom:2px; }
+  .wallet-row-addr { font-size:14px; color:#4a3010; letter-spacing:.05em; }
+  .wallet-row.connected .wallet-row-platform { color:#c8a060; }
+  .wallet-row.connected .wallet-row-addr { color:#70c880; }
+  .wallet-row-badge {
+    font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+    padding:4px 10px; border-radius:20px;
+    border:1px solid #2a1a06; color:#4a3010;
+  }
+  .wallet-row.connected .wallet-row-badge { border-color:#20cc5044; color:#70c880; }
+
+  /* ── Right panel stats ── */
+  .stat-row {
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:10px 0; border-bottom:1px solid #1a1006;
+  }
+  .stat-label { font-size:20px; letter-spacing:.12em; text-transform:uppercase; color:#7a5520; }
+  .stat-val   { font-size:30px; }
+  .stat-fraction { font-size:30px; color:#5a4020; margin-left:2px; }
+  .stat-row.total .stat-val         { color:#e8d09a; }
+  .stat-row.rarity-common .stat-val    { color:#c0c0c0; }
+  .stat-row.rarity-rare .stat-val      { color:#e8c050; }
+  .stat-row.rarity-legendary .stat-val { color:#80d0ff; }
+  .stat-row.rarity-ultimate .stat-val  { color:#ff80c0; }
+
+  #collection-link {
+    display:block; margin-top:20px; text-align:center;
+    padding:12px; border-radius:10px;
+    border:1px solid #3a2010; color:#c8a060;
+    text-decoration:none; font-size:16px; letter-spacing:.1em; text-transform:uppercase;
+    transition:border-color .2s, color .2s, background .2s;
+  }
+  #collection-link:hover { border-color:#8a5020; color:#e8c060; background:rgba(200,160,60,0.05); }
+
+  #no-wallet-msg {
+    font-size:20px; letter-spacing:.1em; text-transform:uppercase;
+    color:#4a3010; text-align:center; padding:60px 20px;
+  }
+</style>
+</head>
+<body>
+
+<div id="site-header-mount"></div>
+
+<div id="layout">
+
+  <!-- ════ LEFT PANEL ════ -->
+  <div class="panel" id="panel-left">
+    <div id="page-title">Hex Profile</div>
+
+    <div class="panel-title">Wallet</div>
+    <div id="wallet-status-row">
+      <div class="wallet-platform-status" id="wps-sol">
+        <img src="drip.jpeg" alt="Solana">
+        <span id="wps-sol-addr">Not connected</span>
+      </div>
+      <div class="wallet-platform-status" id="wps-tez" style="display:none">
+        <img src="objkt.jpeg" alt="Tezos">
+        <span id="wps-tez-addr">Not connected</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ MAIN PANEL ════ -->
+  <div id="panel-main">
+    <div id="profile-card">
+
+      <!-- Avatar -->
+      <div id="avatar-wrap">
+        <img id="avatar-img" src="" alt="Effigy">
+        <div id="avatar-placeholder">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#c8a060" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <span>No effigy forged yet</span>
+          <a href="forge.html" id="avatar-forge-link">Go to Hex Ritual</a>
+        </div>
+      </div>
+
+      <!-- Witch Name -->
+      <div id="witch-name-display">
+        <div id="witch-name-label">Witch Name</div>
+        <div id="witch-name-value">—</div>
+        <div id="witch-name-sub">Assigned on first connection</div>
+      </div>
+
+      <!-- Wallets -->
+      <div id="wallets-block">
+        <div class="block-title">Linked Wallets</div>
+        <div class="wallet-row" id="wr-sol">
+          <img src="drip.jpeg" alt="Solana">
+          <div class="wallet-row-info">
+            <div class="wallet-row-platform">Solana</div>
+            <div class="wallet-row-addr" id="wr-sol-addr">Not linked</div>
+          </div>
+          <div class="wallet-row-badge" id="wr-sol-badge">Disconnected</div>
+        </div>
+        <div class="wallet-row" id="wr-tez">
+          <img src="objkt.jpeg" alt="Tezos">
+          <div class="wallet-row-info">
+            <div class="wallet-row-platform">Tezos</div>
+            <div class="wallet-row-addr" id="wr-tez-addr">Not linked</div>
+          </div>
+          <div class="wallet-row-badge" id="wr-tez-badge">Disconnected</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="no-wallet-msg" style="display:none">Connect your wallet to view profile</div>
+  </div>
+
+  <!-- ════ RIGHT PANEL ════ -->
+  <div class="panel" id="panel-right">
+    <div class="panel-title">Collection</div>
+    <div class="stat-row total">
+      <span class="stat-label">Total</span>
+      <span class="stat-val" id="stat-total">—</span>
+    </div>
+    <div class="stat-row rarity-common">
+      <span class="stat-label">Common</span>
+      <span class="stat-val" id="stat-common">—</span>
+    </div>
+    <div class="stat-row rarity-rare">
+      <span class="stat-label">Rare</span>
+      <span class="stat-val" id="stat-rare">—</span>
+    </div>
+    <div class="stat-row rarity-legendary">
+      <span class="stat-label">Legendary</span>
+      <span class="stat-val" id="stat-legendary">—</span>
+    </div>
+    <div class="stat-row rarity-ultimate">
+      <span class="stat-label">Ultimate</span>
+      <span class="stat-val" id="stat-ultimate">—</span>
+    </div>
+
+    <a href="collection.html" id="collection-link">View Full Collection</a>
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/@airgap/beacon-dapp@4.8.1/dist/walletbeacon.dapp.min.js"></script>
+<script src="site-header.js"></script>
+<script>
+// WIX_API defined in site-header.js
+const CDN = 'https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main';
+
+const PACK_ITEMS = {"common":{"body":["body/common/burlap.PNG","body/common/corduroy.PNG","body/common/cracked_leather.PNG","body/common/jean.PNG","body/common/tartan.PNG","body/common/wool.PNG"],"knife":["knife/common/antler_bead_dagger.png","knife/common/antler_dagger.png","knife/common/beast_claw_blade.png","knife/common/bone_fetish_dagger.png","knife/common/bone_skull_dagger.png","knife/common/bone_triskele_dagger.png","knife/common/chakra_rope_knife.png","knife/common/constellation_dagger.png","knife/common/crystal_bone_dagger.png","knife/common/damascus_knife.png","knife/common/flint_twine_blade.png","knife/common/ivory_tusk_blade.png","knife/common/jagged_iron_blade.png","knife/common/obsidian_tribal_knife.png","knife/common/serpent_curved_blade.png","knife/common/snakeskin_knife.png","knife/common/talon_grip_blade.png","knife/common/verdant_curved_blade.png","knife/common/wrapped_serrated_blade.png"],"offhand":["offhand/common/bone_idol_mask.png","offhand/common/butterfly_trapped_in_jar.png","offhand/common/cursed_voodoo_doll.png","offhand/common/dark art.png","offhand/common/drink my brain.png","offhand/common/fractured_stone_tablet.png","offhand/common/good plant.png","offhand/common/grave_dirt_bottle.png","offhand/common/king.png","offhand/common/mushroom.png","offhand/common/ordinary_map.png","offhand/common/roots & stuff.png","offhand/common/skeletal_pocket_watch.png","offhand/common/the box of dark art.png","offhand/common/the hand.png","offhand/common/tile.png","offhand/common/totem of animal.png","offhand/common/toy marble from 80's.png","offhand/common/tribal_feather_mask.png","offhand/common/velvet_coin_purse.png"],"necklace":["necklace/common/adventurers_compass.png","necklace/common/amethyst_wire_pendant.png","necklace/common/aquamarine_wire_pendant.png","necklace/common/bone_and_bead_necklace.png","necklace/common/bone_and_crystal_talisman.png","necklace/common/bone_parts.png","necklace/common/bones.png","necklace/common/broken_clock.png","necklace/common/brown_mushroom.png","necklace/common/carnelian_wire_pendant.png","necklace/common/chain.png","necklace/common/colored_rocks.png","necklace/common/common_mirror.png","necklace/common/dark_rope.png","necklace/common/empty_cork_vial.png","necklace/common/iron_thimble.png","necklace/common/jade_orb_pendant.png","necklace/common/jade_spiral_medallion.png","necklace/common/jade_wire_pendant.png","necklace/common/leopard_pearl_brooch.png","necklace/common/marbles.png","necklace/common/midnight_charm_bracelet.png","necklace/common/moonstone_pendant.png","necklace/common/obsidian_skull_pendant.png","necklace/common/rick_with_hole.png","necklace/common/rock.png","necklace/common/rope.png","necklace/common/rune_rock.png","necklace/common/rune_stones.png","necklace/common/runic_bead_wreath.png","necklace/common/seashell.png","necklace/common/shadow_bat.png","necklace/common/shamanic_feather_and_fang_bracelet.png","necklace/common/skull_and_spider_rosary.png","necklace/common/snail_shell.png","necklace/common/sponge.png","necklace/common/talavera_tile_pendant.png","necklace/common/tangled_button_cluster.png","necklace/common/teeth.png","necklace/common/three_keys.png","necklace/common/vegvisir_stone_tablet.png","necklace/common/whelk_shell.png"],"eyes":["eyes/common/abyss_button.png","eyes/common/amethyst_cross.png","eyes/common/aqua_cross.png","eyes/common/blush_cross.png","eyes/common/bone_cross.png","eyes/common/cobalt_cross.png","eyes/common/coin.png","eyes/common/ember_cross.png","eyes/common/ghost_button.png","eyes/common/grave_moss.png","eyes/common/hex_cross.png","eyes/common/iron_laurel_seal_v2.png","eyes/common/jade_hex_nut.png","eyes/common/marsh_button.png","eyes/common/pale_specter.png","eyes/common/swamp_button.png","eyes/common/venom_cross.png"]},"rare":{"body":["body/rare/copper.PNG","body/rare/cracked_stone.PNG","body/rare/glassy.PNG","body/rare/wooden.PNG"],"knife":["knife/rare/abyssal_dagger.png","knife/rare/astral_dagger.png","knife/rare/ice_crystal_blade.png","knife/rare/jade_carved_blade.png","knife/rare/jade_crystal_dagger.png","knife/rare/lunar_copper_dagger.png","knife/rare/nautilus_blade.png","knife/rare/ruby_bone_dagger.png","knife/rare/rune_gold_dagger.png","knife/rare/shadow_crystal_dagger.png","knife/rare/sigil_black_dagger.png","knife/rare/skeleton_claw_grip.png","knife/rare/skull_animal_dagger.png","knife/rare/tribal_totem_blade.png","knife/rare/void_star_dagger.png"],"offhand":["offhand/rare/ancient_rune_scroll.png","offhand/rare/black mirror.png","offhand/rare/blue_king.png","offhand/rare/bone_chalice.png","offhand/rare/dragons handbook.png","offhand/rare/golden_entwined_palm_tree_idol.png","offhand/rare/ice_shard.png","offhand/rare/mummy_hand_with_rings.png","offhand/rare/prismatic_crystal_shard.png","offhand/rare/something potion.png","offhand/rare/sphere of war.png","offhand/rare/the sun card.png","offhand/rare/tiky tonky.png","offhand/rare/totem of people.png","offhand/rare/tsss.png"],"necklace":["necklace/rare/all_seeing_eye_brooch.png","necklace/rare/aquamarine_gemstone_brooch.png","necklace/rare/blue_evil_eye_brooch.png","necklace/rare/blue_pearl_rosette_brooch.png","necklace/rare/brown_cameo_brooch.png","necklace/rare/carved_blossom_medallion.png","necklace/rare/carved_rose_medallion.png","necklace/rare/crystal_crown_reliquary.png","necklace/rare/diamond_eye_of_providence.png","necklace/rare/emerald_ornate_brooch.png","necklace/rare/eye_of_horus_pin.png","necklace/rare/golden_filigree_rosette.png","necklace/rare/golden_heart_locket.png","necklace/rare/golden_heart_tome.png","necklace/rare/golden_keyhole_locket.png","necklace/rare/golden_laurel_medallion.png","necklace/rare/golden_sun.png","necklace/rare/green_agate_bone_rune.png","necklace/rare/grey_cameo_brooch.png","necklace/rare/jeweled_keyplate.png","necklace/rare/portrait_locket.png","necklace/rare/purple_gem_locket.png","necklace/rare/red_sun.png","necklace/rare/rose_gemstone_brooch.png","necklace/rare/ruby_ornate_brooch.png","necklace/rare/runed_frame.png","necklace/rare/sepia_portrait_cameo.png","necklace/rare/silver_celtic_knot.png","necklace/rare/silver_filigree_rosette.png","necklace/rare/silver_pearl_rosette_brooch.png","necklace/rare/smoky_quartz_claw_pendant.png","necklace/rare/teal_lotus_hairpin.png","necklace/rare/teal_star_hairpin.png","necklace/rare/tribal_face_coin.png","necklace/rare/wild_rose_medallion.png"],"eyes":["eyes/rare/blush_star_button.png","eyes/rare/bone_rune_button.png","eyes/rare/celtic_jade_button.png","eyes/rare/celtic_teal_button.png","eyes/rare/cobalt_mandala.png","eyes/rare/cobalt_sun_button.png","eyes/rare/crimson_mandala.png","eyes/rare/crimson_sun_button.png","eyes/rare/gold_sigil_coin.png","eyes/rare/ivory_floral_button.png","eyes/rare/rose_petal_button.png","eyes/rare/serpent_amber_slit.png","eyes/rare/terracotta_mandala.png"]},"legendary":{"body":["body/legendary/cosmic.PNG","body/legendary/fractured.PNG","body/legendary/marble.PNG","body/legendary/mummy.PNG"],"knife":["knife/legendary/amger gem dagger.png","knife/legendary/ancient eye dagger.png","knife/legendary/crimson vein blade.png","knife/legendary/crystal hand blade.png","knife/legendary/dark justice blade.png","knife/legendary/drawgon.png","knife/legendary/jungle serpent blade.png","knife/legendary/ocean serpent knife.png","knife/legendary/silver scorpion dagger.png","knife/legendary/skull tower dagger.png","knife/legendary/sun & moon dagger.png","knife/legendary/totem ritual dagger.png"],"offhand":["offhand/legendary/124.png","offhand/legendary/book of enchant.png","offhand/legendary/cerberus skull.png","offhand/legendary/enchanted cat.png","offhand/legendary/obsidian_scrying_stone.png","offhand/legendary/prismatic_crystal_cluster.png","offhand/legendary/the death card.png","offhand/legendary/totem of the shaman.png"],"necklace":["necklace/legendary/black_cat.png","necklace/legendary/celestial_stone_talisman.png","necklace/legendary/crimson_phoenix_crest.png","necklace/legendary/dark_sun_sigil.png","necklace/legendary/frost_crystal_root.png","necklace/legendary/golden_winged_emblem.png","necklace/legendary/mask_of_dark_magic.png","necklace/legendary/purple_rune_sphere.png","necklace/legendary/runic_vortex_stone.png","necklace/legendary/sapphire_eye_brooch.png","necklace/legendary/sapphire_star_medallion.png","necklace/legendary/void_spiral_pendant.png","necklace/legendary/winged_blood_heart.png"],"eyes":["eyes/legendary/amber_spiral.png","eyes/legendary/emerald_marble.png","eyes/legendary/frost_cracked_orb.png","eyes/legendary/sapphire_marble.png","eyes/legendary/serpent_eye_orb.png"]},"ultimate":{"body":["body/ultimate/infernal_bone_wraith.PNG","body/ultimate/prismatic dragon scale.PNG","body/ultimate/rune_iron_golem.PNG","body/ultimate/void_portal_golem.PNG"],"knife":["knife/ultimate/cosmic eye blade.png","knife/ultimate/cosmic void blade.png","knife/ultimate/cracked lava blade.png","knife/ultimate/death shroud blade.png","knife/ultimate/drawon scale knife.png","knife/ultimate/eternal dagger.png","knife/ultimate/frost skeleton blade.png","knife/ultimate/hellfire blade.png","knife/ultimate/nebula cutter.png","knife/ultimate/starlight knife.png"],"offhand":["offhand/ultimate/ancient_rune_stone_tablet.png","offhand/ultimate/cosmos navigator.png","offhand/ultimate/cosmos stone.png","offhand/ultimate/lava stone.png"],"necklace":["necklace/ultimate/cosmic_void_orb.png","necklace/ultimate/eyes.png","necklace/ultimate/gilded_demon_bell.png","necklace/ultimate/jeweled_scarab_amulet.png","necklace/ultimate/runic_sigil_ring.png","necklace/ultimate/silver_skull_mask.png"],"eyes":["eyes/ultimate/amber_dragon_eye_medallion.png","eyes/ultimate/amber_slit_eye.png","eyes/ultimate/cosmic_nebula_orb.png","eyes/ultimate/illuminati_eye_charm.png","eyes/ultimate/jade_serpent_eye.png","eyes/ultimate/skull_orb_black.png","eyes/ultimate/venom_vortex.png","eyes/ultimate/void_cosmos_orb.png"]}};
+
+const RARITIES = ['ultimate','legendary','rare','common'];
+const CATS = ['body','knife','offhand','necklace','eyes'];
+const MASTER_TOTAL = {};
+RARITIES.forEach(r => {
+  MASTER_TOTAL[r] = CATS.reduce((s,c) => s + (PACK_ITEMS[r]?.[c]?.length||0), 0);
+});
+const TOTAL_ALL = Object.values(MASTER_TOTAL).reduce((a,b)=>a+b,0);
+
+// ── Init ──────────────────────────────────────────────────────
+// Run after site-header.js restores wallet from sessionStorage
+document.addEventListener('DOMContentLoaded', function(){ setTimeout(init, 50); });
+async function init(){
+  const key      = sessionStorage.getItem('wallet_key');
+  const platform = sessionStorage.getItem('wallet_platform');
+  const witchName = sessionStorage.getItem('witch_name');
+
+  if(!key){
+    document.getElementById('no-wallet-msg').style.display = '';
+    document.getElementById('profile-card').style.display = 'none';
+    return;
+  }
+
+  // Wallet status UI
+  showWalletStatus(key, platform);
+
+  // Witch name
+  if(witchName) document.getElementById('witch-name-value').textContent = witchName;
+
+  // Avatar from localStorage (forge saves preview as data URL)
+  const avatar = localStorage.getItem('profile_avatar');
+  if(avatar){
+    const img = document.getElementById('avatar-img');
+    img.src = avatar;
+    img.style.display = 'block';
+    document.getElementById('avatar-placeholder').style.display = 'none';
+  }
+
+  // Show current wallet immediately from sessionStorage
+  const solNow = platform === 'sol' ? key : null;
+  const tezNow = platform === 'tez' ? key : null;
+  showLinkedWallets(solNow, tezNow);
+
+  // Profile from Wix — may reveal additional linked wallet + items
+  try {
+    const res = await fetch(`${WIX_API}/getOrCreateProfile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ wallet: key, platform })
+    });
+    const data = await res.json();
+    // Merge: backend may have both wallets linked
+    showLinkedWallets(data.solanaWallet || solNow, data.tezosWallet || tezNow);
+    if(data.witchName && !witchName){
+      sessionStorage.setItem('witch_name', data.witchName);
+      document.getElementById('witch-name-value').textContent = data.witchName;
+    }
+    if(Array.isArray(data.items)) updateStats(data.items);
+  } catch(e) {}
+
+}
+
+function showWalletStatus(key, platform){
+  const short = key.slice(0,4)+'…'+key.slice(-4);
+  const solRow = document.getElementById('wps-sol');
+  const tezRow = document.getElementById('wps-tez');
+  if(platform === 'tez'){
+    tezRow.classList.add('connected');
+    document.getElementById('wps-tez-addr').textContent = short;
+    tezRow.style.display = '';
+    solRow.style.display = 'none';
+  } else {
+    solRow.classList.add('connected');
+    document.getElementById('wps-sol-addr').textContent = short;
+  }
+}
+
+function showLinkedWallets(sol, tez){
+  const solRow = document.getElementById('wr-sol');
+  const tezRow = document.getElementById('wr-tez');
+
+  if(sol){
+    solRow.classList.add('connected');
+    document.getElementById('wr-sol-addr').textContent = sol.slice(0,6)+'...'+sol.slice(-6);
+    document.getElementById('wr-sol-badge').textContent = 'Connected';
+  }
+  if(tez){
+    tezRow.classList.add('connected');
+    document.getElementById('wr-tez-addr').textContent = tez.slice(0,6)+'...'+tez.slice(-6);
+    document.getElementById('wr-tez-badge').textContent = 'Connected';
+  }
+}
+
+function updateStats(ownedPaths){
+  const owned = {common:0,rare:0,legendary:0,ultimate:0};
+  const pathSet = new Set(ownedPaths);
+  RARITIES.forEach(r => {
+    CATS.forEach(c => {
+      (PACK_ITEMS[r]?.[c]||[]).forEach(p => { if(pathSet.has(p)) owned[r]++; });
+    });
+  });
+  const ownedAll = Object.values(owned).reduce((a,b)=>a+b,0);
+  document.getElementById('stat-total').innerHTML =
+    `${ownedAll}<span class="stat-fraction">/${TOTAL_ALL}</span>`;
+  RARITIES.forEach(r => {
+    document.getElementById(`stat-${r}`).innerHTML =
+      `${owned[r]}<span class="stat-fraction">/${MASTER_TOTAL[r]}</span>`;
+  });
+}
+
+// ── Wallet connection ──────────────────────────────────────────
+function detectSolanaWallets(){
+  const seen = new Set(); const list = [];
+  function add(name, p){ if(p?.isPhantom||p?.isSolflare||p?.isBackpack||p?.publicKey){ if(!seen.has(p)){seen.add(p);list.push({name,provider:p});} } }
+  add('Phantom',  window.phantom?.solana);
+  add('Phantom',  window.solana?.isPhantom ? window.solana : null);
+  add('Solflare', window.solflare?.isSolflare ? window.solflare : null);
+  add('Backpack', window.xnft?.solana);
+  return list;
+}
+
+async function connectWallet(){
+  const wallets = detectSolanaWallets();
+  if(!wallets.length){ alert('No Solana wallet found. Please install Phantom.'); return; }
+  const provider = wallets[0].provider;
+  try {
+    const resp = await provider.connect();
+    const pubkey = resp.publicKey.toString();
+    window._solanaProvider = provider;
+    if(typeof setHeaderWallet === 'function') setHeaderWallet(pubkey, 'sol');
+  } catch(e){ console.error('Wallet connect error', e); }
+}
+
+async function disconnectWallet(){
+  if(window._solanaProvider) window._solanaProvider.disconnect();
+  if(typeof setHeaderWallet === 'function') setHeaderWallet(null, null);
+}
+
+let _beaconClient = null;
+async function getBeaconClient(){
+  if(_beaconClient) return _beaconClient;
+  _beaconClient = new beacon.DAppClient({ name: 'Hex & Stitch' });
+  return _beaconClient;
+}
+
+async function connectTezos(){
+  try {
+    const client = await getBeaconClient();
+    const acc = await client.requestPermissions();
+    const addr = acc.address;
+    window.tezosAddress = addr;
+    if(typeof setHeaderWallet === 'function') setHeaderWallet(addr, 'tez');
+  } catch(e){ console.error('Tezos connect error', e); }
+}
+
+async function disconnectTezos(){
+  try { const c = await getBeaconClient(); await c.clearActiveAccount(); } catch(e){}
+  if(typeof setHeaderWallet === 'function') setHeaderWallet(null, null);
+}
+
+window.connectWallet    = connectWallet;
+window.connectTezos     = connectTezos;
+window.disconnectWallet = disconnectWallet;
+window.disconnectTezos  = disconnectTezos;
+
+// Called by site-header.js after every wallet state change
+window.updateLandingWallet = function(){ init(); };
+</script>
+</body>
+</html>

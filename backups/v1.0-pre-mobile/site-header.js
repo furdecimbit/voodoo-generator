@@ -42,14 +42,7 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
 
         <!-- Wallet — icon + dropdown -->
         <div id="site-header-wallet">
-          <div id="wic-profile-info" style="display:none;flex-direction:column;align-items:flex-end;gap:1px;margin-right:10px;">
-            <span id="wic-witch-name" style="font-family:Bloodcrow,serif;font-size:13px;letter-spacing:.08em;color:#e8c060;text-transform:uppercase;white-space:nowrap;"></span>
-            <span id="wic-wallet-sub" style="font-family:Bloodcrow,serif;font-size:13px;letter-spacing:.05em;color:#5a4020;white-space:nowrap;"></span>
-          </div>
-          <button id="wic-avatar" onclick="toggleProfilePanel()" title="Profile" style="width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid #3a2808;background:#0e0a04;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:border-color .2s;cursor:pointer;padding:0;position:relative;">
-            <svg id="wic-av-default" viewBox="0 0 24 24" fill="none" stroke="#c8a050" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex-shrink:0;"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-            <img id="wic-av-img" src="" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;">
-          </button>
+          <span id="wic-demo-label">DEMO MODE — CONNECT TO GET PACKS &amp; ITEMS</span>
           <button class="wallet-icon-circle disconnected" id="wic-main" onclick="toggleWalletPanel()" title="Wallet">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
           </button>
@@ -61,7 +54,6 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
 
   const css = `
     <style id="site-header-styles">
-      html, body { -webkit-overflow-scrolling: touch; }
       @font-face { font-family:'Bloodcrow'; src:url('${CDN_BASE}/bloodcrowc.ttf'); }
 
       #site-header {
@@ -98,13 +90,18 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
         filter:drop-shadow(0 0 14px #e8c06055);
       }
 
+      /* Demo label */
+      #wic-demo-label {
+        font-family:'Bloodcrow',serif; font-size:13px; letter-spacing:.07em;
+        color:#7a5828; white-space:nowrap; margin-right:12px;
+        text-transform:uppercase;
+      }
+
       /* Wallet area */
       #site-header-wallet {
-        display:flex; align-items:center; gap:10px;
+        display:flex; align-items:center; gap:0;
         position:relative; z-index:1;
       }
-      #wic-profile-info { display:none; }
-      #wic-avatar { border-color:#3a2808 !important; box-shadow:none !important; margin-right:0 !important; }
 
       /* Dropdown panel — appended to body, truly above everything */
       #wallet-expand-panel {
@@ -147,7 +144,7 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
       /* Icon circles */
       #wallet-icons { display:flex; align-items:center; gap:8px; }
       .wallet-icon-circle {
-        width:52px; height:52px; border-radius:50%;
+        width:44px; height:44px; border-radius:50%;
         border:2px solid #3a2808; background:#0e0a04;
         cursor:pointer; overflow:hidden; padding:0;
         display:flex; align-items:center; justify-content:center;
@@ -155,7 +152,7 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
         flex-shrink:0;
       }
       .wallet-icon-circle img { width:100%; height:100%; object-fit:cover; display:block; }
-      .wallet-icon-circle svg { width:26px; height:26px; color:#c8a050; stroke:currentColor; }
+      .wallet-icon-circle svg { width:22px; height:22px; color:#c8a050; stroke:currentColor; }
       .wallet-icon-circle:hover { border-color:#6a4818; transform:scale(1.08); }
       .wallet-icon-circle.connected    { border-color:#20cc50; box-shadow:0 0 10px #20cc5066; }
       .wallet-icon-circle.disconnected { border-color:#cc2020; box-shadow:0 0 10px #cc202066; }
@@ -180,7 +177,7 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
         cursor:pointer; flex-shrink:0;
         position:relative; z-index:1;
         transition:border-color .2s, background .2s;
-        font-size:32px; color:#c8a050; line-height:0; padding:0; padding-bottom:2px;
+        font-size:22px; color:#c8a050; line-height:1; padding:0;
       }
       #sidebar-toggle:hover { border-color:#6a4818; background:#1a1006; }
 
@@ -188,7 +185,7 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
       #site-sidebar {
         position:fixed; top:82px; left:0;
         height:calc(100vh - 82px);
-        width:220px;
+        width:200px;
         background:linear-gradient(180deg,#120c04ee,#0e0a04ee);
         border-right:1px solid #3a2808;
         z-index:1001;
@@ -203,50 +200,38 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
         padding:10px 0;
       }
       .ssb-link {
-        display:flex; align-items:center; gap:16px;
-        padding:0 20px; height:58px;
+        display:flex; align-items:center; gap:14px;
+        padding:0 20px; height:50px;
         text-decoration:none; white-space:nowrap;
         color:#6a5030;
-        font-family:'Bloodcrow',serif; font-size:18px; letter-spacing:.08em; text-transform:uppercase;
+        font-family:'Bloodcrow',serif; font-size:15px; letter-spacing:.08em; text-transform:uppercase;
         transition:color .2s, background .2s;
         border-left:2px solid transparent;
       }
       .ssb-link:hover { color:#c8a050; background:rgba(232,192,96,.07); }
       .ssb-link.active { color:#e8c060; background:rgba(232,192,96,.1); border-left-color:#e8c060; }
-      .ssb-icon { width:26px; height:26px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-      .ssb-icon svg, .ssb-icon i { width:22px; height:22px; }
+      .ssb-icon { width:22px; height:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+      .ssb-icon svg, .ssb-icon i { width:18px; height:18px; }
 
       /* Socials */
       #site-sidebar-socials {
-        padding: 14px 12px;
-        border-bottom: 1px solid #2a1a06;
+        margin-top: auto;
+        padding: 16px 12px;
+        border-top: 1px solid #2a1a06;
         display: flex;
-        flex-direction: row;
-        justify-content: center;
-        gap: 8px;
+        flex-direction: column;
+        gap: 4px;
       }
       .ssb-social {
-        display: flex; align-items: center; justify-content: center;
-        width: 40px; height: 40px; border-radius: 10px;
+        display: flex; align-items: center; gap: 12px;
+        padding: 8px 10px; border-radius: 8px;
         text-decoration: none;
         color: #5a4020;
-        border: 1px solid #2a1a06;
-        transition: color .2s, background .2s, border-color .2s;
+        font-family: 'Bloodcrow', serif; font-size: 14px; letter-spacing: .08em; text-transform: uppercase;
+        transition: color .2s, background .2s;
       }
-      .ssb-social:hover { color: #c8a050; background: rgba(232,192,96,.07); border-color: #4a3010; }
-      .ssb-social svg { width: 34px; height: 34px; flex-shrink: 0; }
-      .ssb-social span { display: none; }
-
-
-      /* Copyright */
-      #ssb-copyright {
-        margin-top: auto;
-        padding: 10px 12px;
-        text-align: center;
-        font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
-        color: #2a1a06;
-      }
-
+      .ssb-social:hover { color: #c8a050; background: rgba(232,192,96,.07); }
+      .ssb-social svg { width: 18px; height: 18px; flex-shrink: 0; }
 
       /* Backdrop */
       #site-sidebar-backdrop {
@@ -263,57 +248,13 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
       }
       @media (max-width:640px){
         .wallet-icon-circle { width:36px; height:36px; }
-        #wic-avatar { width:40px !important; height:40px !important; }
+        #wic-demo-label { display:none; }
       }
     </style>`;
 
   const mount = document.getElementById('site-header-mount');
   if(mount) mount.innerHTML = css + html;
   else document.body.insertAdjacentHTML('afterbegin', css + html);
-
-  // Inject profile dropdown
-  const profilePanelEl = document.createElement('div');
-  profilePanelEl.id = 'profile-expand-panel';
-  profilePanelEl.style.cssText = 'position:fixed;display:none;flex-direction:column;gap:6px;background:linear-gradient(160deg,#1a1006,#120c04);border:1px solid #3a2808;border-radius:12px;padding:12px;min-width:200px;box-shadow:0 8px 32px #000000cc;z-index:99999;font-family:Bloodcrow,serif;';
-  profilePanelEl.innerHTML = `
-    <div style="padding:8px 4px;border-bottom:1px solid #2a1a08;">
-      <div id="pep-witchname" style="font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:#e8c060;white-space:nowrap;"></div>
-      <div id="pep-username" style="font-size:11px;letter-spacing:.06em;color:#5a4020;margin-top:2px;"></div>
-    </div>
-    <a href="profile.html" style="display:block;padding:8px 4px;font-family:Bloodcrow,serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#c8a050;text-decoration:none;border-bottom:1px solid #2a1a08;">Go to Profile</a>
-    <button onclick="window.hexLogout&&window.hexLogout();window.location.href='login.html';" style="font-family:Bloodcrow,serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#e05030;background:none;border:none;cursor:pointer;padding:8px 4px;text-align:left;">Sign Out</button>
-  `;
-  document.body.appendChild(profilePanelEl);
-
-  function toggleProfilePanel(){
-    const panel = document.getElementById('profile-expand-panel');
-    const btn   = document.getElementById('wic-avatar');
-    if(!panel || !btn) return;
-    const isOpen = panel.style.display === 'flex';
-    if(!isOpen){
-      const rect = btn.getBoundingClientRect();
-      panel.style.top   = (rect.bottom + 8) + 'px';
-      panel.style.right = (window.innerWidth - rect.right) + 'px';
-      panel.style.left  = 'auto';
-      // populate
-      const wn = document.getElementById('pep-witchname');
-      const un = document.getElementById('pep-username');
-      if(wn) wn.textContent = sessionStorage.getItem('hex_witchName') || '';
-      if(un) un.textContent = sessionStorage.getItem('hex_username') || '';
-    }
-    panel.style.display = isOpen ? 'none' : 'flex';
-  }
-  window.toggleProfilePanel = toggleProfilePanel;
-
-  // Close profile panel when clicking outside
-  document.addEventListener('click', e => {
-    const panel = document.getElementById('profile-expand-panel');
-    const btn   = document.getElementById('wic-avatar');
-    if(!panel || !btn) return;
-    if(panel.style.display === 'flex' && !panel.contains(e.target) && e.target !== btn && !btn.contains(e.target)){
-      panel.style.display = 'none';
-    }
-  });
 
   // Inject wallet dropdown directly into body so it's above all stacking contexts
   const panelEl = document.createElement('div');
@@ -345,9 +286,10 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
     const sidebarEl = document.createElement('div');
     sidebarEl.id = 'site-sidebar';
     sidebarEl.innerHTML = `
+      <div id="site-sidebar-inner">${sidebarItemsHTML}</div>
       <div id="site-sidebar-socials">
         <a href="https://alper-ozdil-projetcs.gitbook.io/hex-and-stitch" target="_blank" class="ssb-social" title="GitBook">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.802 17.77a.703.703 0 1 1-.002 1.406.703.703 0 0 1 .002-1.406m11.024-4.347a.703.703 0 1 1-.001 1.406.703.703 0 0 1 .001-1.406M4.987 6.965a.703.703 0 1 1-.002 1.406.703.703 0 0 1 .002-1.406m16.386 3.37c-.624-.626-1.492-.795-2.26-.557L16.06 6.73c.265-.76.1-1.638-.523-2.264a1.95 1.95 0 0 0-2.756 0 1.95 1.95 0 0 0 0 2.757c.623.623 1.49.793 2.258.557l3.05 3.05c-.266.76-.1 1.637.523 2.261a1.95 1.95 0 0 0 2.76-2.757zm-9.261 4.662c-.624-.626-1.491-.795-2.26-.557L6.8 11.387c.266-.76.1-1.638-.523-2.264a1.95 1.95 0 0 0-2.756 0 1.95 1.95 0 0 0 0 2.757c.623.623 1.49.793 2.258.557l3.052 3.05c-.266.76-.1 1.638.523 2.262a1.95 1.95 0 0 0 2.76-2.756z"/></svg>
           <span>GitBook</span>
         </a>
         <a href="https://discord.com/invite/V57fUq93xB" target="_blank" class="ssb-social" title="Discord">
@@ -359,11 +301,6 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
           <span>X</span>
         </a>
       </div>
-
-      <div id="site-sidebar-inner">${sidebarItemsHTML}</div>
-
-
-      <div id="ssb-copyright">© 2025 Hex &amp; Stitch<br><a href="https://alperozdil.com" target="_blank" style="color:#4a3010;text-decoration:none;font-size:10px;letter-spacing:.06em;">Designed &amp; Developed by Alper Özdil</a></div>
     `;
     document.body.appendChild(sidebarEl);
 
@@ -372,7 +309,6 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
     backdropEl.onclick = () => window.toggleNavDrawer();
     document.body.appendChild(backdropEl);
   }
-
 
   // Load Lucide icons
   if(typeof lucide !== 'undefined'){
@@ -442,18 +378,6 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
   window.headerConnectTez  = headerConnectTez;
   window.headerDisconnect  = headerDisconnect;
 
-  window.ssbAdminLogin = function() {
-    const input = document.getElementById('ssb-admin-input');
-    if (input && input.value === 'hex-admin-2026') {
-      window.open('admin.html', '_blank');
-      input.value = '';
-      toggleNavDrawer();
-    } else if (input) {
-      input.style.borderColor = '#8b2020';
-      setTimeout(() => { input.style.borderColor = '#3a2810'; }, 800);
-    }
-  };
-
   // ── Wallet UI state ──
   function setHeaderWallet(key, platform){
     const circle   = document.getElementById('wic-main');
@@ -461,6 +385,7 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
     const tezAddr  = document.getElementById('wep-tez-addr');
     const solBtn   = document.getElementById('wep-sol-btn');
     const tezBtn   = document.getElementById('wep-tez-btn');
+    const demoLabel = document.getElementById('wic-demo-label');
     const profileLink = document.getElementById('wep-profile-link');
     if(!circle) return;
 
@@ -476,6 +401,7 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
       const short = key.slice(0,4)+'...'+key.slice(-4);
       circle.classList.add('connected');
       circle.title = platform.toUpperCase()+': '+short;
+      if(demoLabel) demoLabel.style.display = 'none';
       if(platform === 'tez'){
         if(tezAddr) tezAddr.textContent = short;
         if(tezBtn){ tezBtn.textContent='Disconnect'; tezBtn.classList.add('disconnect'); tezBtn.onclick=()=>headerDisconnect('tez'); }
@@ -485,85 +411,49 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
       }
       sessionStorage.setItem('wallet_key', key);
       sessionStorage.setItem('wallet_platform', platform);
-      // Link wallet to hex account if logged in
-      const hexUserId = sessionStorage.getItem('hex_userId');
-      if(hexUserId){
-        fetch(`${WIX_API}/linkWallet`, {
+      // Fetch or create profile — witch name
+      if(!sessionStorage.getItem('witch_name')){
+        fetch(`${WIX_API}/getOrCreateProfile`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: hexUserId, wallet: key, platform: platform === 'tez' ? 'tez' : 'sol' })
-        }).then(r => r.json()).then(d => {
-          if(d.error && d.error.includes('already assigned')){
-            alert('This wallet is already assigned to another account.');
-            setHeaderWallet(null, null);
+          body: JSON.stringify({ wallet: key, platform })
+        })
+        .then(r => r.json())
+        .then(d => {
+          if(d.witchName){
+            sessionStorage.setItem('witch_name', d.witchName);
+            _updateWitchNameUI(d.witchName);
           }
-        }).catch(() => {});
-        _updateWitchNameUI(sessionStorage.getItem('hex_witchName'));
-      } else if(!sessionStorage.getItem('witch_name')){
-        _updateWitchNameUI(null);
+        })
+        .catch(() => {});
       } else {
         _updateWitchNameUI(sessionStorage.getItem('witch_name'));
       }
     } else {
       circle.classList.add('disconnected');
       circle.title = 'Wallet';
+      if(demoLabel) demoLabel.style.display = '';
       sessionStorage.removeItem('wallet_key');
       sessionStorage.removeItem('wallet_platform');
       sessionStorage.removeItem('witch_name');
       _updateWitchNameUI(null);
     }
-    // Profile info row
-    const profileInfo = document.getElementById('wic-profile-info');
-    const walletSub   = document.getElementById('wic-wallet-sub');
-    if(profileInfo) profileInfo.style.display = (key && platform) ? 'flex' : 'none';
-    if(walletSub && key && platform) {
-      const short = key.slice(0,4)+'...'+key.slice(-4);
-      walletSub.textContent = (platform === 'sol' ? 'Solana · ' : 'Tezos · ') + short;
-    }
     if(typeof window.updateLandingWallet === 'function') window.updateLandingWallet();
   }
   window.setHeaderWallet = setHeaderWallet;
 
-  function _ensureHeaderProfile(){
-    const av = document.getElementById('wic-avatar');
-    if(av){
-      av.addEventListener('mouseenter', () => { av.style.borderColor = '#6a4818'; });
-      av.addEventListener('mouseleave', () => { _refreshHeaderAvatar(false); });
-    }
-  }
-
   function _updateWitchNameUI(name){
-    const el = document.getElementById('wic-witch-name');
-    if(el) el.textContent = name || '';
-    _refreshHeaderAvatar(false);
-  }
-
-  function _refreshHeaderAvatar(hover){
-    const av  = document.getElementById('wic-avatar');
-    const img = document.getElementById('wic-av-img');
-    const def = document.getElementById('wic-av-default');
-    if(!av || !img || !def) return;
-    const idx = localStorage.getItem('profile_avatar_idx');
-    const connected = !!sessionStorage.getItem('wallet_key');
-    av.style.borderColor = hover ? '#6a4818' : '#3a2808';
-    if(idx !== null){
-      const pad = String(parseInt(idx)).padStart(2,'0');
-      img.src = `avatars/avatar_${pad}.png`;
-      img.style.display = 'block';
-      def.style.display = 'none';
-    } else {
-      img.style.display = 'none';
-      def.style.display = '';
+    let el = document.getElementById('wic-witch-name');
+    if(!el){
+      el = document.createElement('span');
+      el.id = 'wic-witch-name';
+      el.style.cssText = 'font-family:Bloodcrow,serif;font-size:13px;letter-spacing:.08em;color:#e8c060;text-transform:uppercase;white-space:nowrap;margin-right:14px;';
+      const wallet = document.getElementById('site-header-wallet');
+      if(wallet) wallet.insertBefore(el, wallet.firstChild);
     }
+    el.textContent = name || '';
+    el.style.display = name ? '' : 'none';
   }
-
-  // Refresh when avatar picked on profile page (same tab — storage event doesn't fire)
-  window._headerAvatarRefresh = _refreshHeaderAvatar;
-
-  // Refresh avatar when localStorage changes (cross-tab)
-  window.addEventListener('storage', e => {
-    if(e.key === 'profile_avatar_idx') _refreshHeaderAvatar(false);
-  });
 
   function setHeaderSyncing(on){
     const c = document.getElementById('wic-main');
@@ -576,20 +466,6 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
   // Restore from session on page load
   const savedKey      = sessionStorage.getItem('wallet_key');
   const savedPlatform = sessionStorage.getItem('wallet_platform');
-  _ensureHeaderProfile();
-  _refreshHeaderAvatar(false);
   if(savedKey) setHeaderWallet(savedKey, savedPlatform);
-
-  // Hex account (username/password login) — show witchName if logged in
-  const hexWitchName = sessionStorage.getItem('hex_witchName');
-  if(hexWitchName) _updateWitchNameUI(hexWitchName);
-
-  // Expose logout for other pages
-  window.hexLogout = function(){
-    sessionStorage.removeItem('hex_userId');
-    sessionStorage.removeItem('hex_witchName');
-    sessionStorage.removeItem('hex_username');
-    _updateWitchNameUI(null);
-  };
 
 })();

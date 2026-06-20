@@ -12,7 +12,7 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: #080608;
+    background: #080608 url('verticalback.png') center/cover no-repeat fixed;
     color: #e8d09a;
     font-family: 'Bloodcrow', serif;
     min-height: 100vh;
@@ -52,13 +52,13 @@
   #logo-wrap {
     display: flex; flex-direction: column; align-items: center; gap: 8px;
   }
-  #logo-wrap img { height: 48px; opacity: .85; }
+  #logo-wrap img { height: 80px; opacity: 1; filter: drop-shadow(0 0 18px #e8c06044); }
   #logo-title {
-    font-size: 32px; letter-spacing: .2em; text-transform: uppercase;
-    color: #e8c060; text-shadow: 0 0 24px #e8a02055;
+    font-size: 34px; letter-spacing: .2em; text-transform: uppercase;
+    color: #f0d070; text-shadow: 0 0 32px #e8a04088;
   }
   #logo-sub {
-    font-size: 13px; color: #5a4020; letter-spacing: .1em; text-transform: uppercase;
+    font-size: 13px; color: #8a6030; letter-spacing: .1em; text-transform: uppercase;
   }
 
   /* Tabs */
@@ -69,7 +69,7 @@
     flex: 1; padding: 10px; background: none; border: none;
     font-family: 'Bloodcrow', serif; font-size: 16px;
     letter-spacing: .1em; text-transform: uppercase;
-    color: #4a3040; cursor: pointer; transition: color .2s;
+    color: #7a5050; cursor: pointer; transition: color .2s;
     border-bottom: 2px solid transparent; margin-bottom: -1px;
   }
   .tab-btn.active { color: #e8c060; border-bottom-color: #e8c060; }
@@ -79,7 +79,7 @@
 
   .field-group { display: flex; flex-direction: column; gap: 6px; }
   .field-label {
-    font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #6a5030;
+    font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: #b08040;
   }
   .field-input {
     padding: 12px 16px;
@@ -134,6 +134,35 @@
   }
   #home-link:hover { color: #c8a040; }
 
+  /* Post-login buttons */
+  #post-login {
+    display: none; flex-direction: column; gap: 10px;
+    animation: fadeIn .4s ease;
+  }
+  .pl-btn {
+    padding: 14px; border-radius: 12px; text-align: center;
+    font-family: 'Bloodcrow', serif; font-size: 18px;
+    letter-spacing: .12em; text-transform: uppercase;
+    cursor: pointer; text-decoration: none; display: block;
+    transition: transform .15s, box-shadow .2s;
+  }
+  .pl-btn.primary {
+    background: linear-gradient(135deg, #6030a0, #3a1060);
+    border: 1px solid #8040c0; color: #e8d0ff;
+    box-shadow: 0 0 24px #6030a044;
+  }
+  .pl-btn.secondary {
+    background: linear-gradient(135deg, #1a1006, #0e0804);
+    border: 1px solid #4a3010; color: #c8a050;
+    box-shadow: 0 0 12px #00000044;
+  }
+  .pl-btn:hover { transform: scale(1.02); }
+  #wallet-hint {
+    font-size: 14px; color: #c8a050; letter-spacing: .06em;
+    text-align: center; text-transform: uppercase; line-height: 1.6;
+    padding: 0 4px;
+  }
+
   /* Witch name preview (signup) */
   #witchname-preview {
     display: none; text-align: center;
@@ -150,8 +179,7 @@
 <div id="login-card">
 
   <div id="logo-wrap">
-    <img src="logo.png" alt="Hex & Stitch" onerror="this.style.display='none'">
-    <div id="logo-title">Hex & Stitch</div>
+    <img src="logo2.png" alt="Hex & Stitch" onerror="this.style.display='none'">
     <div id="logo-sub">Enter the ritual</div>
   </div>
 
@@ -175,7 +203,15 @@
     <div id="success-msg"></div>
   </div>
 
-  <a id="home-link" href="index.html">← Back to Home</a>
+  <div id="post-login">
+    <img id="post-avatar" src="" alt="" style="display:none;width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid #e8c06066;box-shadow:0 0 24px #e8c06033;margin:0 auto;">
+    <div id="post-witchname" style="text-align:center;font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:#8a6030;"></div>
+    <div id="post-welcome" style="text-align:center;font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:#f0d070;text-shadow:0 0 28px #e8a04088;"></div>
+    <a class="pl-btn primary" href="profile.html">Go to Profile</a>
+    <div id="wallet-hint">Connect a wallet in your profile to open packs and access your collection.</div>
+    <a class="pl-btn secondary" href="index.html">Enter Voodoo Workshop</a>
+  </div>
+
 
 </div>
 
@@ -245,15 +281,27 @@ async function handleSubmit(){
     sessionStorage.setItem('hex_userId',   data.userId);
     sessionStorage.setItem('hex_witchName', data.witchName);
     sessionStorage.setItem('hex_username',  data.username);
+    if(data.avatarIdx !== null && data.avatarIdx !== undefined){
+      localStorage.setItem('profile_avatar_idx', data.avatarIdx);
+    }
 
     const successEl = document.getElementById('success-msg');
     successEl.textContent = currentTab === 'signup'
-      ? `Welcome, ${data.witchName}! Redirecting…`
-      : `Welcome back, ${data.witchName}! Redirecting…`;
+      ? `Welcome, ${data.witchName}!`
+      : `Welcome back, ${data.witchName}!`;
     successEl.style.display = 'block';
     btn.textContent = '✓';
 
-    setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+    document.getElementById('form-wrap').style.display = 'none';
+    document.getElementById('tabs').style.display = 'none';
+    document.getElementById('post-witchname').textContent = 'Welcome';
+    document.getElementById('post-welcome').textContent = data.witchName || '';
+    if(data.avatarIdx !== null && data.avatarIdx !== undefined){
+      const pad = String(data.avatarIdx).padStart(2,'0');
+      document.getElementById('post-avatar').src = `avatars/avatar_${pad}.png`;
+      document.getElementById('post-avatar').style.display = 'block';
+    }
+    document.getElementById('post-login').style.display = 'flex';
 
   } catch(e) {
     errEl.textContent = 'Connection error. Please try again.';
