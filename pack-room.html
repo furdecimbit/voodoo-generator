@@ -157,6 +157,7 @@
   .pack-entry[data-rarity="legendary"]:hover { border-color:#4080c0; box-shadow:0 0 18px #60b0ff44; background:linear-gradient(135deg,#0e2a50ee,#07142aee); }
   .pack-entry[data-rarity="ultimate"]:hover  { border-color:#c03080; box-shadow:0 0 20px #ff80c055; background:linear-gradient(135deg,#3a0e28ee,#1c0614ee); }
 
+  .pack-entry.grayed { opacity:.35; cursor:default; pointer-events:none; filter:grayscale(.8); }
   .pack-entry[data-rarity="common"].active    { border-color:#ccc;    box-shadow:0 0 20px #ffffff33; }
   .pack-entry[data-rarity="rare"].active      { border-color:#e8c050; box-shadow:0 0 22px #e8c05066; }
   .pack-entry[data-rarity="legendary"].active { border-color:#60b0ff; box-shadow:0 0 26px #60b0ff77; }
@@ -631,6 +632,9 @@ const sessionCounts = { common:0, rare:0, legendary:0, ultimate:0 };
 
 // ── Init ───────────────────────────────────────────────────────
 buildSmoke('neutral');
+window.addEventListener('DOMContentLoaded', () => {
+  renderPackList({common:0,rare:0,legendary:0,ultimate:0}, {});
+});
 
 // ── Smoke ──────────────────────────────────────────────────────
 function buildSmoke(rarity){
@@ -752,7 +756,7 @@ function doDisconnect(){
   const tezRow = document.getElementById('wps-tez');
   if(solRow){ solRow.classList.remove('connected'); document.getElementById('wps-sol-addr').textContent='Not connected'; solRow.style.display=''; }
   if(tezRow){ tezRow.classList.remove('connected'); document.getElementById('wps-tez-addr').textContent='Not connected'; tezRow.style.display='none'; }
-  document.getElementById('pack-list').innerHTML = '<div id="packs-empty-msg">Connect wallet to load packs</div>';
+  renderPackList({common:0,rare:0,legendary:0,ultimate:0}, {});
   resetCenter();
 }
 
@@ -796,8 +800,7 @@ function showWalletConnected(pubkey, platform){
   }
   if(typeof window.setHeaderWallet === 'function') window.setHeaderWallet(pubkey, platform);
   setSyncing('Loading packs…');
-  document.getElementById('pack-list').innerHTML =
-    '<div class="packs-loading-msg"><div class="pack-spinner"></div>Loading packs…</div>';
+  document.getElementById('pack-list').innerHTML = '<div style="font-size:13px;color:#5a4020;text-align:center;padding:20px 0;letter-spacing:.1em;text-transform:uppercase;">Loading…</div>';
 }
 function setSyncing(msg){
   const el = document.getElementById('wallet-syncing');
@@ -873,8 +876,7 @@ async function loadWalletPacks(pubkey){
   } catch(e){
     console.error('loadWalletPacks failed', e);
     hideSyncing();
-    document.getElementById('pack-list').innerHTML =
-      '<div style="font-size:12px;color:#8a4040;text-align:center;padding:20px 0;letter-spacing:.08em;text-transform:uppercase">Failed to load packs</div>';
+    renderPackList({common:0,rare:0,legendary:0,ultimate:0}, {});
   }
 }
 
@@ -882,24 +884,19 @@ async function loadWalletPacks(pubkey){
 function renderPackList(counts, mints){
   const list = document.getElementById('pack-list');
   list.innerHTML = '';
-  let any = false;
   for(const r of RARITIES){
-    if(!counts[r]) continue;
-    any = true;
+    const count = counts[r] || 0;
     const entry = document.createElement('div');
-    entry.className = 'pack-entry';
+    entry.className = 'pack-entry' + (count === 0 ? ' grayed' : '');
     entry.dataset.rarity = r;
     entry.innerHTML = `
       <img src="${PACK_IMGS[r]}" alt="${r}">
       <div class="pack-entry-info">
-        <div class="pack-entry-name rarity-${r}">${r} Pack</div>
+        <div class="pack-entry-name rarity-${r}">${r}</div>
       </div>
-      <div class="pack-entry-badge">${counts[r]}</div>`;
-    entry.onclick = () => selectPack(r, mints[r]?.[0]);
+      <div class="pack-entry-badge">${count > 0 ? count : '—'}</div>`;
+    if(count > 0) entry.onclick = () => selectPack(r, mints[r]?.[0]);
     list.appendChild(entry);
-  }
-  if(!any){
-    list.innerHTML = '<div id="packs-empty-msg">No unopened packs</div>';
   }
 }
 
