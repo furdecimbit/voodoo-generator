@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" data-page="leaderboard">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leaderboard — Hex &amp; Stitch</title>
+<style>
+  @font-face { font-family:'Bloodcrow'; src:url('https://cdn.jsdelivr.net/gh/furdecimbit/voodoo-generator@main/bloodcrowc.ttf'); }
+  *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+  body {
+    background:#080608;
+    color:#c8a060;
+    font-family:'Bloodcrow',serif;
+    min-height:100vh;
+  }
+  body::before {
+    content:''; position:fixed; inset:0;
+    background:url('verticalback.png') center top/cover no-repeat;
+    opacity:.5; z-index:0;
+  }
+  body::after {
+    content:''; position:fixed; inset:0;
+    background:linear-gradient(160deg,#1a0c0499 0%,#120a04bb 50%,#0e0804cc 100%);
+    z-index:0;
+  }
+
+  #site-header-mount { position:relative; z-index:100; }
+
+  #page-body {
+    position:relative; z-index:1;
+    max-width:760px; margin:0 auto;
+    padding:32px 20px 60px;
+  }
+
+  #lb-title {
+    font-size:clamp(28px,6vw,48px); letter-spacing:.18em; text-transform:uppercase;
+    color:#e8c060; text-shadow:0 0 30px #e8a02055;
+    text-align:center; margin-bottom:6px;
+  }
+  #lb-sub {
+    font-size:13px; letter-spacing:.1em; text-transform:uppercase;
+    color:#4a3010; text-align:center; margin-bottom:32px;
+  }
+
+  #lb-loading {
+    text-align:center; font-size:14px; letter-spacing:.1em;
+    text-transform:uppercase; color:#4a3010; padding:40px 0;
+  }
+
+  #lb-table { width:100%; border-collapse:collapse; }
+
+  .lb-row {
+    display:grid;
+    grid-template-columns: 48px 1fr 80px 80px 80px 90px;
+    align-items:center; gap:0;
+    border-bottom:1px solid #1a1008;
+    padding:10px 14px;
+    transition:background .15s;
+  }
+  .lb-row:hover { background:rgba(232,192,96,.04); }
+
+  .lb-row.header {
+    font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    color:#4a3010; border-bottom:1px solid #2a1a08;
+    padding-bottom:8px; margin-bottom:4px;
+  }
+  .lb-row.header:hover { background:none; }
+
+  .lb-row.top-1 { background:rgba(232,192,60,.07); }
+  .lb-row.top-2 { background:rgba(200,200,200,.04); }
+  .lb-row.top-3 { background:rgba(180,100,40,.05); }
+
+  .lb-rank {
+    font-size:16px; color:#4a3010; text-align:center; font-weight:bold;
+  }
+  .lb-row.top-1 .lb-rank { color:#f0d060; font-size:20px; }
+  .lb-row.top-2 .lb-rank { color:#b0b0c0; font-size:18px; }
+  .lb-row.top-3 .lb-rank { color:#c07840; font-size:17px; }
+
+  .lb-user { display:flex; align-items:center; gap:10px; min-width:0; }
+  .lb-avatar {
+    width:36px; height:36px; border-radius:8px; object-fit:cover;
+    border:1px solid #2a1a08; flex-shrink:0;
+    background:#0e0a04;
+  }
+  .lb-witchname {
+    font-size:15px; letter-spacing:.06em; text-transform:uppercase;
+    color:#c8a060; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .lb-row.top-1 .lb-witchname { color:#f0d060; }
+
+  .lb-stat {
+    text-align:center; font-size:14px; letter-spacing:.04em;
+  }
+  .lb-curse  { color:#e05050; }
+  .lb-doom   { color:#8050e0; }
+  .lb-hex    { color:#50c070; }
+  .lb-power  { color:#e8c060; font-size:16px; font-weight:bold; }
+  .lb-row.top-1 .lb-power { color:#f0d060; font-size:18px; }
+
+  #lb-empty {
+    text-align:center; font-size:14px; letter-spacing:.1em;
+    text-transform:uppercase; color:#4a3010; padding:40px 0; display:none;
+  }
+
+  @media(max-width:560px){
+    .lb-row { grid-template-columns:40px 1fr 70px 80px; gap:0; padding:10px 8px; }
+    .lb-curse, .lb-doom { display:none; }
+    .lb-avatar { width:30px; height:30px; }
+    .lb-witchname { font-size:13px; }
+    .lb-stat { font-size:13px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="site-header-mount"></div>
+<script src="site-header.js"></script>
+
+<div id="page-body">
+  <div id="lb-title">Leaderboard</div>
+  <div id="lb-sub">Ranked by ritual power</div>
+
+  <div id="lb-loading">Loading…</div>
+  <div id="lb-empty">No entries yet</div>
+
+  <div class="lb-row header">
+    <div></div>
+    <div>Witch</div>
+    <div class="lb-stat lb-curse">Curse</div>
+    <div class="lb-stat lb-doom">Doom</div>
+    <div class="lb-stat lb-hex">Hex</div>
+    <div class="lb-stat lb-power">Power</div>
+  </div>
+  <div id="lb-list"></div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', async () => {
+  if(!sessionStorage.getItem('hex_userId')){
+    window.location.href = 'login.html'; return;
+  }
+
+  window.connectWallet    = ()=>{};
+  window.connectTezos     = ()=>{};
+  window.disconnectWallet = ()=>{ if(typeof setHeaderWallet==='function') setHeaderWallet(null,null); };
+  window.disconnectTezos  = ()=>{ if(typeof setHeaderWallet==='function') setHeaderWallet(null,null); };
+  window.updateLandingWallet = ()=>{};
+
+  try {
+    const res  = await fetch(`${WIX_API}/getLeaderboard`);
+    const data = await res.json();
+    const entries = (data.entries || []).sort((a,b) => b.power - a.power);
+
+    document.getElementById('lb-loading').style.display = 'none';
+
+    if(!entries.length){
+      document.getElementById('lb-empty').style.display = 'block';
+      return;
+    }
+
+    const myId   = sessionStorage.getItem('hex_userId');
+    const avIdx  = localStorage.getItem('profile_avatar_idx');
+    const list   = document.getElementById('lb-list');
+
+    entries.forEach((e, i) => {
+      const rank = i + 1;
+      const row  = document.createElement('div');
+      row.className = 'lb-row' + (rank===1?' top-1':rank===2?' top-2':rank===3?' top-3':'');
+      if(e.userId === myId) row.style.outline = '1px solid #e8c06044';
+
+      const rankLabel = rank===1?'①':rank===2?'②':rank===3?'③':rank;
+      const avSrc = (e.userId === myId && avIdx !== null)
+        ? `avatars/avatar_${String(avIdx).padStart(2,'0')}.png`
+        : `avatars/avatar_00.png`;
+
+      row.innerHTML = `
+        <div class="lb-rank">${rankLabel}</div>
+        <div class="lb-user">
+          <img class="lb-avatar" src="${avSrc}" alt="">
+          <span class="lb-witchname">${e.witchName || '—'}</span>
+        </div>
+        <div class="lb-stat lb-curse">${e.curse}</div>
+        <div class="lb-stat lb-doom">${e.doom}</div>
+        <div class="lb-stat lb-hex">${e.hex}</div>
+        <div class="lb-stat lb-power">${e.power}</div>
+      `;
+      list.appendChild(row);
+    });
+
+  } catch(err) {
+    document.getElementById('lb-loading').textContent = 'Failed to load leaderboard.';
+    console.error(err);
+  }
+});
+</script>
+</body>
+</html>

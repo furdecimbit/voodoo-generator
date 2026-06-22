@@ -17,8 +17,9 @@ const WIX_API  = 'https://www.alperozdil.com/_functions';
     { id:'home',       label:'Home',       href:'index.html' },
     { id:'forge',      label:'Ritual',     href:'forge.html' },
     { id:'packs',      label:'Packs',      href:'pack-room.html' },
-    { id:'collection', label:'Collection', href:'collection.html' },
-    { id:'profile',    label:'Profile',    href:'profile.html' },
+    { id:'collection',  label:'Collection',  href:'collection.html' },
+    { id:'leaderboard', label:'Leaderboard', href:'leaderboard.html' },
+    { id:'profile',     label:'Profile',     href:'profile.html' },
   ];
 
   const sidebarItemsHTML = nav.map(n => `
